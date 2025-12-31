@@ -16,14 +16,15 @@ const nextConfig: NextConfig = {
     },
     staleTimes: {
       dynamic: 0,
-      static: 0,
+      static: 30, // Minimum value required by Next.js 16
     },
-    forceSwcTransforms: true,
     serverMinification: false,
     optimizePackageImports: [],
   },
   serverExternalPackages: [],
 
+  // Add empty turbopack config to work with webpack config
+  turbopack: {},
 
   // Disables static optimization — makes all pages SSR
 

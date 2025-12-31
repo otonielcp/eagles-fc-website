@@ -122,7 +122,7 @@ const Navbar = () => {
       }`}>
         {/* Large Screens: Logo on Left - Enhanced Design */}
         <div className={`absolute left-24 md:left-32 lg:left-44 xl:left-52 flex items-center hidden md:flex transition-all duration-500 z-50 ${
-          isScrolled ? 'top-0' : 'top-0'
+          isScrolled ? 'top-4' : 'top-6'
         }`}>
           <Link href="/" className="relative group">
             <div className="relative">
