@@ -1,4 +1,3 @@
-"use client";
 import CoachesList from '@/components/landing/CoachesList';
 import MiniNavbar from '@/components/landing/MiniNavbar';
 import { Suspense } from 'react';
