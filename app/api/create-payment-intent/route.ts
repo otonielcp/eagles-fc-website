@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe-server';
+import { getStripe } from '@/lib/stripe-server';
 import { Product } from '@/types/product';
 
 interface CartItem extends Product {
@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment intent
+    const stripe = getStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount, // Amount in cents
       currency: 'usd',

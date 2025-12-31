@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe-server';
+import { getStripe } from '@/lib/stripe-server';
 import { Product } from '@/types/product';
 
 interface CartItem extends Product {
@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return NextResponse.json({ sessionId: session.id });
