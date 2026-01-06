@@ -24,14 +24,21 @@ const ProgramsCrest = () => {
         }
       );
 
-      // Animate glow
-      gsap.to(glowRef.current, {
-        scale: [1, 1.2, 1],
-        opacity: [0.3, 0.6, 0.3],
-        duration: 4,
-        repeat: -1,
-        ease: "sine.inOut"
-      });
+      // Animate glow with timeline for keyframe animation
+      const glowTimeline = gsap.timeline({ repeat: -1 });
+      glowTimeline
+        .to(glowRef.current, {
+          scale: 1.2,
+          opacity: 0.6,
+          duration: 2,
+          ease: "sine.inOut"
+        })
+        .to(glowRef.current, {
+          scale: 1,
+          opacity: 0.3,
+          duration: 2,
+          ease: "sine.inOut"
+        });
     }
   }, []);
 
