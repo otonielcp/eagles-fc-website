@@ -17,7 +17,8 @@ import {
   Ticket,
   Video,
   Trophy,
-  UserCircle
+  UserCircle,
+  SlidersHorizontal
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { logout } from "@/actions/auth";
@@ -42,6 +43,7 @@ export default function AdminLayout({
 
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Hero Sliders", href: "/admin/sliders", icon: SlidersHorizontal },
     { name: "News", href: "/admin/news", icon: FileText },
     { name: "Videos", href: "/admin/videos", icon: Video },
     { name: "Teams", href: "/admin/teams", icon: Users },
@@ -51,9 +53,7 @@ export default function AdminLayout({
     { name: "Shop", href: "/admin/shop", icon: ShoppingBag },
     { name: "Sponsors", href: "/admin/sponsors", icon: Image },
     { name: "Standings", href: "/admin/standings", icon: ListOrdered },
-
     { name: "Trophies", href: "/admin/league-count", icon: Trophy },
-
     { name: "Settings", href: "/admin/settings", icon: Settings },
   ];
 

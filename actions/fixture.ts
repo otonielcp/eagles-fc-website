@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import Fixture, { IFixture } from "@/models/Fixture";
+import Slider from "@/models/Slider";
 import connectDB from "@/lib/dbConnect";
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -11,6 +12,110 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// Helper function to create or update slider from fixture data
+async function syncFixtureToSlider(fixture: any) {
+    try {
+        console.log("Syncing fixture to slider:", fixture._id.toString());
+
+        // Combine date and time into a proper datetime string for countdown
+        let matchDateTime = "";
+        if (fixture.date) {
+            // fixture.date is stored as string like "2025-01-15"
+            // fixture.time is stored as string like "7:00 PM"
+            const dateStr = fixture.date.split("T")[0]; // Get just the date part
+            matchDateTime = `${dateStr}T19:00:00`; // Default to 7PM if time parsing needed
+
+            // Try to parse the time string
+            if (fixture.time) {
+                const timeMatch = fixture.time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+                if (timeMatch) {
+                    let hours = parseInt(timeMatch[1]);
+                    const minutes = timeMatch[2];
+                    const meridiem = timeMatch[3];
+
+                    if (meridiem?.toUpperCase() === "PM" && hours !== 12) {
+                        hours += 12;
+                    } else if (meridiem?.toUpperCase() === "AM" && hours === 12) {
+                        hours = 0;
+                    }
+
+                    matchDateTime = `${dateStr}T${String(hours).padStart(2, "0")}:${minutes}:00`;
+                }
+            }
+        }
+
+        // Generate a title from teams if no competition
+        const title = fixture.competition?.toUpperCase() ||
+                      `${fixture.homeTeam || "HOME"} VS ${fixture.awayTeam || "AWAY"}`;
+
+        // Clean up the time string - remove duplicate AM/PM
+        let cleanTime = fixture.time || "";
+        const timeCleanMatch = cleanTime.match(/^(\d{1,2}:\d{2}\s*(AM|PM))/i);
+        if (timeCleanMatch) {
+            cleanTime = timeCleanMatch[1];
+        }
+
+        const sliderData = {
+            type: "game" as const,
+            title: title,
+            content: "", // Empty for game sliders - not required
+            image: fixture.matchImage || "/gameresultbg.jpeg", // Use matchImage or default
+            link: `/fixtures`,
+            buttonText: "VIEW MATCH",
+            order: 0,
+            isActive: true,
+            fixtureId: fixture._id.toString(),
+            gameData: {
+                homeTeamName: fixture.homeTeam || "",
+                homeTeamLogo: fixture.homeTeamLogo || "",
+                awayTeamName: fixture.awayTeam || "",
+                awayTeamLogo: fixture.awayTeamLogo || "",
+                leagueLogo: fixture.leagueLogo || "",
+                matchDate: matchDateTime,
+                matchTime: cleanTime,
+                matchLocation: fixture.stadium || "",
+            },
+        };
+
+        console.log("Slider data prepared:", JSON.stringify(sliderData, null, 2));
+
+        // Check if slider already exists for this fixture
+        const existingSlider = await Slider.findOne({ fixtureId: fixture._id.toString() });
+
+        if (existingSlider) {
+            console.log("Updating existing slider:", existingSlider._id.toString());
+            // Update existing slider but preserve admin-customized fields (like background image)
+            const updatedSlider = await Slider.findByIdAndUpdate(existingSlider._id, {
+                // Update game data from fixture
+                "gameData.homeTeamName": sliderData.gameData.homeTeamName,
+                "gameData.homeTeamLogo": sliderData.gameData.homeTeamLogo,
+                "gameData.awayTeamName": sliderData.gameData.awayTeamName,
+                "gameData.awayTeamLogo": sliderData.gameData.awayTeamLogo,
+                "gameData.leagueLogo": sliderData.gameData.leagueLogo,
+                "gameData.matchDate": sliderData.gameData.matchDate,
+                "gameData.matchTime": sliderData.gameData.matchTime,
+                "gameData.matchLocation": sliderData.gameData.matchLocation,
+            }, { new: true });
+            console.log("Slider updated successfully");
+            return updatedSlider;
+        } else {
+            console.log("Creating new slider for fixture");
+            // Create new slider
+            const newSlider = await Slider.create(sliderData);
+            console.log("New slider created:", newSlider._id.toString());
+            return newSlider;
+        }
+    } catch (error) {
+        console.error("Error syncing fixture to slider:", error);
+        throw error;
+    }
+}
+
+// Helper function to remove slider when fixture is unfeatured
+async function removeFixtureSlider(fixtureId: string) {
+    await Slider.findOneAndDelete({ fixtureId: fixtureId });
+}
 
 // Get all fixtures
 export async function getAllFixtures() {
@@ -48,6 +153,13 @@ export async function createFixture(fixtureData: Partial<IFixture>) {
     try {
         await connectDB();
         const newFixture = await Fixture.create(fixtureData);
+
+        // If fixture is featured, create a slider for it
+        if (fixtureData.isFeatured) {
+            await syncFixtureToSlider(newFixture);
+            revalidatePath("/admin/sliders");
+        }
+
         revalidatePath("/admin/fixtures");
         return JSON.parse(JSON.stringify(newFixture));
     } catch (error) {
@@ -61,6 +173,11 @@ export async function updateFixture(id: string, fixtureData: Partial<IFixture>) 
     try {
         await connectDB();
 
+        // Get the current fixture to check if isFeatured changed
+        const currentFixture = await Fixture.findById(id);
+        const wasFeatured = currentFixture?.isFeatured;
+        const willBeFeatured = fixtureData.isFeatured;
+
         const updatedFixture = await Fixture.findByIdAndUpdate(
             id,
             { ...fixtureData },
@@ -71,8 +188,24 @@ export async function updateFixture(id: string, fixtureData: Partial<IFixture>) 
             throw new Error("Fixture not found");
         }
 
+        // Handle slider sync based on isFeatured changes
+        if (willBeFeatured && !wasFeatured) {
+            // Fixture became featured - create slider
+            await syncFixtureToSlider(updatedFixture);
+            revalidatePath("/admin/sliders");
+        } else if (!willBeFeatured && wasFeatured) {
+            // Fixture was unfeatured - remove slider
+            await removeFixtureSlider(id);
+            revalidatePath("/admin/sliders");
+        } else if (willBeFeatured) {
+            // Fixture is still featured - update slider with new data
+            await syncFixtureToSlider(updatedFixture);
+            revalidatePath("/admin/sliders");
+        }
+
         revalidatePath("/admin/fixtures");
         revalidatePath(`/admin/fixtures/${id}/edit`);
+        revalidatePath("/"); // Revalidate homepage for slider changes
         return JSON.parse(JSON.stringify(updatedFixture));
     } catch (error) {
         console.error(`Error updating fixture with ID ${id}:`, error);
@@ -90,7 +223,12 @@ export async function deleteFixture(id: string) {
             throw new Error("Fixture not found");
         }
 
+        // Also delete associated slider if it exists
+        await removeFixtureSlider(id);
+
         revalidatePath("/admin/fixtures");
+        revalidatePath("/admin/sliders");
+        revalidatePath("/");
         return { success: true };
     } catch (error) {
         console.error(`Error deleting fixture with ID ${id}:`, error);

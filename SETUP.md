@@ -143,9 +143,61 @@ pnpm dev -- -p 3001
 
 ### MongoDB Connection Issues
 
-- Ensure MongoDB service is running
-- Check your connection string in `.env.local`
-- For Atlas, verify IP whitelist settings
+#### Error: "Connection failed. If the problem persists, please check your internet connection or VPN"
+
+This error indicates that the application cannot connect to MongoDB. Follow these troubleshooting steps:
+
+**1. Check Environment Variables**
+- Verify that `.env.local` file exists in the root directory
+- Ensure `MONGO_URI` is set correctly:
+  ```bash
+  # For local MongoDB
+  MONGO_URI=mongodb://localhost:27017/eagles-fc
+  
+  # For MongoDB Atlas
+  MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/eagles-fc?retryWrites=true&w=majority
+  ```
+
+**2. For Local MongoDB:**
+- Check if MongoDB service is running:
+  ```bash
+  # Windows
+  net start MongoDB
+  
+  # Check service status
+  sc query MongoDB
+  ```
+- If not running, start the service or install MongoDB
+- Verify MongoDB is listening on port 27017:
+  ```bash
+  # Windows
+  netstat -an | findstr 27017
+  ```
+
+**3. For MongoDB Atlas (Cloud):**
+- **IP Whitelist**: Go to Atlas Dashboard → Network Access → Add your current IP address (or use `0.0.0.0/0` for all IPs in development)
+- **Connection String**: Verify username and password are correct in the connection string
+- **VPN/Network**: If using VPN, ensure it's not blocking MongoDB Atlas connections
+  - Try disconnecting VPN temporarily to test
+  - Some corporate VPNs block MongoDB connections
+- **Firewall**: Check if your firewall is blocking outbound connections to MongoDB (port 27017 or SRV)
+- **Connection String Format**: Ensure the connection string uses the correct format:
+  ```
+  mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+  ```
+
+**4. General Network Issues:**
+- Test your internet connection
+- Check if you're behind a proxy that might block database connections
+- Try connecting from a different network to isolate the issue
+- For corporate networks, contact IT about MongoDB/Atlas access
+
+**5. Quick Test:**
+Create a test script to verify the connection:
+```bash
+# Test MongoDB connection (requires mongosh or mongo client)
+mongosh "your-connection-string-here"
+```
 
 ### Missing Dependencies
 

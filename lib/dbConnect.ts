@@ -22,22 +22,42 @@ let cached = global.mongoose;
 if (!cached) cached = global.mongoose = { conn: null };
 
 const connectDB = async () => {
-  if (cached.conn) return cached.conn;
+  if (cached.conn) {
+    // Check if the connection is still alive
+    if (mongoose.connection.readyState === 1) {
+      return cached.conn;
+    } else {
+      // Connection is not ready, reset cache
+      cached.conn = null;
+    }
+  }
   
   // Only check for MONGODB_URI when actually connecting (at runtime, not during build)
   const MONGODB_URI = getMongoUri();
   
-  cached.conn = await mongoose
-    .connect(MONGODB_URI)
-    .then((mongoose) => {      
-      return mongoose;
-    })
-    .catch((error) => {
-      console.error("Error connecting to MongoDB", error);
-      return null;
+  try {
+    cached.conn = await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+      socketTimeoutMS: 45000,
     });
-
-  return cached.conn;
+    
+    console.log("MongoDB connected successfully");
+    return cached.conn;
+  } catch (error: any) {
+    console.error("Error connecting to MongoDB:", error);
+    cached.conn = null;
+    
+    // Provide more specific error messages
+    if (error.message?.includes('ENOTFOUND') || error.message?.includes('ECONNREFUSED')) {
+      throw new Error("Connection failed. If the problem persists, please check your internet connection or VPN");
+    } else if (error.message?.includes('authentication failed')) {
+      throw new Error("Database authentication failed. Please check your credentials.");
+    } else if (error.message?.includes('timeout')) {
+      throw new Error("Connection timeout. Please check your internet connection or try again later.");
+    } else {
+      throw new Error(`Database connection failed: ${error.message || 'Unknown error'}`);
+    }
+  }
 };
 
 export default connectDB;

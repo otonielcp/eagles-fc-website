@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Loader2, ListChecks, Bold, Italic, List, ListOrdered, Quote, Undo2, Redo2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Loader2, ListChecks, Bold, Italic, List, ListOrdered, Quote, Undo2, Redo2, Tv, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -728,18 +728,40 @@ export default function FixtureForm({ fixtureId }: { fixtureId?: string }) {
               control={form.control}
               name="isFeatured"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 mb-6">
+                <FormItem className={cn(
+                  "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-6 transition-colors",
+                  field.value && "border-[#C5A464] bg-[#C5A464]/5"
+                )}>
                   <FormControl>
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Featured Match</FormLabel>
+                  <div className="space-y-1 leading-none flex-1">
+                    <FormLabel className="flex items-center gap-2">
+                      <Tv className="h-4 w-4" />
+                      Featured Match (Hero Slider)
+                    </FormLabel>
                     <FormDescription>
-                      This match will be highlighted on the home page
+                      {field.value ? (
+                        <span className="text-[#C5A464]">
+                          This match will be automatically added to the hero slider with countdown timer.
+                          You can customize the slider background image in the Sliders admin page.
+                        </span>
+                      ) : (
+                        "Enable to display this match in the homepage hero slider with a countdown timer"
+                      )}
                     </FormDescription>
+                    {field.value && fixtureId && (
+                      <Link
+                        href="/admin/sliders"
+                        className="inline-flex items-center gap-1 text-sm text-[#C5A464] hover:underline mt-2"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Customize slider appearance
+                      </Link>
+                    )}
                   </div>
                 </FormItem>
               )}

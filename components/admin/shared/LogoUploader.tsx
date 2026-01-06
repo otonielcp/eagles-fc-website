@@ -71,10 +71,10 @@ export default function LogoUploader({
       if (result.success && result.url) {
         // Update the logo URL and store public_id for potential deletion later
         onLogoChange(result.url, result.public_id);
-        
+
         // Show preview
         setPreviewUrl(URL.createObjectURL(file));
-        
+
         toast.success("Logo uploaded successfully");
       } else {
         throw new Error(result.message || "Upload failed");
