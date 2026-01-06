@@ -34,7 +34,7 @@ export default function TeamLogoInput({
   const [logoSaved, setLogoSaved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle click outside to close suggestions
   useEffect(() => {
