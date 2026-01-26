@@ -1,5 +1,5 @@
 import HeroSection from '@/components/landing/HeroSection';
-import DynamicLatestNews from '@/components/news/DynamicLatestNews';
+import LatestNews from '@/components/landing/LatestNews';
 import CoreValues from '@/components/landing/CoreValues';
 import Program from '@/components/landing/Program';
 import GameResult from '@/components/landing/GameResult';
@@ -14,7 +14,7 @@ const HomePage = () => {
       <HeroSection />
 
       <Matches />
-      <DynamicLatestNews />
+      <LatestNews />
 
       <CoreValues />
       <Program />
