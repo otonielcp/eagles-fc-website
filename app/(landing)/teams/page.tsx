@@ -3,6 +3,7 @@ import { getActiveTeams } from '@/actions/team';
 import { getPlayersByTeamId } from '@/actions/player';
 import { getStaffByTeamId } from '@/actions/staff';
 import { getFixturesByTeam } from '@/actions/fixture';
+import { IFixture } from '@/types/fixtures';
 
 export default async function Teams() {
   // Fetch active teams from the database
@@ -32,7 +33,7 @@ export default async function Teams() {
 
       // Get unique competitions/leagues the team is in with their logos
       const competitionsMap = new Map();
-      fixtures.forEach(f => {
+      fixtures.forEach((f: IFixture) => {
         if (f.competition && !competitionsMap.has(f.competition)) {
           competitionsMap.set(f.competition, f.leagueLogo || null);
         }
