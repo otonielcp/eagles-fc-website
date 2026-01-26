@@ -193,6 +193,8 @@ const HeroSection = () => {
     async function fetchSliders() {
       try {
         const slidersData = await getActiveSliders();
+        
+        console.log("Fetched sliders:", slidersData.length, slidersData);
 
         if (slidersData.length > 0) {
           const formattedSlides: SlideData[] = slidersData.map(slider => ({
@@ -205,7 +207,10 @@ const HeroSection = () => {
             _id: slider._id,
             gameData: slider.gameData,
           }));
+          console.log("Formatted slides:", formattedSlides);
           setSlides(formattedSlides);
+        } else {
+          console.log("No active sliders found. Make sure your sliders have 'isActive' set to true in the admin panel.");
         }
       } catch (error) {
         console.error("Error fetching sliders:", error);
