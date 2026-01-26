@@ -52,14 +52,17 @@ export async function getAllSliders(): Promise<SliderType[]> {
 // Get active sliders
 export async function getActiveSliders(): Promise<SliderType[]> {
   try {
+    console.log("[getActiveSliders] Starting...");
     await connectDB();
+    console.log("[getActiveSliders] Database connected");
     
-    // TEMPORARY FIX: Return all sliders to get it working in production
     // Use the exact same approach as getAllSliders for consistency
     const allSliders = await Slider.find({}).sort({ order: 1 });
+    console.log("[getActiveSliders] Found", allSliders.length, "sliders in database");
     
     // Serialize exactly like getAllSliders does
     const serialized = JSON.parse(JSON.stringify(allSliders));
+    console.log("[getActiveSliders] Serialized", serialized.length, "sliders");
     
     // Format matchDate for any sliders with gameData
     const formatted = serialized.map((slider: any) => {
@@ -69,9 +72,12 @@ export async function getActiveSliders(): Promise<SliderType[]> {
       return slider;
     });
     
+    console.log("[getActiveSliders] Returning", formatted.length, "formatted sliders");
     return formatted;
   } catch (error: any) {
-    console.error("Error fetching active sliders:", error);
+    console.error("[getActiveSliders] ERROR:", error);
+    console.error("[getActiveSliders] Error message:", error?.message);
+    console.error("[getActiveSliders] Error name:", error?.name);
     // Return empty array instead of throwing to prevent page crashes
     return [];
   }
