@@ -45,7 +45,7 @@ export default async function Teams() {
 
       // Get upcoming games (status is 'SCHEDULED' and date is in the future)
       const now = new Date();
-      const upcomingGames = fixtures.filter(f => {
+      const upcomingGames = fixtures.filter((f: IFixture) => {
         const fixtureDate = new Date(f.date);
         return f.status === 'SCHEDULED' && fixtureDate >= now;
       }).length;
