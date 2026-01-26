@@ -217,7 +217,7 @@ const HeroSection = () => {
     fetchSliders();
   }, []);
 
-  // Get current slide data
+  // Get current slide data (safe access with optional chaining)
   const currentSlideData = slides[currentSlide];
   const isGameSlide = currentSlideData?.type === "game";
 
@@ -267,6 +267,9 @@ const HeroSection = () => {
 
   // GSAP animations on slide change with different variants
   useEffect(() => {
+    // Don't animate if no slides or still loading
+    if (slides.length === 0 || loading || !currentSlideData) return;
+
     if (isGameSlide) {
       // Animate game content
       if (gameContentRef.current) {
@@ -336,7 +339,7 @@ const HeroSection = () => {
 
     // Game slides get more time (15 seconds) to show all the animations and info
     // Text slides get standard time (8 seconds)
-    const isCurrentGameSlide = currentSlideData.type === "game";
+    const isCurrentGameSlide = currentSlideData?.type === "game";
     const slideInterval = isCurrentGameSlide ? 15000 : 8000;
 
     const interval = setInterval(() => {
@@ -346,7 +349,7 @@ const HeroSection = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [slides.length, loading, currentSlide, currentSlideData.type]);
+  }, [slides.length, loading, currentSlide, currentSlideData?.type]);
 
   // Navigation functions
   const goToSlide = (index: number) => {
@@ -775,7 +778,7 @@ const HeroSection = () => {
     );
   };
 
-  // Show loading state
+  // Show loading state (after all hooks are called)
   if (loading) {
     return (
       <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
@@ -787,7 +790,7 @@ const HeroSection = () => {
     );
   }
 
-  // Show message when no sliders exist
+  // Show message when no sliders exist (after all hooks are called)
   if (slides.length === 0) {
     return (
       <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
