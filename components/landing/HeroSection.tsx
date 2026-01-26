@@ -197,32 +197,35 @@ const HeroSection = () => {
         
         console.log("✅ Fetched sliders response:", slidersData);
         console.log("📊 Number of sliders:", slidersData?.length || 0);
-        console.log("📋 Sliders data:", JSON.stringify(slidersData, null, 2));
 
         if (slidersData && Array.isArray(slidersData) && slidersData.length > 0) {
-          const formattedSlides: SlideData[] = slidersData.map(slider => ({
-            type: slider.type || "text",
-            title: slider.title?.toUpperCase() || "",
-            content: slider.content || "",
-            image: slider.image,
-            link: slider.link,
-            buttonText: slider.buttonText || "READ MORE",
-            _id: slider._id,
-            gameData: slider.gameData,
-          }));
-          console.log("✨ Formatted slides:", formattedSlides);
+          const formattedSlides: SlideData[] = slidersData.map(slider => {
+            // Validate image URL
+            const imageUrl = slider.image?.trim() || '';
+            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+              console.warn(`⚠️ Invalid image URL for slider "${slider.title}": ${imageUrl}`);
+            }
+            
+            return {
+              type: slider.type || "text",
+              title: slider.title?.toUpperCase() || "",
+              content: slider.content || "",
+              image: imageUrl,
+              link: slider.link,
+              buttonText: slider.buttonText || "READ MORE",
+              _id: slider._id,
+              gameData: slider.gameData,
+            };
+          });
+          console.log("✨ Formatted slides:", formattedSlides.length);
           console.log("🎯 Setting slides state with", formattedSlides.length, "slides");
           setSlides(formattedSlides);
         } else {
           console.warn("⚠️ No active sliders found or empty array returned.");
-          console.warn("Sliders data type:", typeof slidersData);
-          console.warn("Sliders is array:", Array.isArray(slidersData));
           setSlides([]);
         }
       } catch (error: any) {
         console.error("❌ Error fetching sliders:", error);
-        console.error("Error message:", error?.message);
-        console.error("Error stack:", error?.stack);
         console.error("This might be a database connection issue. Check your MongoDB connection.");
         setSlides([]);
       } finally {
@@ -883,7 +886,7 @@ const HeroSection = () => {
           transition={{ duration: 1.5, ease: "easeInOut" }}
           className="absolute inset-0"
         style={{
-            backgroundImage: currentSlideData?.image 
+            backgroundImage: currentSlideData?.image && currentSlideData.image.trim() !== ''
               ? `linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.4) 100%), url(${currentSlideData.image})`
               : 'linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.4) 100%)',
           backgroundSize: "cover",
