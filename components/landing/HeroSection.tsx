@@ -395,6 +395,9 @@ const HeroSection = () => {
                 src={gameData.leagueLogo}
                 alt="League"
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </motion.div>
           </motion.div>
@@ -440,6 +443,9 @@ const HeroSection = () => {
                 src={gameData.homeTeamLogo}
                 alt={gameData.homeTeamName}
                 className="w-full h-full object-contain drop-shadow-2xl relative z-10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </motion.div>
             <motion.h3
@@ -542,6 +548,9 @@ const HeroSection = () => {
                 src={gameData.awayTeamLogo}
                 alt={gameData.awayTeamName}
                 className="w-full h-full object-contain drop-shadow-2xl relative z-10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </motion.div>
             <motion.h3
@@ -846,7 +855,9 @@ const HeroSection = () => {
           transition={{ duration: 1.5, ease: "easeInOut" }}
           className="absolute inset-0"
         style={{
-            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.4) 100%), url(${currentSlideData.image})`,
+            backgroundImage: currentSlideData?.image 
+              ? `linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.4) 100%), url(${currentSlideData.image})`
+              : 'linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.4) 100%)',
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -887,6 +898,9 @@ const HeroSection = () => {
                 src={currentSlideData.gameData.leftPlayerImage}
                 alt="Left Player"
                 className="h-[550px] xl:h-[700px] 2xl:h-[800px] object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
                 style={{
                   filter: "drop-shadow(0 0 30px rgba(0,0,0,0.8)) drop-shadow(0 0 60px rgba(189, 155, 88, 0.3))"
                 }}
@@ -919,6 +933,9 @@ const HeroSection = () => {
                 src={currentSlideData.gameData.rightPlayerImage}
                 alt="Right Player"
                 className="h-[550px] xl:h-[700px] 2xl:h-[800px] object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
                 style={{
                   filter: "drop-shadow(0 0 30px rgba(0,0,0,0.8)) drop-shadow(0 0 60px rgba(189, 155, 88, 0.3))"
                 }}
