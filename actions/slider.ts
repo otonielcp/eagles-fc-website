@@ -13,28 +13,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Helper function to format matchDate for datetime-local input and countdown
+// Helper function to format matchDate for datetime-local input and countdown.
+// Never throws — returns "" on any invalid input.
 function formatMatchDate(matchDate: Date | string | null | undefined): string {
-  if (!matchDate) return "";
+  try {
+    if (matchDate == null || matchDate === "") return "";
 
-  if (matchDate instanceof Date) {
-    // Format as ISO string and slice to get YYYY-MM-DDTHH:mm format
-    return matchDate.toISOString().slice(0, 16);
-  }
-
-  if (typeof matchDate === 'string') {
-    // If already in correct format or close to it
-    if (matchDate.includes('T')) {
-      return matchDate.slice(0, 16);
+    if (matchDate instanceof Date) {
+      return matchDate.toISOString().slice(0, 16);
     }
-    // Try to parse and reformat
-    const parsed = new Date(matchDate);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 16);
-    }
-  }
 
-  return matchDate.toString();
+    if (typeof matchDate === "string") {
+      if (matchDate.includes("T")) return matchDate.slice(0, 16);
+      const parsed = new Date(matchDate);
+      if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 16);
+      return matchDate;
+    }
+
+    return String(matchDate);
+  } catch {
+    return "";
+  }
 }
 
 // Get all sliders
@@ -52,33 +51,25 @@ export async function getAllSliders(): Promise<SliderType[]> {
 // Get active sliders
 export async function getActiveSliders(): Promise<SliderType[]> {
   try {
-    console.log("[getActiveSliders] Starting...");
     await connectDB();
-    console.log("[getActiveSliders] Database connected");
-    
-    // Use the exact same approach as getAllSliders for consistency
     const allSliders = await Slider.find({}).sort({ order: 1 });
-    console.log("[getActiveSliders] Found", allSliders.length, "sliders in database");
-    
-    // Serialize exactly like getAllSliders does
-    const serialized = JSON.parse(JSON.stringify(allSliders));
-    console.log("[getActiveSliders] Serialized", serialized.length, "sliders");
-    
-    // Format matchDate for any sliders with gameData
-    const formatted = serialized.map((slider: any) => {
-      if (slider.gameData && slider.gameData.matchDate) {
-        slider.gameData.matchDate = formatMatchDate(slider.gameData.matchDate);
+    const serialized = JSON.parse(JSON.stringify(allSliders)) as any[];
+
+    const formatted: SliderType[] = [];
+    for (const slider of serialized) {
+      try {
+        if (slider.gameData?.matchDate != null) {
+          slider.gameData.matchDate = formatMatchDate(slider.gameData.matchDate);
+        }
+        formatted.push(slider);
+      } catch (err) {
+        console.warn("[getActiveSliders] Skipping slider due to format error:", slider._id, err);
       }
-      return slider;
-    });
-    
-    console.log("[getActiveSliders] Returning", formatted.length, "formatted sliders");
+    }
+
     return formatted;
   } catch (error: any) {
-    console.error("[getActiveSliders] ERROR:", error);
-    console.error("[getActiveSliders] Error message:", error?.message);
-    console.error("[getActiveSliders] Error name:", error?.name);
-    // Return empty array instead of throwing to prevent page crashes
+    console.error("[getActiveSliders] ERROR:", error?.message ?? error);
     return [];
   }
 }

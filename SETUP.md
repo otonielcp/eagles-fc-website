@@ -176,6 +176,7 @@ This error indicates that the application cannot connect to MongoDB. Follow thes
 
 **3. For MongoDB Atlas (Cloud):**
 - **IP Whitelist**: Go to Atlas Dashboard → Network Access → Add your current IP address (or use `0.0.0.0/0` for all IPs in development)
+- **Vercel deployment**: You **must** allow `0.0.0.0/0` (Allow Access from Anywhere) in Atlas Network Access. Vercel’s build/runtime IPs change; without this, you’ll see “Could not connect … IP that isn’t whitelisted” and build/runtime failures.
 - **Connection String**: Verify username and password are correct in the connection string
 - **VPN/Network**: If using VPN, ensure it's not blocking MongoDB Atlas connections
   - Try disconnecting VPN temporarily to test

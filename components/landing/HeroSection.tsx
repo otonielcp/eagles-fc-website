@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Slider, GameSliderData } from "@/types/slider";
-import { getActiveSliders } from "@/actions/slider";
+import { GameSliderData } from "@/types/slider";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -188,57 +187,34 @@ const HeroSection = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const gameContentRef = useRef<HTMLDivElement>(null);
 
-  // Fetch sliders from database
+  // Fetch sliders from API (avoids server-action serialization quirks in production)
   useEffect(() => {
     async function fetchSliders() {
-      console.log("🔄 Starting to fetch sliders...");
       try {
-        const slidersData = await getActiveSliders();
-        
-        console.log("✅ Fetched sliders response:", slidersData);
-        console.log("📊 Number of sliders:", slidersData?.length || 0);
-        console.log("📋 Sliders data type:", typeof slidersData);
-        console.log("📋 Is array:", Array.isArray(slidersData));
+        const res = await fetch("/api/sliders", { cache: "no-store" });
+        const slidersData = await res.json();
 
-        if (slidersData && Array.isArray(slidersData)) {
-          if (slidersData.length > 0) {
-            const formattedSlides: SlideData[] = slidersData.map(slider => {
-              // Validate image URL
-              const imageUrl = slider.image?.trim() || '';
-              if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-                console.warn(`⚠️ Invalid image URL for slider "${slider.title}": ${imageUrl}`);
-              }
-              
-              return {
-                type: slider.type || "text",
-                title: slider.title?.toUpperCase() || "",
-                content: slider.content || "",
-                image: imageUrl,
-                link: slider.link,
-                buttonText: slider.buttonText || "READ MORE",
-                _id: slider._id,
-                gameData: slider.gameData,
-              };
-            });
-            console.log("✨ Formatted slides:", formattedSlides.length);
-            console.log("🎯 Setting slides state with", formattedSlides.length, "slides");
-            setSlides(formattedSlides);
-          } else {
-            console.warn("⚠️ getActiveSliders returned empty array");
-            setSlides([]);
-          }
+        if (Array.isArray(slidersData) && slidersData.length > 0) {
+          const formattedSlides: SlideData[] = slidersData.map((slider: any) => {
+            const imageUrl = slider.image?.trim() || "";
+            return {
+              type: slider.type || "text",
+              title: (slider.title ?? "").toUpperCase(),
+              content: slider.content ?? "",
+              image: imageUrl,
+              link: slider.link ?? "/",
+              buttonText: slider.buttonText ?? "READ MORE",
+              _id: slider._id,
+              gameData: slider.gameData,
+            };
+          });
+          setSlides(formattedSlides);
         } else {
-          console.error("❌ Invalid response from getActiveSliders:", slidersData);
           setSlides([]);
         }
-      } catch (error: any) {
-        console.error("❌ Error fetching sliders:", error);
-        console.error("Error message:", error?.message);
-        console.error("Error stack:", error?.stack);
-        console.error("This might be a database connection issue. Check your MongoDB connection.");
+      } catch {
         setSlides([]);
       } finally {
-        console.log("🏁 Finished fetching, setting loading to false");
         setLoading(false);
       }
     }
@@ -816,12 +792,8 @@ const HeroSection = () => {
     );
   };
 
-  // Debug: Log current state before rendering
-  console.log("🎨 Rendering HeroSection - Loading:", loading, "Slides count:", slides.length, "Current slide:", currentSlide);
-
   // Show loading state (after all hooks are called)
   if (loading) {
-    console.log("⏳ Showing loading state");
     return (
       <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
         <div className="text-center">
@@ -834,7 +806,6 @@ const HeroSection = () => {
 
   // Show message when no sliders exist (after all hooks are called)
   if (slides.length === 0) {
-    console.log("🚫 Showing empty state - no slides found");
     return (
       <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
         <div className="text-center max-w-2xl px-6">
@@ -854,9 +825,6 @@ const HeroSection = () => {
       </div>
     );
   }
-
-  console.log("✅ Rendering slider with", slides.length, "slides. Current slide index:", currentSlide);
-  console.log("📸 Current slide data:", slides[currentSlide]);
 
   return (
     <div ref={heroRef} className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>

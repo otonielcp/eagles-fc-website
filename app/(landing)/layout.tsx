@@ -3,6 +3,8 @@ import Footer from "@/components/landing/Footer";
 import MainContentWrapper from "@/components/landing/MainContentWrapper";
 import { CartProvider } from "@/app/context/CartContext";
 
+export const dynamic = "force-dynamic";
+
 export default function LandingLayout({
     children,
 }: Readonly<{

@@ -3,6 +3,8 @@ import { getPlayersByTeamId } from '@/actions/player';
 import { getStaffByTeamId } from '@/actions/staff';
 import { TeamCard } from '@/components/landing/TeamCard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Teams Overview | Eagles FC',
   description: 'View all Eagles FC teams, players, and coaching staff',
