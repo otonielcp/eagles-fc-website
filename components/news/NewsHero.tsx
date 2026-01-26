@@ -129,7 +129,7 @@ export default function NewsHero() {
 
                 {/* Read More Button */}
                 <Link
-                  href={`/news/${item.slug}`}
+                  href={`/news/${item._id}`}
                   className="inline-flex items-center gap-3 bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#BD9B58] text-black font-bold text-lg px-8 py-4 transition-all duration-500 shadow-[0_0_30px_rgba(189,155,88,0.3)] hover:shadow-[0_0_50px_rgba(189,155,88,0.6)] uppercase tracking-wider"
                 >
                   Read Full Story
