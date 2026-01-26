@@ -8,13 +8,26 @@ declare global {
   };
 }
 
+const DEFAULT_DB = "eagles-fc";
+
 // Lazy initialization - only check for MONGODB_URI when connectDB is called, not at module load
 function getMongoUri(): string {
-  const MONGODB_URI = process.env.MONGO_URI;
-  if (!MONGODB_URI) {
-    throw new Error("MONGODB_URI (MONGO_URI) environment variable is not defined. Please set it in your Vercel environment variables.");
+  let uri = process.env.MONGO_URI;
+  if (!uri || !uri.trim()) {
+    throw new Error("MONGO_URI environment variable is not defined. Set it in Vercel (Production/Preview/Development) and in .env locally.");
   }
-  return MONGODB_URI;
+  uri = uri.trim();
+  // Ensure we use the eagles-fc database. URI must be .../host.net/ or .../host.net
+  const match = uri.match(/^(.+\.mongodb\.net)(\/[^/?]*)?(\?.*)?$/);
+  if (match) {
+    const base = match[1];
+    const db = match[2]; // e.g. /eagles-fc or undefined
+    const qs = match[3] || "";
+    if (!db || db === "/") {
+      return `${base}/${DEFAULT_DB}${qs ? qs : "?retryWrites=true&w=majority"}`;
+    }
+  }
+  return uri;
 }
 
 let cached = global.mongoose;

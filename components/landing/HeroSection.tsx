@@ -161,8 +161,8 @@ const AnimatedBackground = () => {
   return null;
 };
 
-// Extended slide type for internal use
-interface SlideData {
+// Extended slide type for internal use (export for homepage)
+export interface SlideData {
   type: "text" | "game";
   title: string;
   content: string;
@@ -173,12 +173,16 @@ interface SlideData {
   gameData?: GameSliderData;
 }
 
-const HeroSection = () => {
-  const [slides, setSlides] = useState<SlideData[]>([]);
+interface HeroSectionProps {
+  /** Sliders fetched on the server (same DB as localhost). Pass from homepage so prod gets correct data. */
+  initialSlides?: SlideData[];
+}
 
+const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
+  const [slides, setSlides] = useState<SlideData[]>(initialSlides);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialSlides.length === 0);
 
   // Refs for GSAP animations
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -187,40 +191,37 @@ const HeroSection = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const gameContentRef = useRef<HTMLDivElement>(null);
 
-  // Fetch sliders from API (avoids server-action serialization quirks in production)
+  // Fallback: fetch from API only when no initialSlides (e.g. HeroSection used elsewhere)
   useEffect(() => {
+    if (initialSlides.length > 0) {
+      setLoading(false);
+      return;
+    }
     async function fetchSliders() {
       try {
         const res = await fetch("/api/sliders", { cache: "no-store" });
         const slidersData = await res.json();
-
         if (Array.isArray(slidersData) && slidersData.length > 0) {
-          const formattedSlides: SlideData[] = slidersData.map((slider: any) => {
-            const imageUrl = slider.image?.trim() || "";
-            return {
-              type: slider.type || "text",
-              title: (slider.title ?? "").toUpperCase(),
-              content: slider.content ?? "",
-              image: imageUrl,
-              link: slider.link ?? "/",
-              buttonText: slider.buttonText ?? "READ MORE",
-              _id: slider._id,
-              gameData: slider.gameData,
-            };
-          });
-          setSlides(formattedSlides);
-        } else {
-          setSlides([]);
-        }
+          const formatted: SlideData[] = slidersData.map((s: any) => ({
+            type: (s.type || "text") as "text" | "game",
+            title: (s.title ?? "").toUpperCase(),
+            content: s.content ?? "",
+            image: s.image?.trim() ?? "",
+            link: s.link ?? "/",
+            buttonText: s.buttonText ?? "READ MORE",
+            _id: s._id,
+            gameData: s.gameData,
+          }));
+          setSlides(formatted);
+        } else setSlides([]);
       } catch {
         setSlides([]);
       } finally {
         setLoading(false);
       }
     }
-
     fetchSliders();
-  }, []);
+  }, [initialSlides.length]);
 
   // Get current slide data (safe access with optional chaining)
   const currentSlideData = slides[currentSlide];
