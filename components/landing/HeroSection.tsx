@@ -174,36 +174,8 @@ interface SlideData {
   gameData?: GameSliderData;
 }
 
-// Default hero content - Multiple slides for better UX when no sliders in DB
-const defaultSlides: SlideData[] = [
-  {
-    type: "text",
-    title: "DEVELOPING TOMORROW'S CHAMPIONS TODAY",
-    content: "At Eagles FC Youth, we provide a comprehensive development pathway for players aged U7-U19. Our focus is on building technical skills, tactical awareness, and character through professional coaching and competitive play.",
-    image: "/heroimage1.jpeg",
-    link: "/programs",
-    buttonText: "EXPLORE PROGRAMS",
-  },
-  {
-    type: "text",
-    title: "JOIN THE EAGLES FAMILY",
-    content: "Be part of a community dedicated to excellence in youth soccer. We offer professional coaching, competitive leagues, and a pathway to success both on and off the field.",
-    image: "/corevalues.jpeg",
-    link: "/playerinquiries",
-    buttonText: "REGISTER NOW",
-  },
-  {
-    type: "text",
-    title: "EXCELLENCE IN YOUTH DEVELOPMENT",
-    content: "Our proven training methods and experienced coaching staff have helped hundreds of young players reach their full potential. Start your journey with Eagles FC today.",
-    image: "/gameresultbg.jpeg",
-    link: "/club",
-    buttonText: "LEARN MORE",
-  },
-];
-
 const HeroSection = () => {
-  const [slides, setSlides] = useState<SlideData[]>(defaultSlides);
+  const [slides, setSlides] = useState<SlideData[]>([]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -802,6 +774,37 @@ const HeroSection = () => {
       </>
     );
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#BD9B58] mx-auto mb-4"></div>
+          <p className="text-white text-xl">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message when no sliders exist
+  if (slides.length === 0) {
+    return (
+      <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
+        <div className="text-center max-w-2xl px-6">
+          <h1 className="text-5xl md:text-7xl font-bebas font-black text-white uppercase tracking-wider mb-6">
+            EAGLES FC
+          </h1>
+          <p className="text-gray-400 text-lg mb-8">
+            No hero sliders have been created yet. Please add sliders from the admin panel to display content here.
+          </p>
+          <Link href="/admin/sliders" className="inline-block bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] text-black font-bold px-8 py-4 rounded uppercase tracking-wider hover:from-[#D4AF37] hover:to-[#BD9B58] transition-all duration-300">
+            Go to Admin Panel
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={heroRef} className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
