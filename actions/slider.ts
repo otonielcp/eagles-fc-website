@@ -64,12 +64,16 @@ export async function getActiveSliders(): Promise<SliderType[]> {
     console.log("🔍 [getActiveSliders] Found active sliders (boolean true):", sliders.length);
     
     // If no results, try finding all and filter manually (in case isActive is stored as string or other type)
-    if (sliders.length === 0) {
-      console.log("⚠️ [getActiveSliders] No sliders found with isActive: true, trying alternative query...");
-      const allSlidersCheck = await Slider.find({}).sort({ order: 1 });
-      sliders = allSlidersCheck.filter(s => {
+    if (sliders.length === 0 && allSliders.length > 0) {
+      console.log("⚠️ [getActiveSliders] No sliders found with isActive: true, trying alternative filter...");
+      sliders = allSliders.filter(s => {
         const isActive = s.isActive;
-        const isActiveValue = isActive === true || isActive === "true" || isActive === 1;
+        // Check for truthy values: boolean true, string "true", number 1, or any truthy value
+        const isActiveValue = isActive === true || 
+                            isActive === "true" || 
+                            isActive === 1 || 
+                            String(isActive).toLowerCase() === "true" ||
+                            Boolean(isActive) === true;
         console.log(`🔍 [getActiveSliders] Slider "${s.title}": isActive=${isActive} (type: ${typeof isActive}), matches: ${isActiveValue}`);
         return isActiveValue;
       });
