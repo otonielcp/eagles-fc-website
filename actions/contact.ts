@@ -289,9 +289,9 @@ async function sendInquiryEmail(formData: ContactFormData, inquiryType: string):
       text: `
         New ${inquiryType} Inquiry - Eagles Nebraska FC
         
-        Name: ${firstName} ${lastName}
+        Name: ${name}
         Email: ${email}
-        Phone: ${phone}
+        Phone: ${phone || 'Not provided'}
         
         Message:
         ${message}
