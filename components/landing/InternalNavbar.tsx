@@ -30,22 +30,27 @@ const InternalNavbar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="fixed top-0 w-full z-50 shadow-2xl border-b-2 border-[#BD9B58]" style={{ backgroundColor: '#181819' }}>
+    <nav data-navbar="internal" style={{ backgroundColor: '#181819' }} className="fixed top-0 left-0 right-0 z-50 shadow-2xl border-b-2 border-[#BD9B58] h-20 overflow-visible">
       {/* Navigation Bar */}
-      <div className="h-20 flex items-center justify-center px-4 md:px-16 relative" style={{ backgroundColor: '#181819' }}>
-        {/* Logo on Left */}
-        <div className="absolute left-24 md:left-32 lg:left-44 xl:left-52 flex items-center hidden md:flex">
+      <div style={{ backgroundColor: '#181819' }} className="h-20 flex items-center justify-center px-4 md:px-16 relative overflow-visible">
+        {/* Logo on Left - Matching scrolled Navbar style */}
+        <div className="absolute left-24 md:left-32 lg:left-44 xl:left-52 flex items-center hidden md:flex top-4 z-50">
           <Link href="/" className="relative group">
-            <Image
-              src={logo}
-              alt="Eagles FC Logo"
-              width={64}
-              height={64}
-              className="w-auto h-16 transition-all duration-500 transform group-hover:scale-105"
-              style={{ objectFit: 'contain' }}
-              priority
-              unoptimized
-            />
+            <div className="relative">
+              <Image
+                src={logo}
+                alt="Eagles FC Logo"
+                width={120}
+                height={120}
+                className="h-20 w-auto transition-all duration-300 relative z-10 group-hover:scale-105"
+                style={{
+                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+                  objectFit: 'contain'
+                }}
+                priority
+                unoptimized
+              />
+            </div>
           </Link>
         </div>
 
@@ -68,17 +73,22 @@ const InternalNavbar = () => {
         </button>
 
         {/* Small Screens: Logo */}
-        <Link href="/" className="md:hidden absolute right-2">
-          <Image 
-            src={logo} 
-            alt="Eagles FC Logo" 
-            width={56}
-            height={56}
-            className="w-auto h-14"
-            style={{ objectFit: 'contain' }}
-            priority
-            unoptimized
-          />
+        <Link href="/" className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-50">
+          <div className="relative">
+            <Image
+              src={logo}
+              alt="Eagles FC Logo"
+              width={80}
+              height={80}
+              className="h-16 w-auto transition-all duration-300 relative z-10"
+              style={{
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+                objectFit: 'contain'
+              }}
+              priority
+              unoptimized
+            />
+          </div>
         </Link>
 
         {/* Navigation Links */}
@@ -86,7 +96,7 @@ const InternalNavbar = () => {
           {[
             { href: '/club', label: 'Club' },
             { href: '/teams', label: 'Teams' },
-            { href: '/tickets', label: 'Tickets' },
+            { href: '/programs', label: 'Programs' },
             { href: '/fixtures', label: 'Fixtures' },
             { href: '/news', label: 'News' },
             { href: '/shop', label: 'Shop' },
@@ -145,7 +155,7 @@ const InternalNavbar = () => {
                   {[
                     { href: '/club', label: 'Club' },
                     { href: '/teams', label: 'Teams' },
-                    { href: '/tickets', label: 'Tickets' },
+                    { href: '/programs', label: 'Programs' },
                     { href: '/fixtures', label: 'Fixtures' },
                     { href: '/news', label: 'News' },
                     { href: '/shop', label: 'Shop' },

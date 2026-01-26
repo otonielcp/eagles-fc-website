@@ -7,56 +7,20 @@ const ContactMiniNavbar = () => {
   const currentPath = location;
 
   return (
-    <div className="border-b border-gray-200 shadow-lg w-full px-4">
-      <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-gray-500 uppercase text-sm font-medium tracking-wide py-2">
-        {/* Ticketing Tab */}
-        <Link href="/ticketing">
-          <button
-            className={`py-2 px-3 relative ${currentPath === "/ticketing" ? "text-black" : "hover:text-gray-700"
-              }`}
-          >
-            Ticketing
-            {currentPath === "/ticketing" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
-            )}
-          </button>
-        </Link>
-
+    <div className="border-b border-gray-200 shadow-md w-full px-4 sticky top-20 z-40 bg-white">
+      <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-gray-500 uppercase text-sm font-bold tracking-wide py-4">
         {/* Sponsorship Tab */}
         <Link href="/sponsorship">
           <button
-            className={`py-2 px-3 relative ${currentPath === "/sponsorship" ? "text-black" : "hover:text-gray-700"
-              }`}
+            className={`py-2 px-4 relative transition-colors duration-300 ${
+              currentPath === "/sponsorship" 
+                ? "text-[#C5A464]" 
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Sponsorship
             {currentPath === "/sponsorship" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
-            )}
-          </button>
-        </Link>
-
-        {/* Operations Tab */}
-        <Link href="/operations">
-          <button
-            className={`py-2 px-3 relative ${currentPath === "/operations" ? "text-black" : "hover:text-gray-700"
-              }`}
-          >
-            Operations
-            {currentPath === "/operations" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
-            )}
-          </button>
-        </Link>
-
-        {/* Marketing Tab */}
-        <Link href="/marketing">
-          <button
-            className={`py-2 px-3 relative ${currentPath === "/marketing" ? "text-black" : "hover:text-gray-700"
-              }`}
-          >
-            Marketing
-            {currentPath === "/marketing" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#C5A464] to-[#D4B574] rounded-t-md"></div>
             )}
           </button>
         </Link>
@@ -64,12 +28,15 @@ const ContactMiniNavbar = () => {
         {/* Media Tab */}
         <Link href="/media">
           <button
-            className={`py-2 px-3 relative ${currentPath === "/media" ? "text-black" : "hover:text-gray-700"
-              }`}
+            className={`py-2 px-4 relative transition-colors duration-300 ${
+              currentPath === "/media" 
+                ? "text-[#C5A464]" 
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Media
             {currentPath === "/media" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#C5A464] to-[#D4B574] rounded-t-md"></div>
             )}
           </button>
         </Link>
@@ -77,12 +44,15 @@ const ContactMiniNavbar = () => {
         {/* Player Inquiries Tab */}
         <Link href="/playerinquiries">
           <button
-            className={`py-2 px-3 relative ${currentPath === "/playerinquiries" ? "text-black" : "hover:text-gray-700"
-              }`}
+            className={`py-2 px-4 relative transition-colors duration-300 ${
+              currentPath === "/playerinquiries" 
+                ? "text-[#C5A464]" 
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Player Inquiries
             {currentPath === "/playerinquiries" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#C5A464] to-[#D4B574] rounded-t-md"></div>
             )}
           </button>
         </Link>

@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 const Coaches = () => {
     return (
-        <div className="bg-white">
+        <div className="bg-gradient-to-b from-gray-50 via-white to-gray-50">
             <MiniNavbar />
             <div className='py-8 sm:py-12'>
                 <Suspense fallback={

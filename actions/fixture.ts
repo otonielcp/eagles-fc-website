@@ -469,15 +469,15 @@ export async function getDistinctCompetitions() {
   }
 }
 
-export async function getDistinctSeasons() {
+export async function getDistinctSeasons(includeArchived: boolean = false) {
   try {
     await connectDB();
-    
+
     // Get all fixtures and extract years from dates
     const fixtures = await Fixture.find({}, { date: 1 });
-    
+
     const seasons = new Set<string>();
-    
+
     fixtures.forEach(fixture => {
       if (fixture.date) {
         const year = new Date(fixture.date).getFullYear();
@@ -485,19 +485,36 @@ export async function getDistinctSeasons() {
         seasons.add(`SP${year}`);
       }
     });
-    
+
     // Convert to array and sort in descending order (newest first)
-    const sortedSeasons = Array.from(seasons).sort((a, b) => {
+    let sortedSeasons = Array.from(seasons).sort((a, b) => {
       const yearA = parseInt(a.substring(2));
       const yearB = parseInt(b.substring(2));
       return yearB - yearA;
     });
-    
+
+    // If not including archived, filter by active seasons
+    if (!includeArchived) {
+      const Settings = (await import("@/models/Settings")).default;
+      const activeSetting = await Settings.findOne({ key: "activeSeasons" });
+      const activeSeasons: string[] = activeSetting?.value || [];
+
+      // If active seasons are set, filter; otherwise return all (for backwards compatibility)
+      if (activeSeasons.length > 0) {
+        sortedSeasons = sortedSeasons.filter(season => activeSeasons.includes(season));
+      }
+    }
+
     return JSON.parse(JSON.stringify(sortedSeasons));
   } catch (error) {
     console.error("Error fetching seasons:", error);
     throw new Error("Failed to fetch seasons");
   }
+}
+
+// Get all seasons including archived (for admin use)
+export async function getAllSeasons() {
+  return getDistinctSeasons(true);
 }
 
 

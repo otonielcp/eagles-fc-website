@@ -23,7 +23,7 @@ const SecondMenu = () => {
   const menuItems = [
     { href: '/club', label: 'Club' },
     { href: '/teams', label: 'Teams' },
-    { href: '/tickets', label: 'Tickets' },
+    { href: '/programs', label: 'Programs' },
     { href: '/fixtures', label: 'Fixtures' },
     { href: '/news', label: 'News' },
     { href: '/shop', label: 'Shop' },

@@ -17,100 +17,124 @@ const newsData = [
 
 const LatestNews = () => {
   return (
-    <div className="relative bg-gradient-to-b from-white via-gray-50 to-white py-16 overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.02]">
+    <div className="relative bg-white py-20 overflow-hidden">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-[0.015]">
         <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23BD9B58' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C5A464' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
       </div>
 
-      <div className="container mx-auto px-6 sm:px-10 md:px-16 lg:px-32 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 relative z-10">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-1 h-12 bg-gradient-to-b from-[#BD9B58] to-[#d4b068]"></div>
-              <h2 className="text-4xl font-bebas tracking-wide text-gray-900 uppercase">Latest News</h2>
-            </div>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#BD9B58] to-transparent ml-4"></div>
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 uppercase tracking-tight">
+              Latest News
+            </h2>
+            <div className="w-16 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
           </div>
-          <a href="/news" className="hidden md:flex items-center gap-2 text-[#BD9B58] hover:text-[#d4b068] font-semibold transition-colors duration-300 group">
-            <span className="uppercase tracking-wider">More News</span>
-            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
+          <p className="text-gray-500 text-sm md:text-base uppercase tracking-widest font-semibold">
+            Club News & Announcements
+          </p>
         </div>
 
-        {/* Upper News Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+        {/* Featured News - Top 2 Large Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {newsData.slice(0, 2).map((news, index) => (
-            <div key={index} className="group bg-white shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 border-2 border-gray-100 hover:border-[#BD9B58]/30">
-              <div className="flex flex-col sm:flex-row h-full">
+            <a 
+              href="/news" 
+              key={index} 
+              className="group bg-white shadow-xl hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-500 border border-gray-200 hover:border-[#C5A464] transform hover:-translate-y-2"
+            >
+              <div className="relative">
                 {/* Image */}
-                <div className="relative w-full sm:w-1/2 overflow-hidden">
-                  <img src={news.image} alt={news.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                
-                {/* Content */}
-                <div className="w-full sm:w-1/2 p-6 flex flex-col justify-between bg-gradient-to-br from-white to-gray-50 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#BD9B58]/5 to-transparent rounded-bl-full"></div>
-                  <div className="relative z-10">
-                    <h3 className="text-2xl font-bebas uppercase mb-3 text-gray-900 group-hover:text-[#BD9B58] transition-colors duration-300">{news.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">{news.text}</p>
-                  </div>
-                  <div className="flex items-center justify-between relative z-10">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{news.time}</span>
-                    <svg className="w-6 h-6 text-[#BD9B58] opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
+                <div className="relative overflow-hidden h-64 md:h-80">
+                  <img 
+                    src={news.image} 
+                    alt={news.title} 
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                  
+                  {/* Content Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                    <h3 className="text-white text-2xl md:text-3xl font-bold uppercase mb-3 leading-tight group-hover:text-[#C5A464] transition-colors duration-300">
+                      {news.title}
+                    </h3>
+                    <p className="text-white/90 text-sm md:text-base mb-4 leading-relaxed line-clamp-2">
+                      {news.text}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs md:text-sm font-bold text-[#C5A464] uppercase tracking-wider">
+                        {news.time}
+                      </span>
+                      <svg className="w-6 h-6 text-[#C5A464] opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
-        {/* Lower News Section */}
+        {/* Grid News - Bottom 4 Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {newsData.slice(2).map((news, index) => (
-            <div key={index} className="group bg-white shadow-lg hover:shadow-2xl rounded-xl overflow-hidden relative flex flex-col h-80 transition-all duration-300 border-2 border-gray-100 hover:border-[#BD9B58]/30">
+            <a 
+              href="/news"
+              key={index} 
+              className="group bg-white shadow-lg hover:shadow-2xl rounded-xl overflow-hidden transition-all duration-500 border border-gray-200 hover:border-[#C5A464] transform hover:-translate-y-2"
+            >
               {/* Image */}
-              <div className="relative overflow-hidden">
-                <img src={news.image} alt={news.title} className="w-full sm:h-32 h-44 object-cover transform group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                <div className="absolute top-3 right-3 w-2 h-2 bg-[#BD9B58] rounded-full animate-pulse"></div>
+              <div className="relative overflow-hidden h-48">
+                <img 
+                  src={news.image} 
+                  alt={news.title} 
+                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute top-3 right-3 w-2 h-2 bg-[#C5A464] rounded-full animate-pulse shadow-lg"></div>
               </div>
 
               {/* Content */}
-              <div className="p-4 flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50">
-                <div className="flex-grow">
-                  <h3 className="text-base font-bold mb-2 text-gray-900 group-hover:text-[#BD9B58] transition-colors duration-300 line-clamp-2">{news.title}</h3>
-                  <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{news.text}</p>
-                </div>
-
-                {/* Time - Positioned in Bottom-Left */}
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{news.time}</span>
-                  <svg className="w-5 h-5 text-[#BD9B58] opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <div className="p-5 bg-gradient-to-b from-white to-gray-50">
+                <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-[#C5A464] transition-colors duration-300 mb-2 line-clamp-2 uppercase">
+                  {news.title}
+                </h3>
+                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-4">
+                  {news.text}
+                </p>
+                
+                <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    {news.time}
+                  </span>
+                  <svg className="w-5 h-5 text-[#C5A464] opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
-        {/* Mobile More News Link */}
-        <a href="/news" className="md:hidden flex items-center justify-center gap-2 text-[#BD9B58] hover:text-[#d4b068] font-semibold transition-colors duration-300 mt-8 group">
-          <span className="uppercase tracking-wider">More News</span>
-          <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </a>
+        {/* View All News Button */}
+        <div className="text-center mt-12">
+          <a 
+            href="/news" 
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-[#C5A464] to-[#D4B574] hover:from-[#B39355] hover:to-[#C5A464] text-white font-bold text-base md:text-lg px-10 py-4 rounded-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group"
+          >
+            View All News
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -137,107 +137,112 @@ const ResultsData = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-4 md:mx-auto py-8 md:py-12">
-      {/* Show active filters if any */}
-      {(selectedLeague && selectedLeague !== "All leagues" || selectedSeason && selectedSeason !== "All seasons" || (selectedCompetition && selectedCompetition !== "All competitions")) && (
-        <div className="mb-6 px-2 md:px-0">
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="text-gray-500">Filtered by:</span>
-            {selectedLeague && selectedLeague !== "All leagues" && (
-              <span className="text-gray-200 px-2 py-1 rounded" style={{ backgroundColor: '#181819' }}>
-                {selectedLeague}
-              </span>
-            )}
-            {selectedSeason && selectedSeason !== "All seasons" && (
-              <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                {selectedSeason}
-              </span>
-            )}
-            {selectedCompetition && selectedCompetition !== "All competitions" && (
-              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                {selectedCompetition}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
+    <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       {Object.entries(groupedResults).map(([month, matches]) => (
-        <div key={month} className="mb-8 md:mb-12">
-          {/* Month Header */}
-          <h2 className="text-gray-300 text-sm font-medium mb-4 md:mb-6 px-2 md:px-0">
-            {month}
-          </h2>
+        <div key={month} className="mb-20">
+          {/* Month Header - Premium Style */}
+          <div className="flex items-center gap-4 mb-10 justify-center">
+            <div className="w-12 h-[2px] bg-[#C5A464]"></div>
+            <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-[#C5A464]">
+              {month}
+            </h2>
+            <div className="w-12 h-[2px] bg-[#C5A464]"></div>
+          </div>
 
-          {/* Match List */}
-          <div className="space-y-2">
+          {/* Match Cards - Clean Premium Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {matches.map((match: IFixture, idx: number) => {
-              // Format date and time
               const matchDate = new Date(match.date);
               const formattedDate = format(matchDate, "EEE d MMMM").toUpperCase();
               const formattedTime = formatTime(match.time);
+              
+              // Determine winner for styling
+              const homeWinner = match.homeScore > match.awayScore;
+              const awayWinner = match.awayScore > match.homeScore;
 
               return (
-                <div key={idx} className="border-t border-gray-200">
-                  <div className="relative pt-6 pb-8 px-2 md:px-0">
-                    {/* Competition Name */}
-                    <div className="absolute top-4 left-2 md:left-0">
-                      <p className="text-xs font-bold uppercase text-gray-900">{match.competition}</p>
-                      <p className="text-xs font-barlow text-gray-500 mt-1">
-                        {formattedDate} - {formattedTime} - {match.stadium || "TBD"}
-                      </p>
-                    </div>
-
-                    {/* Competition Logo */}
-                    <div className="absolute top-4 right-2 md:right-0">
+                <Link 
+                  key={idx} 
+                  href={`/matchreport/${match._id}`}
+                  className="group block"
+                >
+                  <div className="relative bg-white hover:shadow-xl transition-all duration-300 group overflow-hidden border border-gray-200 hover:border-[#C5A464]">
+                    
+                    {/* League Logo - Top */}
+                    <div className="h-20 flex items-center justify-center bg-white border-b border-gray-100">
                       <img
                         src={match.leagueLogo || leagueLogo}
-                        alt="Competition logo"
-                        className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                        alt="League"
+                        className="w-12 h-12 object-contain"
                       />
                     </div>
 
-                    {/* Match Result */}
-                    <div className="flex items-center justify-between mt-12">
-                      {/* Team 1 */}
-                      <span className="text-xs md:text-sm font-medium w-20 md:w-32 text-left truncate">{match.homeTeam}</span>
-
-                      {/* Central Score Section */}
-                      <div className="flex items-center gap-3 md:gap-6">
-                        <img
-                          src={match.homeTeamLogo || teamLogo}
-                          alt={match.homeTeam}
-                          className="w-8 h-8 md:w-10 md:h-10 object-contain"
-                        />
-
-                        <div className="flex items-center gap-1">
-                          <div className="bg-gray-100 px-2 md:px-3 py-1 md:py-2 text-base md:text-lg">
-                            {match.homeScore || 0}
-                          </div>
-                          <div className="bg-gray-100 px-2 md:px-3 py-1 md:py-2 text-base md:text-lg">
-                            {match.awayScore || 0}
-                          </div>
-                        </div>
-
-                        <img
-                          src={match.awayTeamLogo || teamLogo}
-                          alt={match.awayTeam}
-                          className="w-8 h-8 md:w-10 md:h-10 object-contain"
-                        />
+                    {/* Card Body */}
+                    <div className="p-6">
+                      
+                      {/* Date & Time */}
+                      <div className="text-center mb-8">
+                        <p className="text-sm font-bold text-gray-900 mb-1">
+                          {formattedDate}
+                        </p>
+                        <p className="text-xs text-[#C5A464] font-semibold">
+                          {formattedTime}
+                        </p>
                       </div>
 
-                      {/* Team 2 */}
-                      <span className="text-xs md:text-sm font-medium w-20 md:w-32 text-right truncate">{match.awayTeam}</span>
+                      {/* Teams - Horizontal */}
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        {/* Team 1 Logo & Score */}
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={match.homeTeamLogo || teamLogo}
+                            alt={match.homeTeam}
+                            className="w-16 h-16 object-contain mb-2"
+                          />
+                          <span className={`text-3xl font-black ${homeWinner ? 'text-green-600' : 'text-gray-400'}`}>
+                            {match.homeScore || 0}
+                          </span>
+                        </div>
+
+                        {/* Vertical Divider Line */}
+                        <div className="h-24 w-[2px] bg-gray-200"></div>
+
+                        {/* Team 2 Logo & Score */}
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={match.awayTeamLogo || teamLogo}
+                            alt={match.awayTeam}
+                            className="w-16 h-16 object-contain mb-2"
+                          />
+                          <span className={`text-3xl font-black ${awayWinner ? 'text-green-600' : 'text-gray-400'}`}>
+                            {match.awayScore || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Team Names */}
+                      <div className="flex items-center justify-center gap-3 text-center mb-6">
+                        <span className={`text-xs font-bold flex-1 text-right ${homeWinner ? 'text-gray-900' : 'text-gray-600'}`}>
+                          {match.homeTeam}
+                        </span>
+                        <span className="text-gray-300 px-2">-</span>
+                        <span className={`text-xs font-bold flex-1 text-left ${awayWinner ? 'text-gray-900' : 'text-gray-600'}`}>
+                          {match.awayTeam}
+                        </span>
+                      </div>
+
+                      {/* Stadium */}
+                      <div className="pt-4 border-t border-gray-100 text-center">
+                        <p className="text-xs text-gray-500">
+                          📍 {match.stadium || "TBD"}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Match Report Link */}
-                    <div className="absolute -bottom-0 right-2 md:right-0">
-                      <Link href={`/matchreport/${match._id}`} className="text-xs font-semibold text-gray-500 hover:text-gray-700">
-                        MATCH REPORT →
-                      </Link>
-                    </div>
+                    {/* Bottom Gold Accent */}
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C5A464] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

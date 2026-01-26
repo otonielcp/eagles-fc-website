@@ -18,34 +18,40 @@ const defenders = [
 
 const DefendersSection = () => {
   return (
-    <div className="w-full px-28 mx-4 md:px-28 py-8">
+    <div className="w-full px-4 sm:px-8 md:px-16 lg:px-24 xl:px-28 py-12">
       {/* Section Title */}
-      <h2 className="text-lg text-gray-500 font-semibold uppercase mb-4 border-b pb-2">
+      <h2 className="text-xl md:text-2xl text-[#C5A464] font-bold uppercase mb-8 border-b-2 border-gray-300 pb-4">
         Defenders
       </h2>
 
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6  h-full justify-start">
+      {/* Grid Layout - Bigger Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {defenders.map((player, index) => (
-          <a href="/playerprofilepage">
+          <a href="/playerprofilepage" key={index}>
             <div
-              key={index}
-              className="rounded-lg overflow-hidden shadow-lg aspect-square" style={{ backgroundColor: '#181819' }}
+              className="rounded-xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 aspect-[3/4] group" 
+              style={{ backgroundColor: '#181819' }}
             >
               {/* Player Image */}
-              <div className="relative">
+              <div className="relative h-full">
                 <img
                   src={player.image}
                   alt={player.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                
                 {/* Player Details Overlay */}
-                <div className="absolute bottom-6 left-2  sm:bottom-24 sm:left-4 md:bottom-8  md:left-4  lg:bottom-10  lg:left-4  xl:bottom-14  xl:left-4 2xl:bottom-24  2xl:left-4 mb-4">
-                  <p className="text-white  text-xs md:text-xs xl:text-xl   2xl:text-xl ">{player.number}</p>
-                  <div className="w-4 h-[2px] bg-[#C5A464] xl:w-6 2xl:w-8 mb-1"></div>
-                  <h3 className="text-white text-xs  sm:text-4xl md:text-lg xl:text-3xl 2xl:text-4xl font-bold ">{player.name.includes(" ") ? player.name.split(" ").map((word, i) => (
-                    <div key={i}>{word}</div>
-                  )) : player.name}</h3>
+                <div className="absolute bottom-6 left-6 right-6">
+                  <p className="text-white text-2xl md:text-3xl font-black mb-2">{player.number}</p>
+                  <div className="w-12 h-[3px] bg-gradient-to-r from-[#C5A464] to-[#D4B574] mb-3"></div>
+                  <h3 className="text-white text-xl md:text-2xl font-bold leading-tight">
+                    {player.name.includes(" ") ? player.name.split(" ").map((word, i) => (
+                      <div key={i}>{word}</div>
+                    )) : player.name}
+                  </h3>
                 </div>
               </div>
             </div>

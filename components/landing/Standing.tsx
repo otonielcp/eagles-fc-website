@@ -159,85 +159,74 @@ const Standing = ({ isHomePage = false }) => {
     <div className="max-w-7xl mx-auto my-12 md:my-16 px-4 sm:px-6 lg:px-8">
       {leaguesData.map((league, leagueIndex) => (
         <div key={leagueIndex} className={leagueIndex > 0 ? "mt-20" : ""}>
-          {/* League Title Banner - Enhanced */}
-          <div className="flex justify-center mb-8">
-            <div 
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full font-bold text-sm md:text-base uppercase tracking-wide text-white shadow-lg"
-              style={{
-                background: 'linear-gradient(135deg, #BD9B58 0%, #d4b068 50%, #BD9B58 100%)',
-                backgroundSize: '200% 200%',
-              }}
-            >
+          {/* League Title Banner - Clean Centered Style */}
+          <div className="flex items-center gap-4 mb-10 justify-center">
+            <div className="w-12 h-[2px] bg-[#C5A464]"></div>
+            <h2 className="text-lg md:text-xl font-bold uppercase tracking-wider text-gray-900">
               {league.leagueInfo}
-            </div>
+            </h2>
+            <div className="w-12 h-[2px] bg-[#C5A464]"></div>
           </div>
 
-          {/* Table Container - Enhanced with better styling */}
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+          {/* Table Container - Clean & Simple */}
+          <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
             <table className="w-full border-collapse">
-              {/* Table Header - Enhanced */}
+              {/* Table Header - Clean Dark Header */}
               <thead>
-                <tr className="bg-gray-50 border-b-2 border-gray-200">
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                <tr className="bg-gray-900 text-white border-b-2 border-gray-700">
+                  <th className="px-3 md:px-4 py-3 text-left text-[10px] md:text-xs font-bold uppercase tracking-wider">
                     POS
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    LOGO
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  <th className="px-3 md:px-4 py-3 text-left text-[10px] md:text-xs font-bold uppercase tracking-wider" colSpan={2}>
                     CLUB
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden sm:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
                     P
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden sm:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
                     W
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden sm:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
                     D
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden sm:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
                     L
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden md:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden md:table-cell">
                     GF
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden md:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden md:table-cell">
                     GA
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 hidden md:table-cell">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden md:table-cell">
                     GD
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider text-[#C5A464]">
                     PTS
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
-                    LAST FIVE GAMES
+                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden lg:table-cell">
+                    FORM
                   </th>
                 </tr>
               </thead>
 
-              {/* Table Body - Enhanced */}
-              <tbody className="divide-y divide-gray-100">
+              {/* Table Body - Clean Rows */}
+              <tbody>
                 {league.standings.map((team, index) => (
                   <tr 
                     key={index} 
-                    className={`transition-colors duration-150 hover:bg-gray-50 ${
-                      index === 0 ? 'bg-gray-50/50' : ''
-                    }`}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     {/* Position */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-bold ${
-                        index === 0 ? 'text-[#BD9B58]' : 'text-gray-700'
-                      }`}>
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm font-bold text-gray-900">
                         {team.position}
                       </span>
                     </td>
 
                     {/* Team Logo */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center overflow-hidden rounded-full bg-white border border-gray-200 shadow-sm">
+                    <td className="px-2 md:px-3 py-3 whitespace-nowrap">
+                      <div className="h-10 w-10 flex items-center justify-center overflow-hidden rounded bg-white border border-gray-200">
                         {team.logo ? (
                           <img
                             src={team.logo}
@@ -249,7 +238,7 @@ const Standing = ({ isHomePage = false }) => {
                             }}
                           />
                         ) : (
-                          <div className="h-full w-full bg-gray-100 rounded-full flex items-center justify-center">
+                          <div className="h-full w-full bg-gray-100 rounded flex items-center justify-center">
                             <span className="text-xs text-gray-400 font-bold">
                               {team.club.charAt(0)}
                             </span>
@@ -259,59 +248,55 @@ const Standing = ({ isHomePage = false }) => {
                     </td>
 
                     {/* Club Name */}
-                    <td className="px-4 py-4">
-                      <span className={`text-sm font-medium ${
-                        index === 0 ? 'text-gray-900 font-semibold' : 'text-gray-700'
-                      }`}>
+                    <td className="px-3 md:px-4 py-3">
+                      <span className="text-sm font-semibold text-gray-900">
                         {team.club}
                       </span>
                     </td>
 
-                    {/* Stats - Centered */}
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden sm:table-cell">
+                    {/* Stats */}
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden sm:table-cell">
                       {team.played}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden sm:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden sm:table-cell">
                       {team.won}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden sm:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden sm:table-cell">
                       {team.drawn}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden sm:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden sm:table-cell">
                       {team.lost}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden md:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden md:table-cell">
                       {team.gf}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-700 hidden md:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden md:table-cell">
                       {team.ga}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-700 hidden md:table-cell">
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center text-sm font-bold text-gray-900 hidden md:table-cell">
                       {team.gd}
                     </td>
                     
-                    {/* Points - Highlighted */}
-                    <td className="px-4 py-4 whitespace-nowrap text-center">
-                      <span className={`text-sm font-bold ${
-                        index === 0 ? 'text-[#BD9B58]' : 'text-gray-900'
-                      }`}>
+                    {/* Points - Bold */}
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap text-center">
+                      <span className="text-sm font-black text-gray-900">
                         {team.pts}
                       </span>
                     </td>
 
-                    {/* Form Indicators - Enhanced */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                    {/* Form Indicators */}
+                    <td className="px-3 md:px-4 py-3 whitespace-nowrap hidden lg:table-cell">
+                      <div className="flex items-center justify-center gap-1">
                         {team.form.length > 0 ? (
                           team.form.slice(0, 5).map((result, i) => (
                             <span
                               key={i}
-                              className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold ${
+                              className={`w-5 h-5 flex items-center justify-center rounded-sm text-[10px] font-bold ${
                                 result === "W" 
-                                  ? "bg-green-500 text-white shadow-sm" 
+                                  ? "bg-green-500 text-white" 
                                   : result === "L" 
-                                    ? "bg-red-500 text-white shadow-sm"
-                                    : "bg-gray-300 text-gray-700 shadow-sm"
+                                    ? "bg-red-500 text-white"
+                                    : "bg-gray-400 text-white"
                               }`}
                             >
                               {result}

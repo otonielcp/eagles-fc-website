@@ -2,6 +2,7 @@
 
 import connectDB from '@/lib/dbConnect';
 import Staff from '@/models/Staff';
+import Team from '@/models/Team'; // Import Team model
 import { revalidatePath } from 'next/cache';
 import { Staff as StaffType, StaffFormData } from '@/types/team';
 import { v2 as cloudinary } from 'cloudinary';

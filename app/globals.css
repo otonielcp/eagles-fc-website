@@ -71,6 +71,11 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
+
+  /* Internal navbar - always dark background */
+  .internal-navbar {
+    background-color: #181819 !important;
+  }
 }
 
 :root{

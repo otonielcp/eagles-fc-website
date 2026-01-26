@@ -17,7 +17,6 @@ export default function DynamicLatestNews() {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,14 +37,7 @@ export default function DynamicLatestNews() {
 
   // GSAP Animation on mount
   useEffect(() => {
-    if (!loading && news.length > 0 && titleRef.current && cardsRef.current) {
-      gsap.from(titleRef.current, {
-        opacity: 0,
-        y: -50,
-        duration: 1,
-        ease: "power3.out"
-      });
-
+    if (!loading && news.length > 0 && cardsRef.current) {
       gsap.from(cardsRef.current.querySelectorAll('.news-card'), {
         opacity: 0,
         y: 50,
@@ -59,7 +51,7 @@ export default function DynamicLatestNews() {
 
   if (loading) {
     return (
-      <div className="w-full pb-20 pt-24 relative overflow-hidden" style={{ backgroundColor: '#282829' }}>
+      <div className="w-full py-16 relative overflow-hidden bg-gray-50">
         <div className="relative z-10 flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#BD9B58]"></div>
         </div>
@@ -69,9 +61,9 @@ export default function DynamicLatestNews() {
 
   if (error) {
     return (
-      <div className="w-full pb-20 pt-24 relative overflow-hidden" style={{ backgroundColor: '#282829' }}>
+      <div className="w-full py-16 relative overflow-hidden bg-gray-50">
         <div className="relative z-10 text-center py-12">
-          <p className="text-red-400">{error}</p>
+          <p className="text-red-500">{error}</p>
         </div>
       </div>
     );
@@ -79,9 +71,9 @@ export default function DynamicLatestNews() {
 
   if (news.length === 0) {
     return (
-      <div className="w-full pb-20 pt-24 relative overflow-hidden" style={{ backgroundColor: '#282829' }}>
+      <div className="w-full py-16 relative overflow-hidden bg-gray-50">
         <div className="relative z-10 text-center py-12">
-          <p className="text-gray-300">No news articles available.</p>
+          <p className="text-gray-600">No news articles available.</p>
         </div>
       </div>
     );
@@ -92,27 +84,39 @@ export default function DynamicLatestNews() {
     const formattedDate = formatDistanceToNow(new Date(item.publishDate), { addSuffix: false });
     return (
       <Link href={`/news/${item._id}`} className="block group news-card">
-        <div className="rounded-3xl overflow-hidden transition-all duration-500 shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12),0_0_0_1px_rgba(189,155,88,0.1)] h-full min-h-[500px] border hover:border-[#BD9B58]/50 group relative" style={{ backgroundColor: '#181819', borderColor: '#181819' }}>
+        <div className="overflow-hidden transition-all duration-500 shadow-xl hover:shadow-2xl h-full min-h-[450px] group relative bg-black">
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
               src={item.image}
               alt={item.title}
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110 opacity-60"
+              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
             />
+            {/* Dark gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
           </div>
 
-          {/* Text Overlay at Bottom-Left */}
+          {/* Top gold accent line */}
+          <div className="absolute top-0 left-0 w-0 h-[3px] bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] transition-all duration-500 group-hover:w-full z-20"></div>
+
+          {/* Text Overlay at Bottom */}
           <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
             <div className="max-w-4xl">
+              {/* Category Badge */}
+              <div className="mb-4">
+                <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#BD9B58] bg-[#BD9B58]/10 px-3 py-1 backdrop-blur-sm">
+                  {item.category}
+                </span>
+              </div>
+
               {/* Title - Large bold white text */}
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bebas uppercase mb-4 text-white leading-tight drop-shadow-2xl">
+              <h3 className="text-3xl md:text-4xl font-bebas font-black uppercase mb-4 text-white leading-tight tracking-wider">
                 {item.title}
               </h3>
-              
+
               {/* Description - White text */}
               <p
-                className="text-white/90 text-base md:text-lg leading-relaxed mb-6 line-clamp-2 drop-shadow-lg"
+                className="text-white/90 text-base leading-relaxed mb-6 line-clamp-2"
                 dangerouslySetInnerHTML={{
                   __html: item.summary.slice(0, 150) + "..."
                 }}
@@ -120,129 +124,112 @@ export default function DynamicLatestNews() {
 
               {/* Metadata at bottom */}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/75 font-semibold uppercase tracking-wide">
-                  {formattedDate} | {item.category}
+                <span className="text-sm text-white/80 font-semibold uppercase tracking-wide">
+                  {formattedDate}
                 </span>
-                <div className="w-10 h-10 rounded-full bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#BD9B58] group-hover:to-[#d4b068] border border-white/20 group-hover:border-transparent flex items-center justify-center transition-all duration-500">
-                  <svg className="w-5 h-5 text-white group-hover:text-white transform translate-x-0 group-hover:translate-x-0.5 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <div className="w-12 h-12 bg-[#BD9B58] group-hover:bg-[#D4AF37] flex items-center justify-center transition-all duration-300">
+                  <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Corner accent */}
+          <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-[#BD9B58] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
         </div>
       </Link>
     );
   };
 
-  // Small News Card Component - Dark header with gold accents, white content section
+  // Small News Card Component - Clean white card design
   const SmallNewsCard = ({ item }: { item: News }) => {
     const formattedDate = formatDistanceToNow(new Date(item.publishDate), { addSuffix: false });
 
     return (
       <Link href={`/news/${item._id}`} className="block group news-card">
-        <div className="backdrop-blur-sm rounded-t-3xl overflow-hidden flex flex-col transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-[#BD9B58]/20 border hover:border-[#BD9B58]/60 h-full group relative" style={{ backgroundColor: 'rgba(24, 24, 25, 0.8)', borderColor: '#181819' }}>
-          {/* Dark Header Section */}
-          <div className="relative w-full h-56 overflow-hidden" style={{ backgroundColor: '#181819' }}>
-            {/* Background Image */}
-            <div className="absolute inset-0">
+        <div className="bg-white overflow-hidden flex flex-col transition-all duration-500 shadow-lg hover:shadow-2xl border border-gray-200 hover:border-[#BD9B58] h-full group relative">
+          {/* Top gold accent bar */}
+          <div className="h-1 bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] w-0 group-hover:w-full transition-all duration-500"></div>
+
+          {/* Image Section */}
+          <div className="relative w-full h-56 overflow-hidden">
             <img
               src={item.image}
               alt={item.title}
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110 opacity-70"
+              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
             />
-          </div>
-          </div>
-
-          {/* Dark Content Section */}
-          <div className="backdrop-blur-sm p-6 flex flex-col flex-grow relative" style={{ backgroundColor: 'rgba(24, 24, 25, 0.8)' }}>
-            {/* Category Badge */}
-            <div className="mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#BD9B58]">
+            {/* Category Badge Overlay */}
+            <div className="absolute top-4 left-4">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest text-white bg-[#BD9B58] px-3 py-1">
                 {item.category}
               </span>
             </div>
-            
+          </div>
+
+          {/* Content Section */}
+          <div className="p-6 flex flex-col flex-grow">
             {/* Title */}
-            <h3 className="text-lg font-bold mb-3 text-white group-hover:text-[#BD9B58] transition-colors duration-300 line-clamp-2 leading-tight">
+            <h3 className="text-xl font-bebas font-bold uppercase mb-3 text-black group-hover:text-[#BD9B58] transition-colors duration-300 line-clamp-2 leading-tight tracking-wider">
               {item.title}
             </h3>
-            
+
             {/* Description */}
             <p
-              className="text-sm text-gray-300 line-clamp-2 leading-relaxed mb-4 flex-grow"
+              className="text-sm text-gray-700 line-clamp-3 leading-relaxed mb-4 flex-grow"
               dangerouslySetInnerHTML={{ __html: item.summary }}
             ></p>
 
             {/* Footer */}
-            <div className="mt-auto pt-4 border-t" style={{ borderColor: '#181819' }}>
+            <div className="mt-auto pt-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                <span className="text-xs text-gray-600 font-semibold uppercase tracking-wide">
                   {formattedDate}
                 </span>
-                <div className="w-8 h-8 rounded-full group-hover:bg-gradient-to-r group-hover:from-[#BD9B58] group-hover:to-[#d4b068] border group-hover:border-transparent flex items-center justify-center transition-all duration-500" style={{ backgroundColor: '#181819', borderColor: '#181819' }}>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white transform translate-x-0 group-hover:translate-x-0.5 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <div className="w-10 h-10 bg-gray-100 group-hover:bg-[#BD9B58] flex items-center justify-center transition-all duration-300">
+                  <svg className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Bottom corner accent */}
+          <div className="absolute bottom-0 right-0 w-12 h-12 border-r-2 border-b-2 border-[#BD9B58] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
       </Link>
     );
   };
 
+  // Skip first 5 articles (they're in the slider)
+  const remainingNews = news.slice(5);
+
+  if (remainingNews.length === 0) {
+    return null; // Don't show this section if no remaining news
+  }
+
   return (
-    <div className="w-full pb-20 pt-24 relative overflow-hidden" style={{ backgroundColor: '#282829' }}>
-      {/* Three.js Soccer Scene Background - Temporarily disabled */}
-      {/* <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ zIndex: 0, height: '100%', width: '100%' }}>
-        <div style={{ height: '100%', width: '100%' }}>
-          <SoccerScene />
-        </div>
-      </div> */}
-      
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#BD9B58]/5 via-transparent to-[#BD9B58]/5" style={{ zIndex: 1 }}></div>
-      
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent" style={{ zIndex: 10 }}></div>
-
-      {/* Section Title */}
-      <div className="relative text-center mb-16 px-4" style={{ zIndex: 10 }} ref={titleRef}>
-        <div className="inline-flex items-center gap-3 mb-4">
-          <div className="w-12 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bebas text-white uppercase tracking-tight">Latest News</h2>
-          <div className="w-12 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
-        </div>
-        <p className="text-gray-300 text-sm uppercase tracking-widest font-medium">Club News & Announcements</p>
-      </div>
-
-      <div className="w-full px-4 md:px-6 lg:px-8 relative" style={{ zIndex: 10 }} ref={cardsRef}>
-
-        {/* Top featured news (2 columns) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-[1600px] mx-auto">
-          {news.slice(0, 2).map(newsItem => (
-            <FeaturedNews key={newsItem._id} item={newsItem} />
-          ))}
+    <div className="w-full py-20 relative overflow-hidden bg-white">
+      <div className="max-w-7xl mx-auto px-6" ref={cardsRef}>
+        
+        {/* Section Header */}
+        <div className="mb-12">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+            <span className="text-[#BD9B58] text-sm font-bold uppercase tracking-[0.3em]">More Stories</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bebas font-black text-black uppercase tracking-wider">
+            ALL <span className="text-[#BD9B58]">NEWS</span>
+          </h2>
         </div>
 
-        {/* Smaller news grid (4 columns) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-[1600px] mx-auto">
-          {news.slice(2, 6).map(newsItem => (
+        {/* Remaining Articles in Clean 3-Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {remainingNews.map(newsItem => (
             <SmallNewsCard key={newsItem._id} item={newsItem} />
           ))}
-        </div>
-
-        {/* More News Link */}
-        <div className="text-center max-w-7xl mx-auto">
-          <a href="/news" className="inline-flex items-center gap-2 text-[#BD9B58] hover:text-[#d4b068] font-bold transition-colors duration-300 group uppercase tracking-wider text-sm">
-            <span>View All News</span>
-            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
         </div>
       </div>
     </div>

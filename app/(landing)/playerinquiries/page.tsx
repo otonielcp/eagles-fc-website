@@ -1,24 +1,17 @@
-
-
-
 import RegistrationForm from "@/components/landing/RegistrationForm";
-import ContactMiniNavbar from "@/components/landing/ContactMiniNavbar";
 
+export const metadata = {
+  title: 'Player Registration | Eagles Football Club',
+  description: 'Register your interest in joining Eagles FC',
+};
 
 const PlayerRegistration = () => {
-    return (
-      <div className="max-w-full overflow-hidden" >
-          
-            
-            <ContactMiniNavbar />
-            <RegistrationForm />
-            
-          
-      </div>
-      
-      
-    );
-  };
-  
-  export default PlayerRegistration;
+  return (
+    <div className="bg-white">
+      <RegistrationForm />
+    </div>
+  );
+};
+
+export default PlayerRegistration;
   

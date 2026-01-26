@@ -223,125 +223,122 @@ const MatchReportData = ({
         }
       `}</style>
 
-      <div className="max-w-5xl mx-auto py-8 flex flex-col md:flex-row gap-8">
-        {/* Left Sidebar with Metadata and Share - Only shown on md and up */}
-        <div className="hidden md:flex w-48 flex-col gap-4">
-          {/* Metadata */}
-          <div className="text-xs text-gray-500 uppercase">
-            <p>PUBLISHED · {reportData.publishDate}</p>
-            <p>{reportData.author}</p>
-          </div>
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12">
+        {/* Page Title */}
+        <h1 className="text-2xl md:text-3xl font-normal text-gray-900 mb-8">
+          {reportData.title}
+        </h1>
 
-          {/* borderline*/}
-          <div className="border-t mt-8 border-gray-200"></div>
-
-          {/* Share Buttons */}
-          <div className="pl-0 mx-0">
-            <p className="text-xs text-gray-500 uppercase mb-2">SHARE</p>
-            <div className="flex gap-10 gap-y-4 flex-wrap">
-              <button onClick={handleFacebookShare} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                <Facebook size={16} className="text-white" />
-              </button>
-              <button onClick={handleTwitterShare} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                <Twitter size={16} className="text-white" />
-              </button>
-              <button onClick={handleEmailShare} className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                <Mail size={16} className="text-gray-600" />
-              </button>
-              <button onClick={handleWhatsAppShare} className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <Phone size={16} className="text-white" />
-              </button>
-              <button onClick={handleLinkedInShare} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                <Linkedin size={16} className="text-white" />
-              </button>
-              <button onClick={handleTelegramShare} className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
-                <Send size={16} className="text-white" />
-              </button>
-            </div>
+        {/* Match Summary Section */}
+        <div className="bg-gray-50 border border-gray-200 p-6 mb-8">
+          <h2 className="text-lg font-bold mb-4">Match Summary</h2>
+          <div className="space-y-1 text-sm">
+            <p>
+              <span className="font-semibold">{fixture.homeTeam}</span> {fixture.homeScore} - {fixture.awayScore} <span className="font-semibold">{fixture.awayTeam}</span>
+            </p>
+            <p className="text-gray-600">
+              {fixture.competition} | {fixture.stadium} | {new Date(fixture.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+            </p>
           </div>
         </div>
 
-        {/* Main Article Content */}
-        <article className="flex-1">
-          {/* Mobile Metadata - Only shown on small screens */}
-          <div className="md:hidden mb-4 text-xs text-gray-500 uppercase">
-            <p>PUBLISHED · {reportData.publishDate}</p>
-            <p>{reportData.author}</p>
-          </div>
+        {/* Match Report Content */}
+        <div className="prose prose-sm max-w-none mb-8">
+          <p className="text-sm text-gray-600 mb-6">
+            Match report for {fixture.homeTeam} vs {fixture.awayTeam} at {fixture.stadium}.
+          </p>
 
-          {/* Title */}
-          <h1 className="text-xl font-normal text-gray-900 mb-6">
-            {reportData.title}
-          </h1>
-
-          {/* Match Summary */}
-          <div className="p-4 bg-gray-100 mb-8 mx-4 md:mx-14">
-            <p className="font-bold mb-2">Match Summary</p>
-            <p className="text-sm">
-              {fixture.homeTeam} {fixture.homeScore} - {fixture.awayScore} {fixture.awayTeam}
-            </p>
-            <p className="text-sm">
-              {fixture.competition} | {fixture.stadium} | {new Date(fixture.date).toLocaleDateString()}
-            </p>
-          </div>
-
-          {/* Match Report Content */}
-          <div className="space-y-4 mb-8 mx-4 md:mx-14">
+          <div className="space-y-4">
             {reportData.content.map((content, index) => renderContent(content, index))}
           </div>
+        </div>
 
-          {/* Timeline Events */}
-          {reportData.timelineEvents.length > 0 && (
-            <div className="mb-8 mx-4 md:mx-14">
-              <h2 className="font-bold mb-2">Key Match Events</h2>
-              <ul className="list-disc pl-5 space-y-2">
-                {reportData.timelineEvents.map((event, index) => (
-                  <li key={index} className="text-gray-700 text-sm">{event}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Next Match */}
-          <div className="mb-8 mx-4 md:mx-14">
-            <p className="font-bold mb-2">Next up</p>
-            <p className="text-gray-700">
-              {reportData.nextMatch.info}{' '}
-              <Link href="/fixtures" className="text-red-600 hover:underline">
-                {reportData.nextMatch.link}
-              </Link>
-              .
-            </p>
+        {/* Timeline Events */}
+        {reportData.timelineEvents.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-4">Key Match Events</h2>
+            <ul className="list-disc pl-5 space-y-2">
+              {reportData.timelineEvents.map((event, index) => (
+                <li key={index} className="text-gray-700 text-sm">{event}</li>
+              ))}
+            </ul>
           </div>
+        )}
 
-          {/* Bottom Share Buttons */}
-          <div className="pt-8 mx-4 md:mx-14 border-t">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-gray-500 uppercase">PUBLISHED · {reportData.publishDate}</p>
-              <p className="text-xs text-gray-500 uppercase mb-2">SHARE</p>
-              <div className="flex gap-2">
-                <button onClick={handleFacebookShare} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                  <Facebook size={16} className="text-white" />
+        {/* Next Match Section */}
+        <div className="border-t border-gray-200 pt-8 mb-8">
+          <h3 className="text-base font-bold mb-3">Next up</h3>
+          <p className="text-sm text-gray-700">
+            {reportData.nextMatch.info}{' '}
+            <Link href="/fixtures" className="text-red-600 hover:underline font-medium">
+              {reportData.nextMatch.link}
+            </Link>
+            .
+          </p>
+        </div>
+
+        {/* Footer with Metadata and Share */}
+        <div className="border-t border-gray-200 pt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Metadata */}
+            <div className="text-xs text-gray-500 uppercase space-y-1">
+              <p>PUBLISHED · {reportData.publishDate}</p>
+              <p>{reportData.author}</p>
+            </div>
+
+            {/* Share Buttons */}
+            <div>
+              <p className="text-xs text-gray-500 uppercase mb-3">SHARE</p>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={handleFacebookShare}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  style={{ backgroundColor: '#181819' }}
+                  aria-label="Share on Facebook"
+                >
+                  <Facebook size={18} className="text-white" />
                 </button>
-                <button onClick={handleTwitterShare} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                  <Twitter size={16} className="text-white" />
+                <button
+                  onClick={handleTwitterShare}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  style={{ backgroundColor: '#181819' }}
+                  aria-label="Share on Twitter"
+                >
+                  <Twitter size={18} className="text-white" />
                 </button>
-                <button onClick={handleEmailShare} className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Mail size={16} className="text-gray-600" />
+                <button
+                  onClick={handleEmailShare}
+                  className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  aria-label="Share via Email"
+                >
+                  <Mail size={18} className="text-gray-700" />
                 </button>
-                <button onClick={handleWhatsAppShare} className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                  <Phone size={16} className="text-white" />
+                <button
+                  onClick={handleWhatsAppShare}
+                  className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  aria-label="Share on WhatsApp"
+                >
+                  <Phone size={18} className="text-white" />
                 </button>
-                <button onClick={handleLinkedInShare} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
-                  <Linkedin size={16} className="text-white" />
+                <button
+                  onClick={handleLinkedInShare}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  style={{ backgroundColor: '#181819' }}
+                  aria-label="Share on LinkedIn"
+                >
+                  <Linkedin size={18} className="text-white" />
                 </button>
-                <button onClick={handleTelegramShare} className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                  <Send size={16} className="text-white" />
+                <button
+                  onClick={handleTelegramShare}
+                  className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                  aria-label="Share on Telegram"
+                >
+                  <Send size={18} className="text-white" />
                 </button>
               </div>
             </div>
           </div>
-        </article>
+        </div>
       </div>
     </>
   );

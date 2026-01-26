@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from 'framer-motion';
 import MiniNavbar from "@/components/landing/MiniNavbar";
 import ProgramsHero from "@/components/landing/ProgramsHero";
 import ProgramCard from "@/components/landing/ProgramCard";
@@ -66,7 +67,44 @@ const Programs = () => {
       <MiniNavbar />
       <ProgramsHero />
       
-      <div className="bg-gradient-to-b from-white via-gray-50/30 to-white py-16 md:py-20 lg:py-24">
+      {/* Programs Section with Premium Design */}
+      <div className="relative bg-white py-32">
+        {/* Section Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+          <div className="text-center max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-3 mb-6"
+            >
+              <div className="w-8 h-[1px] bg-[#C5A464]"></div>
+              <span className="text-[10px] font-bold tracking-[0.25em] text-[#C5A464] uppercase">Choose Your Path</span>
+              <div className="w-8 h-[1px] bg-[#C5A464]"></div>
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="text-4xl sm:text-5xl font-black text-gray-900 mb-6"
+            >
+              Programs Built for <span className="text-[#C5A464]">Champions</span>
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-lg text-gray-600 leading-relaxed"
+            >
+              Every program is carefully designed to maximize player potential at every stage of development
+            </motion.p>
+          </div>
+        </div>
+
+        {/* Program Cards */}
         <div className="space-y-12 md:space-y-16 lg:space-y-20">
           {programs.map((program, index) => (
             <ProgramCard
@@ -78,8 +116,6 @@ const Programs = () => {
         </div>
       </div>
 
-      <ProgramsPathway />
-      <ProgramsCrest />
       <HistoryBar />
     </div>
   );

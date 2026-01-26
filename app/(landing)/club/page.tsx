@@ -7,9 +7,10 @@ import MiniNavbar from '@/components/landing/MiniNavbar';
 
 const AboutUs = () => {
   return (
-    <div className="max-w-full overflow-hidden bg-white">
+    <div className="max-w-full bg-white">
         <MiniNavbar />
-        <div className="space-y-0">
+        {/* mt-12 = space below fixed mini navbar (main navbar 80px + mini navbar ~48px = 128px, minus the pt-20 from wrapper = need mt-12) */}
+        <div className="space-y-0 mt-12">
           <AboutEagles />
           <OurPhilosophy />
           <OurMission />

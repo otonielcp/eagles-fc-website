@@ -1,7 +1,8 @@
-import MatchReportData from '@/components/landing/MatchReportData';
-import MatchTimeline from '@/components/landing/MatchTimeline';
 import { getFixtureById } from '@/actions/fixture';
-import GameResultHero from '@/components/landing/GameResultHero';
+import { MatchReportHero } from '@/components/landing/MatchReportHero';
+import { MatchReportTimeline } from '@/components/landing/MatchReportTimeline';
+import { MatchReportSummary } from '@/components/landing/MatchReportSummary';
+import MatchReportData from '@/components/landing/MatchReportData';
 
 const MatchReport = async ({
   params
@@ -19,11 +20,16 @@ const MatchReport = async ({
 
   return (
     <div className="max-w-full overflow-hidden">
-      {/* <GameResult /> */}
-      <GameResultHero result={fixture} />
+      {/* Modern Hero Section */}
+      <MatchReportHero fixture={fixture} />
 
-      <MatchTimeline fixture={fixture} />
+      {/* Vertical Timeline */}
+      <MatchReportTimeline fixture={fixture} />
 
+      {/* Match Statistics */}
+      <MatchReportSummary fixture={fixture} />
+
+      {/* Match Report Content (keep existing component for written report) */}
       <MatchReportData fixture={fixture} />
     </div>
   );

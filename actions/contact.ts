@@ -4,11 +4,10 @@ import { log } from 'console';
 import nodemailer from 'nodemailer';
 
 interface ContactFormData {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  confirmEmail: string;
-  phone: string;
+  phone?: string;
+  subject: string;
   message: string;
 }
 
@@ -77,7 +76,7 @@ async function createTransporter() {
 
 export async function sendContactEmail(formData: ContactFormData): Promise<ContactResponse> {
   try {
-    const { firstName, lastName, email, phone, message } = formData;
+    const { name, email, phone, subject, message } = formData;
     log(1, process.env.SMTP_HOST, process.env.SMTP_PORT, process.env.SMTP_USER, process.env.SMTP_PASS);
 
     const transporter = await createTransporter();
@@ -87,36 +86,37 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
     const mailOptions = {
       from: process.env.SMTP_USER,
       to:  process.env.SMTP_TO, // Send to the same email
-      subject: 'New Ticketing Inquiry - Eagles Nebraska FC',
+      subject: `New Contact Form Submission: ${subject} - Eagles FC`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #C6A76D; border-bottom: 2px solid #C6A76D; padding-bottom: 10px;">
-            New Ticketing Inquiry
+          <h2 style="color: #BD9B58; border-bottom: 2px solid #BD9B58; padding-bottom: 10px;">
+            New Contact Form Submission
           </h2>
           
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+            <p><strong>Name:</strong> ${name}</p>
             <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone}</p>
+            ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+            <p><strong>Subject:</strong> ${subject}</p>
           </div>
           
           <div style="margin: 20px 0;">
             <h3 style="color: #333;">Message:</h3>
-            <div style="background: white; padding: 15px; border-left: 4px solid #C6A76D; border-radius: 0 5px 5px 0;">
+            <div style="background: white; padding: 15px; border-left: 4px solid #BD9B58; border-radius: 0 5px 5px 0;">
               ${message.replace(/\n/g, '<br>')}
             </div>
           </div>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #666; font-size: 12px; text-align: center;">
-            <em>Sent from Eagles Nebraska FC Website - ${new Date().toLocaleString()}</em>
+            <em>Sent from Eagles FC Website - ${new Date().toLocaleString()}</em>
           </p>
         </div>
       `,
       text: `
-        New Ticketing Inquiry - Eagles Nebraska FC
+        New Contact Form Submission - Eagles FC
         
-        Name: ${firstName} ${lastName}
+        Name: ${name}
         Email: ${email}
         Phone: ${phone}
         

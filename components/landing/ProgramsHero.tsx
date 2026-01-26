@@ -1,218 +1,135 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
 import { motion } from 'framer-motion';
 
 const ProgramsHero = () => {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const accentRef = useRef<HTMLDivElement>(null);
-  const orb1Ref = useRef<HTMLDivElement>(null);
-  const orb2Ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (heroRef.current && titleRef.current && subtitleRef.current && accentRef.current) {
-      const tl = gsap.timeline();
-      
-      // Animate orbs with more sophisticated movement
-      if (orb1Ref.current && orb2Ref.current) {
-        gsap.to(orb1Ref.current, {
-          x: 150,
-          y: -80,
-          duration: 25,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut"
-        });
-        gsap.to(orb2Ref.current, {
-          x: -120,
-          y: 100,
-          duration: 30,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut"
-        });
-      }
-      
-      // Animate accent line
-      tl.fromTo(
-        accentRef.current,
-        { width: 0, opacity: 0 },
-        { width: '300px', opacity: 1, duration: 1.5, ease: "power3.out" }
-      )
-      // Animate title with stagger
-      .fromTo(
-        titleRef.current.querySelectorAll('span'),
-        { opacity: 0, y: 80, rotationX: -90 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          rotationX: 0,
-          duration: 1.2, 
-          ease: "power4.out",
-          stagger: 0.15
-        },
-        "-=1"
-      )
-      // Animate subtitle
-      .fromTo(
-        subtitleRef.current,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out" },
-        "-=0.6"
-      );
-    }
-  }, []);
-
   return (
-    <div 
-      ref={heroRef}
-      className="relative w-full h-[80vh] min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#181819] to-[#0f0f0f]"
-    >
-      {/* Enhanced animated gradient orbs */}
-      <motion.div 
-        ref={orb1Ref}
-        className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#C5A464]/30 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1, 1.3, 1],
-          opacity: [0.4, 0.7, 0.4]
-        }}
-        transition={{ 
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div 
-        ref={orb2Ref}
-        className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-[#C5A464]/20 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1, 1.4, 1],
-          opacity: [0.3, 0.6, 0.3]
-        }}
-        transition={{ 
-          duration: 12,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1.5
-        }}
-      />
-      
-      {/* Sophisticated grid pattern */}
-      <div className="absolute inset-0 opacity-[0.05]" style={{
-        backgroundImage: `linear-gradient(#C5A464 1px, transparent 1px), linear-gradient(90deg, #C5A464 1px, transparent 1px)`,
-        backgroundSize: '100px 100px'
-      }}></div>
-
-      {/* Animated gold accent lines */}
-      <motion.div 
-        className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#C5A464] to-transparent"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 2, delay: 0.3 }}
-      />
-      <motion.div 
-        className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#C5A464] to-transparent"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 2, delay: 0.3 }}
-      />
-
-      {/* Premium decorative elements */}
-      <div className="absolute top-24 left-24 w-48 h-48 border border-[#C5A464]/20 rounded-full hidden xl:block"></div>
-      <div className="absolute bottom-24 right-24 w-40 h-40 border border-[#C5A464]/20 rounded-full hidden xl:block"></div>
-      <div className="absolute top-1/2 left-16 w-32 h-32 border border-[#C5A464]/15 rounded-full hidden lg:block"></div>
-      <div className="absolute top-1/3 right-16 w-24 h-24 border border-[#C5A464]/10 rounded-full hidden lg:block"></div>
-
-      {/* Content */}
-      <div className="relative z-10 text-center px-4 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center mb-12">
-          <motion.div 
-            ref={accentRef}
-            className="h-[4px] bg-gradient-to-r from-transparent via-[#C5A464] to-transparent rounded-full shadow-lg shadow-[#C5A464]/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-          />
-        </div>
-        
-        <h1 
-          ref={titleRef}
-          className="text-7xl md:text-8xl lg:text-9xl xl:text-[13rem] font-black text-white mb-12 tracking-tight leading-[0.85]"
-          style={{ fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", letterSpacing: '0.01em' }}
-        >
-          <motion.span
-            className="block"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            OUR
-          </motion.span>
-          <motion.span 
-            className="block bg-gradient-to-r from-[#C5A464] via-[#D4B068] to-[#C5A464] bg-clip-text text-transparent"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            PROGRAMS
-          </motion.span>
-        </h1>
-        
-        <p 
-          ref={subtitleRef}
-          className="text-xl md:text-2xl lg:text-3xl text-gray-300/95 leading-relaxed max-w-4xl mx-auto font-light tracking-wide"
-        >
-          From recreational play to elite competition, discover the perfect pathway for every player's journey
-        </p>
-
-        {/* Premium decorative dots */}
-        <div className="flex justify-center gap-4 mt-16">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-3 h-3 rounded-full bg-[#C5A464] shadow-lg shadow-[#C5A464]/50"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.5 + i * 0.2, duration: 0.5, type: "spring" }}
-            />
-          ))}
-        </div>
+    <div className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
+      {/* Animated Background Grid */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(rgba(197, 164, 100, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(197, 164, 100, 0.1) 1px, transparent 1px)`,
+          backgroundSize: '100px 100px'
+        }}></div>
       </div>
 
-      {/* Enhanced bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/90 to-transparent"></div>
-      
-      {/* Premium particles effect */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => {
-          const randomX = typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1920;
-          const randomY = typeof window !== 'undefined' ? Math.random() * window.innerHeight : Math.random() * 1080;
-          return (
+      {/* Radial Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-radial from-[#C5A464]/5 via-transparent to-transparent"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-32">
+        {/* Luxury Label with Animation */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-flex items-center gap-4 mb-12"
+        >
+          <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C5A464] to-[#C5A464]"></div>
+          <span className="text-[11px] font-bold tracking-[0.3em] text-[#C5A464] uppercase">Pathways to Greatness</span>
+          <div className="w-16 h-[1px] bg-gradient-to-l from-transparent via-[#C5A464] to-[#C5A464]"></div>
+        </motion.div>
+
+        {/* Massive Luxury Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          className="mb-16"
+        >
+          <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
+            <span className="block text-white mb-4">OUR</span>
+            <span className="block bg-gradient-to-r from-[#C5A464] via-[#D4AF37] to-[#C5A464] bg-clip-text text-transparent">
+              PROGRAMS
+            </span>
+          </h1>
+          {/* Underline Accent */}
+          <motion.div
+            initial={{ width: 0 }}
+            whileInView={{ width: "200px" }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="h-[2px] bg-gradient-to-r from-transparent via-[#C5A464] to-transparent mx-auto mt-8"
+          ></motion.div>
+        </motion.div>
+
+        {/* Elegant Description */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mb-20"
+        >
+          <p className="text-xl sm:text-2xl text-gray-400 leading-relaxed font-light max-w-4xl mx-auto tracking-wide">
+            From recreational play to elite competition,<br className="hidden sm:block"/>
+            <span className="text-[#C5A464] font-normal">discover the perfect pathway</span> for every player's journey
+          </p>
+        </motion.div>
+
+        {/* Luxury Stats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="flex items-center justify-center gap-20 sm:gap-32"
+        >
+          {/* Program Count */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-[#C5A464]/10 blur-3xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700"></div>
+            <div className="relative text-center">
+              <div className="text-7xl sm:text-8xl font-black mb-3">
+                <span className="bg-gradient-to-br from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
+                  3
+                </span>
+                <span className="text-[#C5A464]">+</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-[1px] bg-[#C5A464]"></div>
+                <div className="text-xs uppercase tracking-[0.2em] text-gray-500 font-bold">Elite Programs</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Vertical Divider */}
+          <div className="w-[1px] h-24 bg-gradient-to-b from-transparent via-[#C5A464]/30 to-transparent"></div>
+
+          {/* Age Range */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-[#C5A464]/10 blur-3xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700"></div>
+            <div className="relative text-center">
+              <div className="text-7xl sm:text-8xl font-black mb-3">
+                <span className="bg-gradient-to-br from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
+                  All
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-[1px] bg-[#C5A464]"></div>
+                <div className="text-xs uppercase tracking-[0.2em] text-gray-500 font-bold">Ages Welcome</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 1 }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="text-xs uppercase tracking-[0.2em] text-gray-600 font-semibold mb-2">Scroll</div>
             <motion.div
-              key={i}
-              className="absolute w-1.5 h-1.5 bg-[#C5A464]/40 rounded-full"
-              initial={{
-                x: randomX,
-                y: randomY,
-                opacity: 0
-              }}
-              animate={{
-                y: [null, randomY - 150],
-                opacity: [0, 1, 0],
-                scale: [0, 1, 0]
-              }}
-              transition={{
-                duration: Math.random() * 4 + 3,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-                ease: "easeOut"
-              }}
-            />
-          );
-        })}
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-[1px] h-16 bg-gradient-to-b from-[#C5A464] to-transparent"
+            ></motion.div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

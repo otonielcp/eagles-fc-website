@@ -51,9 +51,9 @@ const Navbar = () => {
 
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ease-in-out overflow-visible ${
-      isScrolled 
-        ? 'shadow-2xl border-b-2 border-[#BD9B58]' 
+    <nav data-navbar="landing" className={`fixed top-0 w-full z-50 transition-all duration-700 ease-in-out overflow-visible ${
+      isScrolled
+        ? 'shadow-2xl border-b-2 border-[#BD9B58]'
         : 'bg-transparent'
     }`} style={isScrolled ? { backgroundColor: '#181819' } : {}}>
       {/* Animated top accent line */}
@@ -195,7 +195,7 @@ const Navbar = () => {
           {[
             { href: '/club', label: 'Club' },
             { href: '/teams', label: 'Teams' },
-            { href: '/tickets', label: 'Tickets' },
+            { href: '/programs', label: 'Programs' },
             { href: '/fixtures', label: 'Fixtures' },
             { href: '/news', label: 'News' },
             { href: '/shop', label: 'Shop' },
@@ -295,11 +295,11 @@ const Navbar = () => {
                   The Club
                 </Link>
                 <Link 
-                  href="/tickets" 
+                  href="/programs" 
                   className="block px-6 py-4 text-2xl font-black uppercase tracking-wide hover:bg-white/5 hover:text-[#BD9B58] transition-all duration-300 border-l-4 border-transparent hover:border-[#BD9B58]" 
                   onClick={closeMenu}
                 >
-                  Tickets
+                  Programs
                 </Link>
                 <Link 
                   href="/shop" 
