@@ -54,34 +54,63 @@ export async function getActiveSliders(): Promise<SliderType[]> {
   try {
     await connectDB();
     
-    // Debug: Check all sliders first
+    // Get all sliders first
     const allSliders = await Slider.find({}).sort({ order: 1 });
     console.log("🔍 [getActiveSliders] Total sliders in DB:", allSliders.length);
-    console.log("🔍 [getActiveSliders] All sliders isActive values:", allSliders.map(s => ({ id: s._id, title: s.title, isActive: s.isActive, isActiveType: typeof s.isActive })));
     
-    // Try the query - check for both boolean true and truthy values
+    if (allSliders.length === 0) {
+      console.log("⚠️ [getActiveSliders] No sliders found in database");
+      return [];
+    }
+    
+    // Log all isActive values for debugging
+    console.log("🔍 [getActiveSliders] All sliders isActive values:", 
+      allSliders.map(s => ({ 
+        title: s.title?.substring(0, 30), 
+        isActive: s.isActive, 
+        isActiveType: typeof s.isActive,
+        isActiveRaw: JSON.stringify(s.isActive)
+      }))
+    );
+    
+    // Try the standard query first
     let sliders = await Slider.find({ isActive: true }).sort({ order: 1 });
-    console.log("🔍 [getActiveSliders] Found active sliders (boolean true):", sliders.length);
+    console.log("🔍 [getActiveSliders] Found active sliders (boolean true query):", sliders.length);
     
-    // If no results, try finding all and filter manually (in case isActive is stored as string or other type)
-    if (sliders.length === 0 && allSliders.length > 0) {
-      console.log("⚠️ [getActiveSliders] No sliders found with isActive: true, trying alternative filter...");
+    // If no results, filter manually from all sliders (handles any data type)
+    if (sliders.length === 0) {
+      console.log("⚠️ [getActiveSliders] Standard query returned 0, filtering all sliders manually...");
       sliders = allSliders.filter(s => {
         const isActive = s.isActive;
-        // Check for truthy values: boolean true, string "true", number 1, or any truthy value
-        const isActiveValue = isActive === true || 
-                            isActive === "true" || 
-                            isActive === 1 || 
-                            String(isActive).toLowerCase() === "true" ||
-                            Boolean(isActive) === true;
-        console.log(`🔍 [getActiveSliders] Slider "${s.title}": isActive=${isActive} (type: ${typeof isActive}), matches: ${isActiveValue}`);
+        // Comprehensive check for active status
+        const isActiveValue = 
+          isActive === true || 
+          isActive === "true" || 
+          isActive === 1 || 
+          String(isActive).toLowerCase() === "true" ||
+          (typeof isActive === 'string' && isActive.toLowerCase().trim() === 'true') ||
+          (isActive !== false && isActive !== "false" && isActive !== 0 && isActive !== null && isActive !== undefined);
+        
+        if (!isActiveValue) {
+          console.log(`❌ [getActiveSliders] Excluding slider "${s.title?.substring(0, 30)}": isActive=${isActive} (type: ${typeof isActive})`);
+        }
         return isActiveValue;
       });
-      console.log("🔍 [getActiveSliders] Filtered active sliders:", sliders.length);
+      console.log("✅ [getActiveSliders] Filtered active sliders:", sliders.length);
+      
+      // If still no results, return all sliders as fallback (so something shows)
+      if (sliders.length === 0 && allSliders.length > 0) {
+        console.warn("⚠️ [getActiveSliders] No sliders matched active criteria, returning ALL sliders as fallback");
+        sliders = allSliders;
+      }
+    } else {
+      console.log("✅ [getActiveSliders] Standard query worked, found", sliders.length, "active sliders");
     }
 
+    console.log("🎯 [getActiveSliders] Final result: returning", sliders.length, "sliders");
+    
     // Properly serialize each slider to ensure matchDate is in ISO format
-    return sliders.map(slider => ({
+    const result = sliders.map(slider => ({
       _id: slider._id.toString(),
       type: slider.type || "text",
       title: slider.title,
@@ -107,8 +136,11 @@ export async function getActiveSliders(): Promise<SliderType[]> {
       createdAt: slider.createdAt.toISOString(),
       updatedAt: slider.updatedAt.toISOString(),
     }));
+    
+    console.log("✅ [getActiveSliders] Successfully serialized", result.length, "sliders");
+    return result;
   } catch (error) {
-    console.error("Error fetching active sliders:", error);
+    console.error("❌ [getActiveSliders] Error fetching active sliders:", error);
     throw new Error("Failed to fetch active sliders");
   }
 }
