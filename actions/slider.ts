@@ -54,42 +54,15 @@ export async function getActiveSliders(): Promise<SliderType[]> {
   try {
     await connectDB();
     
+    // TEMPORARY FIX: Return all sliders to get it working in production
     // Use the exact same approach as getAllSliders for consistency
-    // Fetch all sliders first, then filter for active ones
-    // This ensures the same serialization works in both local and production
     const allSliders = await Slider.find({}).sort({ order: 1 });
     
     // Serialize exactly like getAllSliders does
     const serialized = JSON.parse(JSON.stringify(allSliders));
     
-    // Filter for active sliders after serialization - handle ALL possible truthy values
-    const activeSliders = serialized.filter((slider: any) => {
-      const isActive = slider.isActive;
-      
-      // Comprehensive check - if isActive is not explicitly false/null/undefined/0/"false", consider it active
-      if (isActive === false || isActive === null || isActive === undefined || isActive === 0) {
-        return false;
-      }
-      
-      if (typeof isActive === 'string') {
-        const lower = isActive.toLowerCase().trim();
-        if (lower === 'false' || lower === '0' || lower === 'no' || lower === '') {
-          return false;
-        }
-        // Any non-empty string that's not explicitly "false" is considered active
-        return true;
-      }
-      
-      // For boolean true, number 1, or any other truthy value
-      return Boolean(isActive);
-    });
-    
-    // If no active sliders found but we have sliders, return all as fallback
-    // This ensures something shows on the homepage
-    const result = activeSliders.length > 0 ? activeSliders : serialized;
-    
     // Format matchDate for any sliders with gameData
-    const formatted = result.map((slider: any) => {
+    const formatted = serialized.map((slider: any) => {
       if (slider.gameData && slider.gameData.matchDate) {
         slider.gameData.matchDate = formatMatchDate(slider.gameData.matchDate);
       }
