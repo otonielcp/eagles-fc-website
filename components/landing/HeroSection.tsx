@@ -196,7 +196,7 @@ const HeroSection = () => {
         
         console.log("Fetched sliders:", slidersData.length, slidersData);
 
-        if (slidersData.length > 0) {
+        if (slidersData && slidersData.length > 0) {
           const formattedSlides: SlideData[] = slidersData.map(slider => ({
             type: slider.type || "text",
             title: slider.title?.toUpperCase() || "",
@@ -210,10 +210,14 @@ const HeroSection = () => {
           console.log("Formatted slides:", formattedSlides);
           setSlides(formattedSlides);
         } else {
-          console.log("No active sliders found. Make sure your sliders have 'isActive' set to true in the admin panel.");
+          console.warn("No active sliders found. Sliders must have 'isActive: true' to appear on the homepage.");
+          console.log("To fix: Go to /admin/sliders → Edit each slider → Toggle 'Active' ON → Save");
+          setSlides([]);
         }
       } catch (error) {
         console.error("Error fetching sliders:", error);
+        console.error("This might be a database connection issue. Check your MongoDB connection.");
+        setSlides([]);
       } finally {
         setLoading(false);
       }
@@ -812,8 +816,11 @@ const HeroSection = () => {
           <h1 className="text-5xl md:text-7xl font-bebas font-black text-white uppercase tracking-wider mb-6">
             EAGLES FC
           </h1>
-          <p className="text-gray-400 text-lg mb-8">
-            No hero sliders have been created yet. Please add sliders from the admin panel to display content here.
+          <p className="text-gray-400 text-lg mb-4">
+            No active hero sliders found.
+          </p>
+          <p className="text-gray-500 text-sm mb-8">
+            If you have created sliders, make sure they are marked as <strong className="text-white">"Active"</strong> in the admin panel. Go to Sliders → Edit each slider → Toggle "Active" ON → Save.
           </p>
           <Link href="/admin/sliders" className="inline-block bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] text-black font-bold px-8 py-4 rounded uppercase tracking-wider hover:from-[#D4AF37] hover:to-[#BD9B58] transition-all duration-300">
             Go to Admin Panel
