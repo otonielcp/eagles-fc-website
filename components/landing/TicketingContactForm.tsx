@@ -42,7 +42,16 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await sendContactEmail(formData);
+      // Transform form data to match ContactFormData interface
+      const contactData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        subject: 'Ticketing Inquiry',
+        message: formData.message
+      };
+
+      const result = await sendContactEmail(contactData);
 
       if (result.success) {
         toast.success('Message sent successfully!');
