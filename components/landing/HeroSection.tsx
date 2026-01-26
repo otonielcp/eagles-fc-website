@@ -174,18 +174,36 @@ interface SlideData {
   gameData?: GameSliderData;
 }
 
-// Default hero content - Youth Focus
-const defaultSlide: SlideData = {
-  type: "text",
-  title: "DEVELOPING TOMORROW'S CHAMPIONS TODAY",
-  content: "At Eagles FC Youth, we provide a comprehensive development pathway for players aged U7-U19. Our focus is on building technical skills, tactical awareness, and character through professional coaching and competitive play.",
-  image: "/heroimage1.jpeg",
-  link: "/programs",
-  buttonText: "READ MORE",
-};
+// Default hero content - Multiple slides for better UX when no sliders in DB
+const defaultSlides: SlideData[] = [
+  {
+    type: "text",
+    title: "DEVELOPING TOMORROW'S CHAMPIONS TODAY",
+    content: "At Eagles FC Youth, we provide a comprehensive development pathway for players aged U7-U19. Our focus is on building technical skills, tactical awareness, and character through professional coaching and competitive play.",
+    image: "/heroimage1.jpeg",
+    link: "/programs",
+    buttonText: "EXPLORE PROGRAMS",
+  },
+  {
+    type: "text",
+    title: "JOIN THE EAGLES FAMILY",
+    content: "Be part of a community dedicated to excellence in youth soccer. We offer professional coaching, competitive leagues, and a pathway to success both on and off the field.",
+    image: "/footerimage.jpeg",
+    link: "/playerinquiries",
+    buttonText: "REGISTER NOW",
+  },
+  {
+    type: "text",
+    title: "EXCELLENCE IN YOUTH DEVELOPMENT",
+    content: "Our proven training methods and experienced coaching staff have helped hundreds of young players reach their full potential. Start your journey with Eagles FC today.",
+    image: "/heroimage1.jpeg",
+    link: "/club",
+    buttonText: "LEARN MORE",
+  },
+];
 
 const HeroSection = () => {
-  const [slides, setSlides] = useState<SlideData[]>([defaultSlide]);
+  const [slides, setSlides] = useState<SlideData[]>(defaultSlides);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
