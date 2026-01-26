@@ -53,7 +53,28 @@ export async function getAllSliders(): Promise<SliderType[]> {
 export async function getActiveSliders(): Promise<SliderType[]> {
   try {
     await connectDB();
-    const sliders = await Slider.find({ isActive: true }).sort({ order: 1 });
+    
+    // Debug: Check all sliders first
+    const allSliders = await Slider.find({}).sort({ order: 1 });
+    console.log("🔍 [getActiveSliders] Total sliders in DB:", allSliders.length);
+    console.log("🔍 [getActiveSliders] All sliders isActive values:", allSliders.map(s => ({ id: s._id, title: s.title, isActive: s.isActive, isActiveType: typeof s.isActive })));
+    
+    // Try the query - check for both boolean true and truthy values
+    let sliders = await Slider.find({ isActive: true }).sort({ order: 1 });
+    console.log("🔍 [getActiveSliders] Found active sliders (boolean true):", sliders.length);
+    
+    // If no results, try finding all and filter manually (in case isActive is stored as string or other type)
+    if (sliders.length === 0) {
+      console.log("⚠️ [getActiveSliders] No sliders found with isActive: true, trying alternative query...");
+      const allSlidersCheck = await Slider.find({}).sort({ order: 1 });
+      sliders = allSlidersCheck.filter(s => {
+        const isActive = s.isActive;
+        const isActiveValue = isActive === true || isActive === "true" || isActive === 1;
+        console.log(`🔍 [getActiveSliders] Slider "${s.title}": isActive=${isActive} (type: ${typeof isActive}), matches: ${isActiveValue}`);
+        return isActiveValue;
+      });
+      console.log("🔍 [getActiveSliders] Filtered active sliders:", sliders.length);
+    }
 
     // Properly serialize each slider to ensure matchDate is in ISO format
     return sliders.map(slider => ({
