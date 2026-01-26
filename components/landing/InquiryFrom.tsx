@@ -44,7 +44,16 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
     }
 
     try {
-      const result = await onSubmit(formData);
+      // Transform form data to match ContactFormData interface
+      const contactData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        subject: title, // Use the title as the subject
+        message: formData.message
+      };
+
+      const result = await onSubmit(contactData);
       
       if (result.success) {
         setSubmitMessage('Your inquiry has been sent successfully!');
