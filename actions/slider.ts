@@ -54,94 +54,45 @@ export async function getActiveSliders(): Promise<SliderType[]> {
   try {
     await connectDB();
     
-    // Get all sliders first
-    const allSliders = await Slider.find({}).sort({ order: 1 });
-    console.log("🔍 [getActiveSliders] Total sliders in DB:", allSliders.length);
-    
-    if (allSliders.length === 0) {
-      console.log("⚠️ [getActiveSliders] No sliders found in database");
-      return [];
-    }
-    
-    // Log all isActive values for debugging
-    console.log("🔍 [getActiveSliders] All sliders isActive values:", 
-      allSliders.map(s => ({ 
-        title: s.title?.substring(0, 30), 
-        isActive: s.isActive, 
-        isActiveType: typeof s.isActive,
-        isActiveRaw: JSON.stringify(s.isActive)
-      }))
-    );
-    
-    // Try the standard query first
+    // First, try the standard MongoDB query for isActive: true
     let sliders = await Slider.find({ isActive: true }).sort({ order: 1 });
-    console.log("🔍 [getActiveSliders] Found active sliders (boolean true query):", sliders.length);
     
-    // If no results, filter manually from all sliders (handles any data type)
+    // If standard query returns 0, get all sliders and filter manually
+    // This handles cases where isActive might be stored as string, number, or other type
     if (sliders.length === 0) {
-      console.log("⚠️ [getActiveSliders] Standard query returned 0, filtering all sliders manually...");
+      const allSliders = await Slider.find({}).sort({ order: 1 });
+      
+      // Filter for active sliders - handle various data types
       sliders = allSliders.filter(s => {
         const isActive = s.isActive;
-        // Comprehensive check for active status
-        const isActiveValue = 
-          isActive === true || 
-          isActive === "true" || 
-          isActive === 1 || 
-          String(isActive).toLowerCase() === "true" ||
-          (typeof isActive === 'string' && isActive.toLowerCase().trim() === 'true') ||
-          (isActive !== false && isActive !== "false" && isActive !== 0 && isActive !== null && isActive !== undefined);
-        
-        if (!isActiveValue) {
-          console.log(`❌ [getActiveSliders] Excluding slider "${s.title?.substring(0, 30)}": isActive=${isActive} (type: ${typeof isActive})`);
-        }
-        return isActiveValue;
+        // Check for truthy values that indicate "active"
+        return (
+          isActive === true ||
+          isActive === "true" ||
+          isActive === 1 ||
+          String(isActive).toLowerCase().trim() === "true"
+        );
       });
-      console.log("✅ [getActiveSliders] Filtered active sliders:", sliders.length);
-      
-      // If still no results, return all sliders as fallback (so something shows)
-      if (sliders.length === 0 && allSliders.length > 0) {
-        console.warn("⚠️ [getActiveSliders] No sliders matched active criteria, returning ALL sliders as fallback");
-        sliders = allSliders;
-      }
-    } else {
-      console.log("✅ [getActiveSliders] Standard query worked, found", sliders.length, "active sliders");
     }
-
-    console.log("🎯 [getActiveSliders] Final result: returning", sliders.length, "sliders");
     
-    // Properly serialize each slider to ensure matchDate is in ISO format
-    const result = sliders.map(slider => ({
-      _id: slider._id.toString(),
-      type: slider.type || "text",
-      title: slider.title,
-      content: slider.content,
-      image: slider.image,
-      link: slider.link,
-      buttonText: slider.buttonText,
-      order: slider.order,
-      isActive: slider.isActive,
-      gameData: slider.gameData ? {
-        homeTeamName: slider.gameData.homeTeamName || "",
-        homeTeamLogo: slider.gameData.homeTeamLogo || "",
-        awayTeamName: slider.gameData.awayTeamName || "",
-        awayTeamLogo: slider.gameData.awayTeamLogo || "",
-        leagueLogo: slider.gameData.leagueLogo || "",
-        matchDate: formatMatchDate(slider.gameData.matchDate),
-        matchTime: slider.gameData.matchTime || "",
-        matchLocation: slider.gameData.matchLocation || "",
-        leftPlayerImage: slider.gameData.leftPlayerImage || "",
-        rightPlayerImage: slider.gameData.rightPlayerImage || "",
-      } : undefined,
-      fixtureId: slider.fixtureId?.toString(),
-      createdAt: slider.createdAt.toISOString(),
-      updatedAt: slider.updatedAt.toISOString(),
-    }));
+    // Properly serialize each slider - use same approach as getAllSliders for consistency
+    // This ensures data is properly serialized for both local and production
+    const serialized = JSON.parse(JSON.stringify(sliders));
     
-    console.log("✅ [getActiveSliders] Successfully serialized", result.length, "sliders");
+    // Format matchDate for any sliders with gameData
+    const result = serialized.map((slider: any) => {
+      if (slider.gameData && slider.gameData.matchDate) {
+        slider.gameData.matchDate = formatMatchDate(slider.gameData.matchDate);
+      }
+      return slider;
+    });
+    
     return result;
-  } catch (error) {
-    console.error("❌ [getActiveSliders] Error fetching active sliders:", error);
-    throw new Error("Failed to fetch active sliders");
+  } catch (error: any) {
+    console.error("Error fetching active sliders:", error);
+    // In production, return empty array instead of throwing to prevent page crashes
+    // This allows the page to still render with the empty state message
+    return [];
   }
 }
 
