@@ -111,13 +111,13 @@ export default function NewsHero() {
 
                 {/* Excerpt */}
                 <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8 line-clamp-3">
-                  {item.excerpt}
+                  {item.summary}
                 </p>
 
                 {/* Meta Info */}
                 <div className="flex items-center gap-6 mb-8 text-gray-400 text-sm">
                   <span className="uppercase tracking-wider">
-                    {formatDistanceToNow(new Date(item.publishedAt || item.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(item.publishDate || item.createdAt), { addSuffix: true })}
                   </span>
                   {item.author && (
                     <>
