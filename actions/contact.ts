@@ -253,7 +253,7 @@ export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationDa
 // Generic function for different inquiry types
 async function sendInquiryEmail(formData: ContactFormData, inquiryType: string): Promise<ContactResponse> {
   try {
-    const { firstName, lastName, email, phone, message } = formData;
+    const { name, email, phone, message } = formData;
     const transporter = await createTransporter();
     
     // Email content
@@ -268,9 +268,9 @@ async function sendInquiryEmail(formData: ContactFormData, inquiryType: string):
           </h2>
           
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+            <p><strong>Name:</strong> ${name}</p>
             <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
           </div>
           
           <div style="margin: 20px 0;">
