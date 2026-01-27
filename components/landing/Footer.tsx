@@ -250,24 +250,24 @@ const Footer = async () => {
             </div>
 
             {/* Legal Links - Enhanced */}
-            <div className="flex items-center gap-2 md:gap-4 text-xs">
-              <Link 
-                href="/terms" 
-                className="px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10"
+            <div className="flex flex-wrap justify-center md:justify-end items-center gap-1 sm:gap-2 md:gap-4 text-xs">
+              <Link
+                href="/terms"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
               >
                 Legal Terms
               </Link>
-              <span className="text-white/20">•</span>
-              <Link 
-                href="/privacy-policy" 
-                className="px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10"
+              <span className="text-white/20 hidden sm:inline">•</span>
+              <Link
+                href="/privacy-policy"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
               >
                 Privacy Policy
               </Link>
-              <span className="text-white/20">•</span>
-              <Link 
-                href="/cookies" 
-                className="px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10"
+              <span className="text-white/20 hidden sm:inline">•</span>
+              <Link
+                href="/cookies"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
               >
                 Cookies
               </Link>

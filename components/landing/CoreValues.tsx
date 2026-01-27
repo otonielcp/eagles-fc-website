@@ -43,7 +43,7 @@ const CoreValues = () => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full min-h-[500px] md:min-h-[600px] flex items-center justify-center text-white text-center px-6 py-20 overflow-hidden"
+      className="relative w-full min-h-[400px] sm:min-h-[500px] md:min-h-[600px] flex items-center justify-center text-white text-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 overflow-hidden"
       style={{ backgroundImage: `url(${coreValueImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       {/* Dark overlay */}
@@ -53,9 +53,9 @@ const CoreValues = () => {
       
       {/* Text Content */}
       <div className="relative z-20 w-full mx-auto px-2 md:px-4 lg:px-8">
-        <motion.h2 
+        <motion.h2
           ref={titleRef}
-          className="text-4xl md:text-5xl lg:text-6xl font-bebas font-bold mb-10 md:mb-14 uppercase tracking-[0.15em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
+          className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bebas font-bold mb-6 sm:mb-10 md:mb-14 uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
           style={{ wordSpacing: '0.35em' }}
           initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,11 +64,10 @@ const CoreValues = () => {
           CORE VALUES
         </motion.h2>
         
-        <div 
+        <div
           ref={valuesRef}
-          className="flex flex-nowrap items-center justify-center relative z-30 w-full"
-          style={{ 
-            flexWrap: 'nowrap',
+          className="flex flex-wrap md:flex-nowrap items-center justify-center relative z-30 w-full gap-y-2 sm:gap-y-3"
+          style={{
             overflow: 'visible',
             width: '100%'
           }}
@@ -85,7 +84,7 @@ const CoreValues = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <span className="text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-bold tracking-wide uppercase relative z-10 inline-block text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-[#BD9B58] transition-colors duration-300 whitespace-nowrap px-1 md:px-2 lg:px-3 cursor-pointer">
+              <span className="text-[10px] sm:text-xs md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-bold tracking-wide uppercase relative z-10 inline-block text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-[#BD9B58] transition-colors duration-300 whitespace-nowrap px-0.5 sm:px-1 md:px-2 lg:px-3 cursor-pointer">
                 {value.name}
               </span>
               
@@ -109,7 +108,7 @@ const CoreValues = () => {
               
               {/* Separator (except for last item) */}
               {index < values.length - 1 && (
-                <span className="text-[#BD9B58] text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-light inline-block drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mx-0.5 md:mx-1 lg:mx-2" style={{ flexShrink: 0 }}>
+                <span className="text-[#BD9B58] text-[10px] sm:text-xs md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-light inline-block drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mx-0.5 md:mx-1 lg:mx-2" style={{ flexShrink: 0 }}>
                   |
                 </span>
               )}

@@ -141,8 +141,8 @@ const Program = () => {
             {/* Decorative border glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-[#BD9B58]/50 via-[#d4b068]/30 to-[#BD9B58]/50 rounded-tr-3xl rounded-bl-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
             
-            <div 
-              className="relative overflow-hidden rounded-tr-3xl rounded-bl-3xl shadow-2xl group border-2 border-[#BD9B58]/30 w-full h-[500px] md:h-[600px] lg:h-[700px] bg-cover bg-center transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+            <div
+              className="relative overflow-hidden rounded-tr-3xl rounded-bl-3xl shadow-2xl group border-2 border-[#BD9B58]/30 w-full h-[300px] sm:h-[400px] md:h-[600px] lg:h-[700px] bg-cover bg-center transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
               style={{
                 backgroundImage: `url(${programpic})`,
               }}
@@ -211,8 +211,8 @@ const Program = () => {
               <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
             </motion.div>
             
-            <motion.h2 
-              className="text-5xl md:text-6xl lg:text-7xl font-bebas text-gray-900 leading-[0.9] mb-8 relative"
+            <motion.h2
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bebas text-gray-900 leading-[0.9] mb-6 sm:mb-8 relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -245,38 +245,38 @@ const Program = () => {
         </div>
 
         {/* Stats Section - Mobile */}
-        <motion.div 
-          className="lg:hidden flex justify-center mb-20"
+        <motion.div
+          className="lg:hidden flex justify-center mb-12 sm:mb-20 px-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <div className="bg-gradient-to-br from-[#BD9B58] via-[#d4b068] to-[#BD9B58] text-white py-8 px-10 rounded-tr-3xl rounded-bl-3xl shadow-2xl w-full max-w-md border-2 border-white/30 relative overflow-hidden group">
+          <div className="bg-gradient-to-br from-[#BD9B58] via-[#d4b068] to-[#BD9B58] text-white py-6 sm:py-8 px-4 sm:px-10 rounded-tr-3xl rounded-bl-3xl shadow-2xl w-full max-w-md border-2 border-white/30 relative overflow-hidden group">
             {/* Shimmer effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            
-            <div className="flex items-center gap-6 text-center relative z-10">
-              <motion.div className="border-r border-white/40 pr-6" whileHover={{ scale: 1.1 }}>
-                <div className="text-4xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">10+</div>
-                <p className="text-xs font-bold uppercase tracking-widest text-white/90">Player Pathways</p>
+
+            <div className="flex items-center justify-center gap-3 sm:gap-6 text-center relative z-10">
+              <motion.div className="border-r border-white/40 pr-3 sm:pr-6" whileHover={{ scale: 1.1 }}>
+                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">10+</div>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">Pathways</p>
               </motion.div>
-              <motion.div className="border-r border-white/40 pr-6" whileHover={{ scale: 1.1 }}>
-                <div className="text-4xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">135+</div>
-                <p className="text-xs font-bold uppercase tracking-widest text-white/90">Active Players</p>
+              <motion.div className="border-r border-white/40 pr-3 sm:pr-6" whileHover={{ scale: 1.1 }}>
+                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">135+</div>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">Players</p>
               </motion.div>
               <motion.div whileHover={{ scale: 1.1 }}>
-                <div className="text-4xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 justify-center"><span>2</span><span className="text-2xl">Teams</span></div>
-                <p className="text-xs font-bold uppercase tracking-widest text-white/90">USYS National League</p>
+                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 justify-center"><span>2</span><span className="text-lg sm:text-2xl">Teams</span></div>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">USYS</p>
               </motion.div>
             </div>
           </div>
         </motion.div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16" ref={cardsRef}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16 px-2 sm:px-0" ref={cardsRef}>
           {/* Card 1 */}
           <motion.div 
-            className="feature-card bg-white border-2 border-gray-200 p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
+            className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
             whileHover={{ y: -12, scale: 1.03, rotateY: 2 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -314,7 +314,7 @@ const Program = () => {
 
         {/* Card 2 */}
           <motion.div 
-            className="feature-card bg-white border-2 border-gray-200 p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
+            className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
             whileHover={{ y: -12, scale: 1.03, rotateY: -2 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -346,7 +346,7 @@ const Program = () => {
 
         {/* Card 3 */}
           <motion.div 
-            className="feature-card bg-white border-2 border-gray-200 p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
+            className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
             whileHover={{ y: -12, scale: 1.03 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}

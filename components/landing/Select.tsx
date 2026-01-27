@@ -4,9 +4,9 @@ const selectSecondImage = "/select-second.jpeg"
 
 const Select = () => {
   return (
-    <div className="relative max-w-4xl py-16 mx-auto flex flex-col md:flex-row items-center sm:items-start">
+    <div className="relative max-w-4xl py-8 sm:py-12 md:py-16 mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center md:items-start">
       {/* Main Content Div - Left side */}
-      <div className="bg-white rounded-lg shadow-lg p-10 sm:pr-32 sm:p-14 sm:w-2/3 relative z-10">
+      <div className="bg-white rounded-lg shadow-lg p-6 sm:p-10 md:pr-32 md:p-14 w-full md:w-2/3 relative z-10">
         <h2 className="text-gray-500 text-2xl font-semibold">Program</h2>
         <h3 className="text-2xl italic font-semibold text-[#C5A464] mb-4">SELECT</h3>
         <p className="text-gray-600 text-xs mb-4 leading-relaxed">
@@ -45,18 +45,18 @@ const Select = () => {
       </div>
 
       {/* Image Container - Right side for large screens, stacked below for small screens */}
-      <div className="relative w-full sm:w-[60%] sm:absolute sm:top-32 sm:-right-5 mt-8 sm:mt-0 flex justify-center sm:block">
+      <div className="relative w-full md:w-[60%] md:absolute md:top-32 md:-right-5 mt-8 md:mt-0 flex justify-center md:block">
         {/* Main Image */}
         <img
           src={selectMainImage}
           alt="Select Program Main"
-          className="w-[80%] h-[80%] object-cover rounded-lg shadow-lg md:ml-16 lg:ml-32 sm:ml-16"
+          className="w-full max-w-[300px] sm:max-w-none sm:w-[80%] h-auto object-cover rounded-lg shadow-lg md:ml-16 lg:ml-32"
         />
-        {/* Secondary Image - Positioned over main image */}
+        {/* Secondary Image - Hidden on mobile, shown on tablet+ */}
         <img
           src={selectSecondImage}
           alt="Select Program Secondary"
-          className="absolute bottom-0 sm:bottom-0 left-16 sm:left-52  h-[20%] object-cover border-white border-t-8 border-r-8 rounded-bl-lg shadow-lg z-10"
+          className="hidden sm:block absolute bottom-0 left-1/4 sm:left-32 md:left-52 h-[20%] object-cover border-white border-t-8 border-r-8 rounded-bl-lg shadow-lg z-10"
         />
       </div>
     </div>

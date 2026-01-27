@@ -51,15 +51,15 @@ const LatestNews = () => {
 
       <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 uppercase tracking-tight">
+        <div className="text-center mb-10 sm:mb-16">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <div className="w-8 sm:w-16 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 uppercase tracking-tight">
               Latest News
             </h2>
-            <div className="w-16 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
+            <div className="w-8 sm:w-16 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
           </div>
-          <p className="text-gray-500 text-sm md:text-base uppercase tracking-widest font-semibold">
+          <p className="text-gray-500 text-xs sm:text-sm md:text-base uppercase tracking-widest font-semibold">
             Club News & Announcements
           </p>
         </div>
