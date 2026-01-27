@@ -155,6 +155,7 @@ export const SITE_IMAGES: Record<string, string> = {
   "/photos/lightroom/IMG_2898.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769480389/eagles-fc/site/site-photos_lightroom_IMG_2898.jpg",
   "/photos/IMG_2826.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769489894/eagles-fc/site/site-photos_IMG_2826.jpg",
   "/photos/IMG_3418.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769490131/eagles-fc/site/site-photos_IMG_3418.jpg",
+  "/photos/IMG_3214.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg",
   "/photos/IMG_3461.JPG": "/photos/IMG_3461.JPG",
   "/photos/IMG_3512.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769490392/eagles-fc/site/site-photos_IMG_3512.jpg",
   "/photos/IMG_3969.JPG": "https://res.cloudinary.com/dofpgztzm/image/upload/v1769490472/eagles-fc/site/site-photos_IMG_3969.jpg",
