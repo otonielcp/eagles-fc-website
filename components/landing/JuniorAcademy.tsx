@@ -1,6 +1,7 @@
+import { getSiteImage } from '@/lib/site-images';
 
 const juniorImage = "/junior-main.jpeg"
-const juniorSecondImage = "/junior-second.jpeg"
+const juniorSecondImage = getSiteImage("/photos/IMG_2897.JPG")
 
 const JuniorAcademy = () => {
   return (

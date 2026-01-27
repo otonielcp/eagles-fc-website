@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import MiniNavbar from "@/components/landing/MiniNavbar";
 import ProgramsHero from "@/components/landing/ProgramsHero";
 import ProgramCard from "@/components/landing/ProgramCard";
 import ProgramsPathway from "@/components/landing/ProgramsPathway";
 import ProgramsCrest from "@/components/landing/ProgramsCrest";
 import HistoryBar from "@/components/landing/HistoryBar";
+import { getSiteImage } from '@/lib/site-images';
 
 const Programs = () => {
   const programs = [
@@ -39,7 +39,7 @@ const Programs = () => {
       additionalInfo: "The Junior Academy is not just about skill building—it's about developing a passion for the game and preparing young players for long-term success. Our expert coaches use age-appropriate training methods to ensure each child learns, grows, and enjoys the game in a positive and nurturing atmosphere. For players looking to advance into competitive soccer, the Junior Academy provides the technical foundation and game awareness needed to transition into higher levels of play.",
       images: {
         main: "/junior-main.jpeg",
-        secondary: "/junior-second.jpeg"
+        secondary: getSiteImage("/photos/IMG_2897.JPG")
       },
       imagePosition: "left" as const
     },
@@ -56,7 +56,7 @@ const Programs = () => {
       additionalInfo: "The Select Program is the bridge between youth soccer and the next stage of your soccer career. Our teams compete in the USYS National League, the premier youth soccer league in the United States, providing players with high-level competition and exposure to college and professional scouts. Players in this program train and compete at the highest standards, ensuring they are ready to succeed on and off the field.",
       images: {
         main: "/select-main.jpeg",
-        secondary: "/select-second.jpeg"
+        secondary: getSiteImage("/photos/IMG_3585.JPG")
       },
       imagePosition: "right" as const
     }
@@ -64,7 +64,6 @@ const Programs = () => {
 
   return (
     <div className="max-w-full overflow-hidden bg-white">
-      <MiniNavbar />
       <ProgramsHero />
       
       {/* Programs Section with Premium Design */}

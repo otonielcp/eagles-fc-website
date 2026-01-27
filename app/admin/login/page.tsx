@@ -32,7 +32,7 @@ export default function LoginPage() {
         <div>
           <img
             className="mx-auto h-16 w-auto" 
-            src="/logo.png"
+            src="/LOGO (2).png"
             alt="Eagles FC Logo"
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">

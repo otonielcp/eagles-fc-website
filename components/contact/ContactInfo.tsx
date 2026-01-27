@@ -19,7 +19,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: "Call Us",
-      details: ["(402) 555-GOAL", "(402) 555-KICK"],
+      details: ["(308) 850-3206"],
       description: "Mon-Fri from 9am to 6pm"
     },
     {
@@ -30,7 +30,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: "Visit Us",
-      details: ["Eagles FC Training Center", "Omaha, Nebraska"],
+      details: [],
       description: "Come see us in person"
     },
     {

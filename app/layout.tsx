@@ -17,10 +17,10 @@ export const metadata: Metadata = {
   description: "Eagles FC - Football Club",
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png" },
+      { url: "/LOGO%20(2).png", type: "image/png" },
     ],
     apple: [
-      { url: "/logo.png", type: "image/png" },
+      { url: "/LOGO%20(2).png", type: "image/png" },
     ],
   },
 };

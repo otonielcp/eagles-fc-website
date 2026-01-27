@@ -3,8 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
+import { getSiteImage } from '@/lib/site-images';
 
-const coreValueImage = "/corevalues.jpeg"
+const coreValueImage = getSiteImage("/photos/IMG_2826.JPG")
 
 const CoreValues = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,29 +46,17 @@ const CoreValues = () => {
       className="relative w-full min-h-[500px] md:min-h-[600px] flex items-center justify-center text-white text-center px-6 py-20 overflow-hidden"
       style={{ backgroundImage: `url(${coreValueImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      {/* Enhanced Gradient Overlay */}
-      <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(to bottom, rgba(24, 24, 25, 0.7), rgba(24, 24, 25, 0.6), rgba(24, 24, 25, 0.7))' }}></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-[#BD9B58]/30 via-[#BD9B58]/20 to-[#BD9B58]/30 z-10"></div>
-      
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 opacity-10 z-10" style={{
-        backgroundImage: `radial-gradient(circle at 2px 2px, #BD9B58 1px, transparent 0)`,
-        backgroundSize: '40px 40px'
-      }}></div>
-
-      {/* Decorative corner elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#BD9B58]/20 to-transparent rounded-full blur-3xl z-10"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#BD9B58]/20 to-transparent rounded-full blur-3xl z-10"></div>
-      
-      {/* Gold accent lines */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent z-20"></div>
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent z-20"></div>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-10 bg-black/50"></div>
+      {/* Enhanced gradient overlay */}
+      <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(to bottom, rgba(24, 24, 25, 0.85), rgba(24, 24, 25, 0.8), rgba(24, 24, 25, 0.85))' }}></div>
       
       {/* Text Content */}
       <div className="relative z-20 w-full mx-auto px-2 md:px-4 lg:px-8">
         <motion.h2 
           ref={titleRef}
-          className="text-4xl md:text-5xl lg:text-6xl font-bebas font-bold mb-10 md:mb-14 uppercase tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
+          className="text-4xl md:text-5xl lg:text-6xl font-bebas font-bold mb-10 md:mb-14 uppercase tracking-[0.15em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
+          style={{ wordSpacing: '0.35em' }}
           initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -129,9 +118,6 @@ const CoreValues = () => {
         </div>
       </div>
 
-      {/* Decorative elements - moved outside content div */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-[#BD9B58]/20 rounded-full pointer-events-none z-0"></div>
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-[#BD9B58]/15 rounded-full pointer-events-none z-0"></div>
     </div>
   );
 };

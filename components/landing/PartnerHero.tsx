@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from "react";
+import { getSiteImage } from '@/lib/site-images';
 
-const partnerImage = "/parrtner-hero.png"
+const partnerImage = getSiteImage("/photos/IMG_3654.JPG")
 
 const PartnerHero = () => {
   const [isLoaded, setIsLoaded] = useState(false);

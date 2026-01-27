@@ -5,6 +5,7 @@ import { UserCheck, GitCompareArrows, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { getSiteImage } from '@/lib/site-images';
 
 // Dynamic import for Three.js to prevent build errors - Temporarily disabled
 // let Canvas: any;
@@ -23,7 +24,7 @@ import gsap from 'gsap';
 //   console.warn('Three.js not available, using fallback');
 // }
 
-const programpic = "/programpics/programpic1.jpeg";
+const programpic = getSiteImage("/photos/IMG_3418.JPG");
 
 // Three.js Soccer Ball Component - Temporarily disabled
 const SoccerBall = () => {
@@ -188,7 +189,7 @@ const Program = () => {
                   className="flex-shrink-0"
                   whileHover={{ scale: 1.1 }}
                 >
-                  <div className="text-5xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">2</div>
+                  <div className="text-5xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 flex-wrap justify-center lg:justify-start"><span>2</span><span className="text-3xl">Teams</span></div>
                   <p className="text-xs font-bold uppercase tracking-widest text-white/90 whitespace-nowrap">USYS National League</p>
                 </motion.div>
             </div>
@@ -264,7 +265,7 @@ const Program = () => {
                 <p className="text-xs font-bold uppercase tracking-widest text-white/90">Active Players</p>
               </motion.div>
               <motion.div whileHover={{ scale: 1.1 }}>
-                <div className="text-4xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">2</div>
+                <div className="text-4xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 justify-center"><span>2</span><span className="text-2xl">Teams</span></div>
                 <p className="text-xs font-bold uppercase tracking-widest text-white/90">USYS National League</p>
               </motion.div>
             </div>

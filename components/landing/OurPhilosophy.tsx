@@ -1,109 +1,123 @@
-"use client";
-import { motion } from "framer-motion";
+'use client';
 
-const background = "/ourphilosophybg.png"
+import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { getSiteImage } from '@/lib/site-images';
+
+const coreValueImage = getSiteImage("/photos/IMG_2826.JPG")
 
 const OurPhilosophy = () => {
-  const philosophyPoints = [
-    {
-      icon: <img src="/club/1.png" alt="Character" className="w-14 h-14 object-contain" />,
-      title: "CHARACTER",
-      description: "Developing technical, tactical, and mental skills."
-    },
-    {
-      icon: <img src="/club/2.png" alt="Passion" className="w-14 h-14 object-contain" />,
-      title: "PASSION",
-      description: "Instilling discipline, humility, and teamwork."
-    },
-    {
-      icon: <img src="/club/3.png" alt="Preparation" className="w-14 h-14 object-contain" />,
-      title: "PREPARATION",
-      description: "Cultivating a winning mindset."
-    },
-    {
-      icon: <img src="/club/4.png" alt="Leadership" className="w-14 h-14 object-contain" />,
-      title: "LEADERSHIP",
-      description: "Fostering excellence and community pride."
-    },
-    {
-      icon: <img src="/club/5.png" alt="Development" className="w-14 h-14 object-contain" />,
-      title: "DEVELOPMENT",
-      description: "Preparing players for success beyond soccer."
-    },
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const valuesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current && titleRef.current && valuesRef.current) {
+      gsap.from(titleRef.current, {
+        opacity: 0,
+        y: -30,
+        duration: 1,
+        ease: "power3.out"
+      });
+
+      gsap.from(valuesRef.current.querySelectorAll('.value-item'), {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power3.out",
+        delay: 0.3
+      });
+    }
+  }, []);
+
+  const values = [
+    { name: 'CHARACTER', description: 'Developing technical, tactical, and mental skills.' },
+    { name: 'PASSION', description: 'Instilling discipline, humility, and teamwork.' },
+    { name: 'PREPARATION', description: 'Cultivating a winning mindset.' },
+    { name: 'LEADERSHIP', description: 'Fostering excellence and community pride.' },
+    { name: 'DEVELOPMENT', description: 'Preparing players for success beyond soccer.' }
   ];
 
   return (
-    <div className="relative w-full bg-gradient-to-b from-gray-50 via-gray-100 to-white py-24 lg:py-32">
+    <div
+      ref={containerRef}
+      className="relative w-full min-h-[500px] md:min-h-[600px] flex items-center justify-center text-white text-center px-6 py-20 overflow-hidden"
+      style={{ backgroundImage: `url(${coreValueImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-10 bg-black/50"></div>
+      {/* Enhanced gradient overlay */}
+      <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(to bottom, rgba(24, 24, 25, 0.85), rgba(24, 24, 25, 0.8), rgba(24, 24, 25, 0.85))' }}></div>
       
-      <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16">
-        
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+      {/* Text Content */}
+      <div className="relative z-20 w-full mx-auto px-2 md:px-4 lg:px-8">
+        <motion.h2 
+          ref={titleRef}
+          className="text-4xl md:text-5xl lg:text-6xl font-bebas font-bold mb-10 md:mb-14 uppercase tracking-[0.15em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
+          style={{ wordSpacing: '0.35em' }}
+          initial={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="w-8 h-[1px] bg-[#C5A464]"></div>
-            <span className="text-[10px] font-bold tracking-[0.25em] text-[#C5A464] uppercase">Our Philosophy</span>
-            <div className="w-8 h-[1px] bg-[#C5A464]"></div>
-          </div>
-          
-          <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-gray-900 mb-6">
-            Core <span className="text-[#C5A464]">Values</span>
-          </h2>
-          
-          <p className="text-lg text-gray-600 font-light max-w-2xl mx-auto">
-            Five pillars that define our commitment to excellence and shape every player's journey
-          </p>
-        </motion.div>
-
-        {/* Philosophy Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8">
-          {philosophyPoints.map((point, index) => (
+          CORE VALUES
+        </motion.h2>
+        
+        <div 
+          ref={valuesRef}
+          className="flex flex-nowrap items-center justify-center relative z-30 w-full"
+          style={{ 
+            flexWrap: 'nowrap',
+            overflow: 'visible',
+            width: '100%'
+          }}
+        >
+          {values.map((value, index) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              key={value.name}
+              className="value-item group relative z-30"
+              style={{ 
+                flexShrink: 0,
+                whiteSpace: 'nowrap'
+              }}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative"
             >
-              {/* Card */}
-              <div className="relative bg-white border border-gray-200 rounded-lg p-8 h-full flex flex-col items-center text-center transition-all duration-300 hover:border-[#C5A464] hover:shadow-xl hover:-translate-y-1">
-                
-                {/* Icon */}
-                <div className="mb-6 transform transition-transform duration-300 group-hover:scale-110">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#C5A464]/10 to-[#C5A464]/5 flex items-center justify-center">
-                    {point.icon}
-                  </div>
+              <span className="text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-bold tracking-wide uppercase relative z-10 inline-block text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-[#BD9B58] transition-colors duration-300 whitespace-nowrap px-1 md:px-2 lg:px-3 cursor-pointer">
+                {value.name}
+              </span>
+              
+              {/* Hover Tooltip with Description - Clean Minimal Design */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-50 pointer-events-none">
+                <div 
+                  className="border-t-2 border-[#BD9B58] rounded-b-lg shadow-2xl"
+                  style={{ 
+                    backgroundColor: '#181819',
+                    minWidth: '280px',
+                    maxWidth: '400px',
+                    padding: '1.25rem 1.5rem',
+                    display: 'inline-block'
+                  }}
+                >
+                  <p className="text-white text-sm md:text-base leading-relaxed text-center font-light m-0 whitespace-normal">
+                    {value.description}
+                  </p>
                 </div>
-
-                {/* Title */}
-                <h3 className="text-[11px] font-bold tracking-[0.2em] text-gray-900 mb-4 uppercase group-hover:text-[#C5A464] transition-colors duration-300">
-                  {point.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-[14px] leading-[1.7] text-gray-600 font-light">
-                  {point.description}
-                </p>
-
-                {/* Bottom accent */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#C5A464] group-hover:w-12 transition-all duration-300"></div>
               </div>
-
-              {/* Number badge */}
-              <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#C5A464] text-white text-sm font-bold flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                {index + 1}
-              </div>
+              
+              {/* Separator (except for last item) */}
+              {index < values.length - 1 && (
+                <span className="text-[#BD9B58] text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-light inline-block drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mx-0.5 md:mx-1 lg:mx-2" style={{ flexShrink: 0 }}>
+                  |
+                </span>
+              )}
             </motion.div>
           ))}
         </div>
-
       </div>
+
     </div>
   );
 };

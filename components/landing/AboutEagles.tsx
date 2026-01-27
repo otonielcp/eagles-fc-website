@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { getSiteImage } from '@/lib/site-images';
 
-const eaglesImage = "/club-hero.png"
+const eaglesImage = getSiteImage("/photos/IMG_3461.JPG")
 
 const AboutEagles = () => {
   return (

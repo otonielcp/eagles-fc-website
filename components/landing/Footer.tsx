@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import FooterLogo from './FooterLogo';
-const logo = "/footerlogo1.png"
-const footerimage = "/footerimage.jpeg"
+import { getSiteImage } from '@/lib/site-images';
+const logo = "/footerlogo2.png"
+const footerimage = getSiteImage("/photos/IMG_3214.JPG")
 import { FaInstagram, FaTwitter, FaYoutube, FaFacebook } from 'react-icons/fa6';
 import { getPortfolioLogosByCategory } from '@/actions/sponsorsLogo';
 import { PortfolioLogo } from '@/types/sponsorsLogo';

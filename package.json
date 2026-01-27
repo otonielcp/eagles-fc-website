@@ -6,7 +6,8 @@
     "dev": "next dev -p 3009",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "upload-site-images": "node scripts/upload-site-images-to-cloudinary.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

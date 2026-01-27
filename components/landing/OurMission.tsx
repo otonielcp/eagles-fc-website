@@ -1,8 +1,9 @@
 "use client";
 import { motion } from "framer-motion";
+import { getSiteImage } from '@/lib/site-images';
 
-const ourmission1 = "/about-us/Image.png"
-const ourmission2 = "/ourmission2.jpeg"
+const ourmission1 = getSiteImage("/photos/IMG_4471.JPG")
+const ourmission2 = getSiteImage("/photos/IMG_4663.JPG")
 
 const OurMission = () => {
   return (

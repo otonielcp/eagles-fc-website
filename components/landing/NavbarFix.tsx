@@ -80,56 +80,56 @@ const NavbarFix = () => {
   }, []); // Empty dependency array - only runs once on mount
 
   return (
-    <div className="border-b border-gray-200 shadow-lg w-full px-20">
-      <div className="max-w-[1400px] mx-auto py-0 flex flex-col sm:flex-row items-center sm:justify-between">
+    <div className="w-full border-b border-[#BD9B58]" style={{ backgroundColor: '#181819' }}>
+      <div className="py-2 flex flex-col sm:flex-row items-center sm:justify-between px-6 md:pl-44 lg:pl-56 xl:pl-64 md:pr-20 lg:pr-32" style={{ backgroundColor: '#181819' }}>
 
-        {/* First Row - Links (Stacked Horizontally on Small Screens) */}
-        <div className="flex justify-center sm:justify-start space-x-6 text-gray-500 uppercase text-sm font-medium tracking-wide">
+        {/* First Row - Links */}
+        <div className="flex justify-center sm:justify-start space-x-8 text-white/70 uppercase text-sm font-medium tracking-wide">
           <Link href="/fixtures">
             <button
-              className={`py-2 sm:py-3 relative ${
-                currentPath === "/fixtures" ? "text-black" : "hover:text-gray-700"
+              className={`py-3 relative transition-colors duration-300 ${
+                currentPath === "/fixtures" ? "text-white" : "hover:text-[#BD9B58]"
               }`}
             >
               Fixtures
               {currentPath === "/fixtures" && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#BD9B58]"></div>
               )}
             </button>
           </Link>
 
           <Link href="/results">
             <button
-              className={`py-2 sm:py-3 relative ${
-                currentPath === "/results" ? "text-black" : "hover:text-gray-700"
+              className={`py-3 relative transition-colors duration-300 ${
+                currentPath === "/results" ? "text-white" : "hover:text-[#BD9B58]"
               }`}
             >
               Results
               {currentPath === "/results" && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#BD9B58]"></div>
               )}
             </button>
           </Link>
 
           <Link href="/tables">
             <button
-              className={`py-2 sm:py-3 relative ${
-                currentPath === "/tables" ? "text-black" : "hover:text-gray-700"
+              className={`py-3 relative transition-colors duration-300 ${
+                currentPath === "/tables" ? "text-white" : "hover:text-[#BD9B58]"
               }`}
             >
               Tables
               {currentPath === "/tables" && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#C5A464]"></div>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#BD9B58]"></div>
               )}
             </button>
           </Link>
         </div>
 
-        {/* Second Row - Dropdowns (Stacked Horizontally on Small Screens) */}
-        <div className="flex justify-center sm:justify-end space-x-1 text-gray-500 text-xs mt-2 sm:mt-0">
-          {/* League Dropdown (Competition Types) */}
+        {/* Second Row - Dropdowns */}
+        <div className="flex justify-center sm:justify-end space-x-2 text-white text-xs mt-2 sm:mt-0">
+          {/* League Dropdown */}
           <select
-            className="bg-transparent focus:outline-none cursor-pointer border border-gray-300 px-1 py-1 rounded-md"
+            className="bg-transparent focus:outline-none cursor-pointer border border-white/30 px-3 py-2 rounded-md text-white"
             value={selectedLeague}
             onChange={(e) => setSelectedLeague(e.target.value)}
             disabled={isLoading}
@@ -154,7 +154,7 @@ const NavbarFix = () => {
 
           {/* Season Dropdown */}
           <select
-            className="bg-transparent focus:outline-none cursor-pointer border border-gray-300 px-1 py-1 rounded-md"
+            className="bg-transparent focus:outline-none cursor-pointer border border-white/30 px-3 py-2 rounded-md text-white"
             value={selectedSeason}
             onChange={(e) => setSelectedSeason(e.target.value)}
             disabled={isLoading}
@@ -179,7 +179,7 @@ const NavbarFix = () => {
 
           {/* Competition Dropdown */}
           <select
-            className="bg-transparent focus:outline-none cursor-pointer border border-gray-300 px-1 py-1 rounded-md"
+            className="bg-transparent focus:outline-none cursor-pointer border border-white/30 px-3 py-2 rounded-md text-white"
             value={selectedCompetition}
             onChange={(e) => setSelectedCompetition(e.target.value)}
             disabled={isLoading}
