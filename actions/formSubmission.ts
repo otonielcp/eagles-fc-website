@@ -14,13 +14,17 @@ export async function createFormSubmission(data: {
   data?: Record<string, any>;
 }) {
   try {
+    console.log("[FormSubmission] Attempting to save:", data.type, data.email);
     await connectDB();
-    await FormSubmission.create(data);
+    console.log("[FormSubmission] DB connected, creating document...");
+    const doc = await FormSubmission.create(data);
+    console.log("[FormSubmission] Saved successfully, id:", doc._id);
     revalidatePath("/admin/inbox");
     return { success: true };
-  } catch (error) {
-    console.error("Error saving form submission:", error);
-    return { success: false };
+  } catch (error: any) {
+    console.error("[FormSubmission] ERROR saving form submission:", error?.message || error);
+    console.error("[FormSubmission] Full error:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    return { success: false, error: error?.message || "Unknown error" };
   }
 }
 

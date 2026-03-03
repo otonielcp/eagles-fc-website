@@ -1,6 +1,5 @@
 "use server";
 
-import { log } from 'console';
 import nodemailer from 'nodemailer';
 import { createPartnershipInquiry } from './partnershipInquiry';
 import { createFormSubmission } from './formSubmission';
@@ -80,18 +79,22 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
   try {
     const { name, email, phone, subject, message } = formData;
 
-    // Save to database
-    await createFormSubmission({
-      type: 'contact',
-      name,
-      email,
-      phone: phone || '',
-      subject,
-      message,
-    });
+    // Save to database (don't let DB failure prevent email from sending)
+    try {
+      const dbResult = await createFormSubmission({
+        type: 'contact',
+        name,
+        email,
+        phone: phone || '',
+        subject,
+        message,
+      });
+      console.log("[Contact] DB save result:", dbResult);
+    } catch (dbError) {
+      console.error("[Contact] DB save failed:", dbError);
+    }
 
     const transporter = await createTransporter();
-    console.log(process.env.SMTP_USER, process.env.SMTP_TO);
     
     // Email content
     const mailOptions = {
@@ -160,16 +163,21 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
 
 export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationData): Promise<ContactResponse> {
   try {
-    // Save to database
-    await createFormSubmission({
-      type: 'registration',
-      name: `${formData.playerFirstName} ${formData.playerLastName}`,
-      email: formData.parentEmail,
-      phone: formData.parentPhone,
-      subject: 'Player Registration',
-      message: formData.soccerExperience || '',
-      data: formData,
-    });
+    // Save to database (don't let DB failure prevent email from sending)
+    try {
+      const dbResult = await createFormSubmission({
+        type: 'registration',
+        name: `${formData.playerFirstName} ${formData.playerLastName}`,
+        email: formData.parentEmail,
+        phone: formData.parentPhone,
+        subject: 'Player Registration',
+        message: formData.soccerExperience || '',
+        data: formData,
+      });
+      console.log("[Registration] DB save result:", dbResult);
+    } catch (dbError) {
+      console.error("[Registration] DB save failed:", dbError);
+    }
 
     const transporter = await createTransporter();
 
@@ -277,15 +285,20 @@ async function sendInquiryEmail(formData: ContactFormData, inquiryType: string):
   try {
     const { name, email, phone, message } = formData;
 
-    // Save to database
-    await createFormSubmission({
-      type: inquiryType.toLowerCase() as 'operations' | 'marketing' | 'media',
-      name,
-      email,
-      phone: phone || '',
-      subject: `${inquiryType} Inquiry`,
-      message,
-    });
+    // Save to database (don't let DB failure prevent email from sending)
+    try {
+      const dbResult = await createFormSubmission({
+        type: inquiryType.toLowerCase() as 'operations' | 'marketing' | 'media',
+        name,
+        email,
+        phone: phone || '',
+        subject: `${inquiryType} Inquiry`,
+        message,
+      });
+      console.log(`[${inquiryType}] DB save result:`, dbResult);
+    } catch (dbError) {
+      console.error(`[${inquiryType}] DB save failed:`, dbError);
+    }
 
     const transporter = await createTransporter();
     
@@ -367,8 +380,13 @@ export async function sendMediaInquiry(formData: ContactFormData): Promise<Conta
 
 export async function sendPartnershipInquiry(formData: PartnershipFormData): Promise<ContactResponse> {
   try {
-    // Save to database
-    await createPartnershipInquiry(formData);
+    // Save to database (don't let DB failure prevent email from sending)
+    try {
+      const dbResult = await createPartnershipInquiry(formData);
+      console.log("[Partnership] DB save result:", dbResult);
+    } catch (dbError) {
+      console.error("[Partnership] DB save failed:", dbError);
+    }
 
     const transporter = await createTransporter();
 

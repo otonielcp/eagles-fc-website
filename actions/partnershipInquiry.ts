@@ -40,12 +40,16 @@ export async function createPartnershipInquiry(data: {
   description?: string;
 }) {
   try {
+    console.log("[PartnershipInquiry] Attempting to save:", data.email);
     await connectDB();
+    console.log("[PartnershipInquiry] DB connected, creating document...");
     const inquiry = await PartnershipInquiry.create(data);
+    console.log("[PartnershipInquiry] Saved successfully, id:", inquiry._id);
     revalidatePath("/admin/partnerships");
     return { success: true, id: inquiry._id.toString() };
-  } catch (error) {
-    console.error("Error creating partnership inquiry:", error);
+  } catch (error: any) {
+    console.error("[PartnershipInquiry] ERROR:", error?.message || error);
+    console.error("[PartnershipInquiry] Full error:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
     return { success: false, message: "Failed to save inquiry" };
   }
 }
