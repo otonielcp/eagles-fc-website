@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import CoachesList from '@/components/landing/CoachesList';
 import { Suspense } from 'react';
+
+export const metadata: Metadata = {
+  title: "Coaching Staff",
+  description:
+    "Meet the experienced coaching staff at Eagles FC in Grand Island, Nebraska. Licensed coaches dedicated to developing youth soccer talent at every level.",
+  openGraph: {
+    title: "Coaching Staff | Eagles FC - Grand Island, NE",
+    description:
+      "Meet the experienced coaching staff at Eagles FC in Grand Island, Nebraska.",
+  },
+};
 
 const Coaches = () => {
     return (

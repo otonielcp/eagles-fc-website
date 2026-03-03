@@ -18,7 +18,7 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src={fixture.matchImage || "https://images.unsplash.com/photo-1549923015-badf41b04831?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2NjZXIlMjBtYXRjaCUyMHN0YWRpdW18ZW58MXx8fHwxNzY4NTgzMDc1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"}
+          src={fixture.matchImage || "https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg"}
           alt="Stadium background"
           className="w-full h-full object-cover"
         />
@@ -28,16 +28,18 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-20">
         <div className="max-w-7xl mx-auto">
-          {/* Match Status Badge */}
+          {/* League Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="flex justify-center mb-12"
           >
-            <span className="inline-flex items-center px-8 py-3 rounded-full bg-amber-500 text-black text-sm font-black tracking-widest uppercase">
-              {fixture.status || 'FULL TIME'}
-            </span>
+            {fixture.leagueLogo ? (
+              <img src={fixture.leagueLogo} alt={fixture.competition} className="h-28 w-auto object-contain drop-shadow-lg" />
+            ) : (
+              <p className="text-white/70 text-sm uppercase tracking-wider font-medium">{fixture.competition}</p>
+            )}
           </motion.div>
 
           {/* Score Display - Horizontal Layout */}
@@ -133,16 +135,16 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
             </div>
           </motion.div>
 
-          {/* League Badge */}
+          {/* Match Status Badge */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
             className="flex justify-center mt-12"
           >
-            <div className="px-6 py-3 bg-white/5 border border-white/20 rounded-xl backdrop-blur-sm">
-              <p className="text-white/70 text-sm uppercase tracking-wider font-medium">{fixture.competition}</p>
-            </div>
+            <span className="inline-flex items-center px-8 py-3 rounded-full bg-amber-500 text-black text-sm font-black tracking-widest uppercase">
+              {fixture.status || 'FULL TIME'}
+            </span>
           </motion.div>
         </div>
       </div>

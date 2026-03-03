@@ -5,8 +5,14 @@ import LatestVideos from '@/components/landing/LatestVideos';
 import NewsHero from '@/components/news/NewsHero';
 
 export const metadata = {
-  title: 'News | Eagles Football Club',
-  description: 'Latest news and updates from Eagles Football Club',
+  title: 'News',
+  description:
+    'Latest news and updates from Eagles Football Club in Grand Island, Nebraska. Stay informed on youth soccer events, match recaps, and club announcements.',
+  openGraph: {
+    title: 'News | Eagles FC - Grand Island, NE',
+    description:
+      'Latest news and updates from Eagles Football Club in Grand Island, Nebraska.',
+  },
 };
 
 export default function NewsPage() {

@@ -242,6 +242,31 @@ export async function getEnrichedClubTeams() {
 }
 
 /**
+ * Get a single FutbolCore game by ID, transformed to IFixture-compatible format.
+ */
+export async function getFutbolCoreFixtureById(gameId: string) {
+  try {
+    const allFixtures = await getClubFixtures();
+    const fixture = allFixtures.find((f) => f._id === gameId);
+    if (!fixture) return null;
+
+    // Add missing IFixture fields with defaults
+    return {
+      ...fixture,
+      seasonYear: '',
+      month: '',
+      highlights: '',
+      timeline: [] as { time: string; type: string; team: string; player?: string; assistedBy?: string; description?: string }[],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  } catch (error) {
+    console.error(`Error fetching FutbolCore fixture ${gameId}:`, error);
+    return null;
+  }
+}
+
+/**
  * Get all club games transformed into a format compatible with the fixtures page.
  */
 export async function getClubFixtures() {
@@ -265,7 +290,7 @@ export async function getClubFixtures() {
       homeScore: game.score.home,
       awayScore: game.score.away,
       matchReport: '',
-      matchImage: '/gameresultbg.jpeg',
+      matchImage: 'https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg',
       title: game.title,
       location: game.location,
       venue: game.venue,

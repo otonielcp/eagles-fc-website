@@ -1,4 +1,5 @@
 import { getFixtureById } from '@/actions/fixture';
+import { getFutbolCoreFixtureById } from '@/actions/futbolcore';
 import { MatchReportHero } from '@/components/landing/MatchReportHero';
 import { MatchReportTimeline } from '@/components/landing/MatchReportTimeline';
 import { MatchReportSummary } from '@/components/landing/MatchReportSummary';
@@ -12,7 +13,12 @@ const MatchReport = async ({
   }>
 }) => {
   const { id } = await params;
-  const fixture = await getFixtureById(id);
+
+  // Try MongoDB first, then fall back to FutbolCore
+  let fixture = await getFixtureById(id);
+  if (!fixture) {
+    fixture = await getFutbolCoreFixtureById(id);
+  }
 
   if (!fixture) {
     return <div className="text-center text-2xl h-[80vh] flex items-center justify-center font-bold">Fixture not found</div>;
