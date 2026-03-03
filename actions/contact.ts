@@ -2,6 +2,8 @@
 
 import { log } from 'console';
 import nodemailer from 'nodemailer';
+import { createPartnershipInquiry } from './partnershipInquiry';
+import { createFormSubmission } from './formSubmission';
 
 interface ContactFormData {
   name: string;
@@ -77,7 +79,16 @@ async function createTransporter() {
 export async function sendContactEmail(formData: ContactFormData): Promise<ContactResponse> {
   try {
     const { name, email, phone, subject, message } = formData;
-    log(1, process.env.SMTP_HOST, process.env.SMTP_PORT, process.env.SMTP_USER, process.env.SMTP_PASS);
+
+    // Save to database
+    await createFormSubmission({
+      type: 'contact',
+      name,
+      email,
+      phone: phone || '',
+      subject,
+      message,
+    });
 
     const transporter = await createTransporter();
     console.log(process.env.SMTP_USER, process.env.SMTP_TO);
@@ -149,8 +160,19 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
 
 export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationData): Promise<ContactResponse> {
   try {
+    // Save to database
+    await createFormSubmission({
+      type: 'registration',
+      name: `${formData.playerFirstName} ${formData.playerLastName}`,
+      email: formData.parentEmail,
+      phone: formData.parentPhone,
+      subject: 'Player Registration',
+      message: formData.soccerExperience || '',
+      data: formData,
+    });
+
     const transporter = await createTransporter();
-    
+
     // Email content for player registration
     const mailOptions = {
       from: process.env.SMTP_USER,
@@ -254,6 +276,17 @@ export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationDa
 async function sendInquiryEmail(formData: ContactFormData, inquiryType: string): Promise<ContactResponse> {
   try {
     const { name, email, phone, message } = formData;
+
+    // Save to database
+    await createFormSubmission({
+      type: inquiryType.toLowerCase() as 'operations' | 'marketing' | 'media',
+      name,
+      email,
+      phone: phone || '',
+      subject: `${inquiryType} Inquiry`,
+      message,
+    });
+
     const transporter = await createTransporter();
     
     // Email content
@@ -334,8 +367,11 @@ export async function sendMediaInquiry(formData: ContactFormData): Promise<Conta
 
 export async function sendPartnershipInquiry(formData: PartnershipFormData): Promise<ContactResponse> {
   try {
+    // Save to database
+    await createPartnershipInquiry(formData);
+
     const transporter = await createTransporter();
-    
+
     // Email content for partnership inquiry
     const mailOptions = {
       from: process.env.SMTP_USER,

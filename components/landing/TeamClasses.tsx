@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Team } from '@/types/team';
 import { useState } from 'react';
 
+const CLUB_LOGO = 'https://res.cloudinary.com/dofpgztzm/image/upload/v1765895370/club-logo/eagles-fc-logo-2026.png';
+
 interface PlayerAvatar {
   id: string;
   image: string;
@@ -42,14 +44,14 @@ const PlayerAvatarImg = ({ src, name }: { src: string; name: string }) => {
 
   if (!hasValidSrc) {
     return (
-      <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-[#BD9B58] to-[#8B7340] flex items-center justify-center">
-        <span className="text-white text-[10px] font-bold">{name.charAt(0).toUpperCase()}</span>
+      <div className="w-10 h-10 rounded-full border-2 border-gray-200 bg-white overflow-hidden flex items-center justify-center">
+        <img src={CLUB_LOGO} alt="" className="w-6 h-6 object-contain" />
       </div>
     );
   }
 
   return (
-    <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#BD9B58] to-[#8B7340]" title={name}>
+    <div className="w-10 h-10 rounded-full border-2 border-gray-200 overflow-hidden bg-white" title={name}>
       <img
         src={src}
         alt=""
@@ -65,7 +67,7 @@ const TeamImage = ({ src, category }: { src: string; category: string }) => {
   const hasValidSrc = src && src.length > 1 && src.startsWith('http');
 
   return (
-    <div className="relative h-52 overflow-hidden bg-gradient-to-br from-gray-200 to-gray-100">
+    <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-200 to-gray-100">
       {hasValidSrc && (
         <img
           src={src}
@@ -96,7 +98,7 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="max-w-[1400px] mx-auto px-6 py-16">
       {/* Section Header */}
       <div className="text-center mb-14">
         <div className="inline-flex items-center gap-3 mb-4">
@@ -108,7 +110,7 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
       </div>
 
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {teams.map((team) => {
           const avatarCount = team.playerAvatars?.length || 0;
           const fallbackCount = avatarCount > 0 ? 0 : Math.min(4, team.totalPlayers);
@@ -144,9 +146,9 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
                           : [...Array(fallbackCount)].map((_, i) => (
                               <div
                                 key={i}
-                                className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-[#BD9B58] to-[#8B7340] flex items-center justify-center"
+                                className="w-10 h-10 rounded-full border-2 border-gray-200 bg-white overflow-hidden flex items-center justify-center"
                               >
-                                <span className="text-white text-[10px] font-bold">E</span>
+                                <img src={CLUB_LOGO} alt="" className="w-6 h-6 object-contain" />
                               </div>
                             ))
                         }
@@ -170,7 +172,7 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
                     {team.leagueLogos && team.leagueLogos.length > 0 ? (
                       <div className="flex items-center gap-1.5">
                         {team.leagueLogos.slice(0, 3).map((logo, idx) => (
-                          <div key={idx} className="w-7 h-7 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center">
+                          <div key={idx} className="w-9 h-9 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center">
                             <img
                               src={logo.url}
                               alt=""

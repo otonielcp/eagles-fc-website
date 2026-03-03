@@ -19,7 +19,9 @@ import {
   Trophy,
   UserCircle,
   SlidersHorizontal,
-  Archive
+  Archive,
+  Handshake,
+  Inbox
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { logout } from "@/actions/auth";
@@ -44,6 +46,7 @@ export default function AdminLayout({
 
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Inbox", href: "/admin/inbox", icon: Inbox },
     { name: "Hero Sliders", href: "/admin/sliders", icon: SlidersHorizontal },
     { name: "News", href: "/admin/news", icon: FileText },
     { name: "Videos", href: "/admin/videos", icon: Video },
@@ -53,6 +56,7 @@ export default function AdminLayout({
     { name: "Seasons", href: "/admin/seasons", icon: Archive },
     { name: "Tickets", href: "/admin/tickets", icon: Ticket },
     { name: "Shop", href: "/admin/shop", icon: ShoppingBag },
+    { name: "Partnerships", href: "/admin/partnerships", icon: Handshake },
     { name: "Sponsors", href: "/admin/sponsors", icon: Image },
     { name: "Standings", href: "/admin/standings", icon: ListOrdered },
     { name: "Trophies", href: "/admin/league-count", icon: Trophy },
