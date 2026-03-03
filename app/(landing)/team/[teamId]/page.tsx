@@ -1,66 +1,158 @@
 import TeamSponsor from "@/components/landing/TeamSponsor";
 import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
-import { getTeamById, getSimilarTeams, getAllTeams } from "@/actions/team";
+import { getTeamById, getAllTeams } from "@/actions/team";
 import { getPlayersByTeamId } from "@/actions/player";
+import { getClubTeams, getTeamRosterWithBranding } from "@/actions/futbolcore";
 import PlayerSection from "@/components/landing/PlayerSection";
 import { notFound } from "next/navigation";
+import { Team, Player } from "@/types/team";
 
 export default async function TeamRosterPage({ params }: any) {
-  // Fetch team data
   const { teamId } = await params;
-  const team = await getTeamById(teamId);
-  
-  if (!team) {
-    notFound();
+
+  // Try MongoDB first, then FutbolCore
+  let team: Team | null = null;
+  try {
+    team = await getTeamById(teamId);
+  } catch {
+    // ID is not a valid MongoDB ObjectId - will try FutbolCore below
   }
-  
-  // Fetch similar teams (for the mini navbar)
-  // const similarTeams = await getSimilarTeams(team.name);
-  const similarTeams = await getAllTeams();
-  
-  // Fetch players for this team
-  const players = await getPlayersByTeamId(teamId);
-  
+  let players: Player[] = [];
+  let allTeams: Team[] = [];
+  let isFutbolCore = false;
+
+  if (team) {
+    // Found in MongoDB - use existing flow
+    players = await getPlayersByTeamId(teamId);
+    allTeams = await getAllTeams();
+  } else {
+    // Try FutbolCore API
+    const fcTeams = await getClubTeams();
+    const fcTeam = fcTeams.find((t) => t._id === teamId);
+
+    if (!fcTeam) {
+      notFound();
+    }
+
+    isFutbolCore = true;
+
+    // Transform FutbolCore team to Team interface
+    // Use category as shortName when shortName is the same as name (not distinguishable)
+    const getDisplayName = (t: typeof fcTeam) => {
+      if (t.shortName && t.shortName !== t.name) return t.shortName;
+      return t.category || t.name;
+    };
+
+    team = {
+      _id: fcTeam._id,
+      name: fcTeam.name,
+      shortName: getDisplayName(fcTeam),
+      description: fcTeam.description || '',
+      category: fcTeam.category,
+      image: fcTeam.teamImage?.secure_url || fcTeam.logo?.secure_url || '',
+      isActive: fcTeam.isActive,
+      order: fcTeam.displayOrder || 0,
+      sponsor: { name: '', logo: '', website: '', isActive: false },
+      createdAt: '',
+      updatedAt: '',
+    };
+
+    // Transform all FC teams for the mini navbar
+    allTeams = fcTeams.map((t) => ({
+      _id: t._id,
+      name: t.name,
+      shortName: getDisplayName(t),
+      description: t.description || '',
+      category: t.category,
+      image: t.teamImage?.secure_url || t.logo?.secure_url || '',
+      isActive: t.isActive,
+      order: t.displayOrder || 0,
+      sponsor: { name: '', logo: '', website: '', isActive: false },
+      createdAt: '',
+      updatedAt: '',
+    }));
+
+    // Fetch roster from FutbolCore with branding
+    const rosterData = await getTeamRosterWithBranding(teamId);
+    const fcRoster = rosterData.players;
+    const defaultPlayerImg = rosterData.defaultPlayerImage;
+    players = fcRoster.map((p) => ({
+      _id: p._id,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      displayName: `${p.firstName} ${p.lastName}`,
+      jerseyNumber: p.jerseyNumber,
+      position: p.position,
+      dateOfBirth: '',
+      nationality: '',
+      height: 0,
+      weight: 0,
+      biography: '',
+      image: p.profileImage || defaultPlayerImg || '',
+      teamId: teamId,
+      isActive: true,
+      isCaptain: false,
+      stats: {
+        appearances: p.statistics?.matchesPlayed || 0,
+        goals: p.statistics?.goals || 0,
+        assists: p.statistics?.assists || 0,
+        yellowCards: p.statistics?.yellowCards || 0,
+        redCards: p.statistics?.redCards || 0,
+        minutes: p.statistics?.minutesPlayed || 0,
+        starts: p.statistics?.starts || 0,
+        substitutions: p.statistics?.substitutions || 0,
+        fouls: p.statistics?.fouls || 0,
+        penalties: p.statistics?.penalties || 0,
+        doubleYellowCards: p.statistics?.doubleYellows || 0,
+        shots: p.statistics?.shots || 0,
+        matchesPlayed: p.statistics?.matchesPlayed || 0,
+      },
+      socialMedia: { instagram: '', twitter: '', facebook: '' },
+      createdAt: '',
+      updatedAt: '',
+    }));
+  }
+
   // Group players by position
-  const goalkeepers = players.filter(player => 
+  const goalkeepers = players.filter(player =>
     player.position === "Goalkeeper"
   );
-  
-  const defenders = players.filter(player => 
+
+  const defenders = players.filter(player =>
     ["Defender", "Center Back", "Full Back", "Wing Back"].includes(player.position)
   );
-  
-  const midfielders = players.filter(player => 
+
+  const midfielders = players.filter(player =>
     ["Midfielder", "Defensive Midfielder", "Central Midfielder", "Attacking Midfielder"].includes(player.position)
   );
-  
-  const forwards = players.filter(player => 
+
+  const forwards = players.filter(player =>
     ["Forward", "Winger", "Striker"].includes(player.position)
   );
 
   return (
     <div className="max-w-full overflow-hidden" style={{ marginBottom: '70px' }}>
-      <MiniNavbarTeams currentTeam={team} similarTeams={similarTeams} />
-      
-      <TeamSponsor team={team} />
-      
+      <MiniNavbarTeams currentTeam={team} similarTeams={allTeams} />
+
+      {!isFutbolCore && <TeamSponsor team={team} />}
+
       {goalkeepers.length > 0 && (
         <PlayerSection title="Goalkeepers" players={goalkeepers} />
       )}
-      
+
       {defenders.length > 0 && (
         <PlayerSection title="Defenders" players={defenders} />
       )}
-      
+
       {midfielders.length > 0 && (
         <PlayerSection title="Midfielders" players={midfielders} />
       )}
-      
+
       {forwards.length > 0 && (
         <PlayerSection title="Forwards" players={forwards} />
       )}
-      
-      <TeamSponsor team={team} />
+
+      {!isFutbolCore && <TeamSponsor team={team} />}
     </div>
   );
-} 
+}

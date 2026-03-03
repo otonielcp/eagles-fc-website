@@ -1,8 +1,9 @@
 'use client';
 
-import { Eye, Trophy } from 'lucide-react';
+import { Trophy, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { Team } from '@/types/team';
+import { useState } from 'react';
 
 interface PlayerAvatar {
   id: string;
@@ -21,14 +22,70 @@ interface TeamWithCounts extends Team {
   playerAvatars: PlayerAvatar[];
   competitions: Competition[];
   upcomingGames: number;
+  nextOpponent?: string;
+  leagueLogos?: { url: string }[];
+  season?: string;
+  formation?: string;
+  tier?: string;
+  colors?: { primary: string; secondary: string };
+  logo?: { secure_url: string; url: string };
+  coach?: { _id: string; firstName: string; lastName: string };
 }
 
 interface TeamClassesProps {
   teams: TeamWithCounts[];
 }
 
+// Small component for player avatar with error fallback
+const PlayerAvatarImg = ({ src, name }: { src: string; name: string }) => {
+  const hasValidSrc = src && src.length > 1 && src.startsWith('http');
+
+  if (!hasValidSrc) {
+    return (
+      <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-[#BD9B58] to-[#8B7340] flex items-center justify-center">
+        <span className="text-white text-[10px] font-bold">{name.charAt(0).toUpperCase()}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#BD9B58] to-[#8B7340]" title={name}>
+      <img
+        src={src}
+        alt=""
+        className="w-full h-full object-cover"
+        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+      />
+    </div>
+  );
+};
+
+// Team image with fallback
+const TeamImage = ({ src, category }: { src: string; category: string }) => {
+  const hasValidSrc = src && src.length > 1 && src.startsWith('http');
+
+  return (
+    <div className="relative h-52 overflow-hidden bg-gradient-to-br from-gray-200 to-gray-100">
+      {hasValidSrc && (
+        <img
+          src={src}
+          alt=""
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      )}
+
+      {/* Category badge */}
+      <div className="absolute bottom-3 left-3">
+        <span className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm">
+          {category}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const TeamClasses = ({ teams }: TeamClassesProps) => {
-  // If no teams are provided, show a placeholder message
   if (!teams || teams.length === 0) {
     return (
       <div className="w-9/12 mx-auto py-12 text-center">
@@ -39,146 +96,113 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-6 py-16">
+      {/* Section Header */}
+      <div className="text-center mb-14">
+        <div className="inline-flex items-center gap-3 mb-4">
+          <div className="w-12 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+          <h2 className="text-4xl md:text-5xl font-bebas text-gray-900 uppercase tracking-tight">Our Teams</h2>
+          <div className="w-12 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
+        </div>
+        <p className="text-gray-500 text-sm uppercase tracking-widest font-medium">Eagles FC Squads</p>
+      </div>
+
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team) => (
-          <div key={team._id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-            {/* Card Image */}
-            <div className="relative h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-              <img
-                src={team.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop'}
-                alt={team.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-4 left-4">
-                <div className="bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
-                  {team.category}
-                </div>
-              </div>
-              <div className="absolute top-4 right-4">
-                <button className="w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors backdrop-blur-sm">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+        {teams.map((team) => {
+          const avatarCount = team.playerAvatars?.length || 0;
+          const fallbackCount = avatarCount > 0 ? 0 : Math.min(4, team.totalPlayers);
+          const shownCount = avatarCount + fallbackCount;
+          const remaining = team.totalPlayers - shownCount;
 
-            {/* Card Content */}
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
-                <div className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-medium">
-                  {team.coaches} Coach{team.coaches !== 1 ? 'es' : ''}
-                </div>
-              </div>
+          return (
+            <Link key={team._id} href={`/team/${team._id}`} className="group block">
+              <div className="bg-white rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_1px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-gray-100">
 
-              {/* Player Avatars */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex -space-x-2">
-                  {team.playerAvatars && team.playerAvatars.length > 0 ? (
-                    team.playerAvatars.map((player) => (
-                      <div
-                        key={player.id}
-                        className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-200"
-                        title={player.name}
-                      >
-                        <img
-                          src={player.image}
-                          alt={player.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    [...Array(Math.min(4, team.totalPlayers))].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full border-2 border-white flex items-center justify-center"
-                      >
-                        <span className="text-white text-xs font-semibold">E</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-                {team.totalPlayers > team.playerAvatars.length && (
-                  <span className="text-sm text-gray-500">+{team.totalPlayers - team.playerAvatars.length}</span>
-                )}
-                <div className="ml-auto">
-                  <span className="text-sm font-medium text-gray-900">Total Players</span>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-gray-900">{team.totalPlayers}</span>
+                {/* Card Image */}
+                <TeamImage src={team.image} category={team.category} />
+
+                {/* Card Body */}
+                <div className="p-5">
+
+                  {/* Team Name + Coaches Badge */}
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight pr-3">{team.name}</h3>
+                    <span className="flex-shrink-0 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
+                      {team.coaches} Coach{team.coaches !== 1 ? 'es' : ''}
+                    </span>
                   </div>
-                </div>
-              </div>
 
-              {/* Leagues */}
-              <div className="mb-4 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <Trophy className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Leagues</span>
-                  {team.competitions.length === 0 && (
-                    <span className="ml-auto text-xs text-gray-400">No leagues</span>
-                  )}
-                </div>
-                {team.competitions.length > 0 && (
-                  <div className="space-y-2 mt-2">
-                    {team.competitions.slice(0, 2).map((comp, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
-                        <span className="text-xs font-medium text-gray-700 truncate flex-1">
-                          {comp.name}
-                        </span>
-                        {comp.logo && (
-                          <div className="w-6 h-6 rounded overflow-hidden bg-white border border-gray-200 flex items-center justify-center ml-2 flex-shrink-0">
+                  {/* Player Avatars + Total Players */}
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        {avatarCount > 0
+                          ? team.playerAvatars.map((player) => (
+                              <PlayerAvatarImg key={player.id} src={player.image} name={player.name} />
+                            ))
+                          : [...Array(fallbackCount)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-[#BD9B58] to-[#8B7340] flex items-center justify-center"
+                              >
+                                <span className="text-white text-[10px] font-bold">E</span>
+                              </div>
+                            ))
+                        }
+                      </div>
+                      {remaining > 0 && (
+                        <span className="text-xs text-gray-400 font-medium">+{remaining}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">Total Players</span>
+                      <span className="text-lg font-bold text-gray-900">{team.totalPlayers}</span>
+                    </div>
+                  </div>
+
+                  {/* Leagues Row */}
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Leagues</span>
+                    </div>
+                    {team.leagueLogos && team.leagueLogos.length > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        {team.leagueLogos.slice(0, 3).map((logo, idx) => (
+                          <div key={idx} className="w-7 h-7 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center">
                             <img
-                              src={comp.logo}
-                              alt={comp.name}
+                              src={logo.url}
+                              alt=""
                               className="w-full h-full object-contain p-0.5"
+                              onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
                             />
                           </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                    {team.competitions.length > 2 && (
-                      <p className="text-xs text-gray-500 ml-2">+{team.competitions.length - 2} more</p>
+                    ) : (
+                      <span className="text-xs text-gray-400">No leagues</span>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Upcoming Games */}
-              <div className="flex items-center gap-2 mb-5">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm text-gray-600">Upcoming</span>
-                <span className="ml-auto text-sm text-gray-900">
-                  {team.upcomingGames > 0 ? `${team.upcomingGames} game${team.upcomingGames !== 1 ? 's' : ''}` : 'No upcoming games'}
-                </span>
-              </div>
+                  {/* Upcoming Row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Upcoming</span>
+                    </div>
+                    {team.upcomingGames > 0 && team.nextOpponent ? (
+                      <span className="text-sm font-semibold text-gray-800">{team.nextOpponent}</span>
+                    ) : (
+                      <span className="text-sm font-medium text-[#BD9B58]">No upcoming games</span>
+                    )}
+                  </div>
 
-              {/* View Button */}
-              <Link
-                href={`/team/${team._id}`}
-                className="block w-full"
-              >
-                <button
-                  className="w-full bg-white py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                  style={{
-                    border: '2px solid #CEB27D',
-                    color: '#CEB27D'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#CEB27D10'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                >
-                  <Eye className="w-4 h-4" />
-                  View
-                </button>
-              </Link>
-            </div>
-          </div>
-        ))}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,15 +1,15 @@
-// Updated Fixtures component
+// Updated Fixtures component - pulls from FutbolCore API
 "use client";
 
 import { useEffect, useState } from 'react';
 import FixturesData from '@/components/landing/FixturesData';
 import NextMatchFixture from '@/components/landing/NextMatchFixture';
 import NavbarFix from '@/components/landing/NavbarFix';
-import { getFilteredUpcomingMatches } from "@/actions/fixture";
+import { getClubFixtures } from "@/actions/futbolcore";
 import useLeagueStore from "@/store/leaguestore";
 
 const Fixtures = () => {
-  const [fixtures, setFixtures] = useState([]);
+  const [fixtures, setFixtures] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { selectedLeague, selectedSeason, selectedCompetition } = useLeagueStore();
 
@@ -17,15 +17,8 @@ const Fixtures = () => {
     const fetchFixtures = async () => {
       setLoading(true);
       try {
-        // Pass filter values to the server action
-        const data = await getFilteredUpcomingMatches(
-          selectedLeague,
-          selectedSeason,
-          selectedCompetition
-        );
-        
-        console.log("Filtered fixtures data:", data);
-        console.log("Applied filters:", { selectedLeague, selectedSeason, selectedCompetition });
+        // Fetch all games from FutbolCore API
+        const data = await getClubFixtures();
 
         // Helper function to parse date without timezone issues
         const parseLocalDate = (dateString: string) => {
@@ -37,64 +30,71 @@ const Fixtures = () => {
         const formatDateAsIs = (dateString: string) => {
           const date = parseLocalDate(dateString);
           const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-          const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 
+          const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
                          'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-          
+
           const dayName = days[date.getDay()];
           const dayNum = date.getDate();
           const monthName = months[date.getMonth()];
-          
+
           return `${dayName} ${dayNum} ${monthName}`;
         };
 
         const formatMonthYearAsIs = (dateString: string) => {
           const date = parseLocalDate(dateString);
-          const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 
+          const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
                          'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-          
+
           const monthName = months[date.getMonth()];
           const year = date.getFullYear();
-          
+
           return `${monthName} ${year}`;
         };
 
         // Helper function to format time by removing leading zeros from hours
         const formatTime = (timeString: string) => {
           if (!timeString) return timeString;
-          
+
           // Check if time is in 12-hour format (contains AM/PM)
           const timeMatch = timeString.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-          
+
           if (timeMatch) {
             let hours = parseInt(timeMatch[1]);
             const minutes = timeMatch[2];
             const meridiem = timeMatch[3];
-            
+
             // Remove leading zero from hours
             return `${hours}:${minutes} ${meridiem}`;
           }
-          
+
           // If it's 24-hour format, convert to 12-hour and remove leading zeros
           const time24Match = timeString.match(/(\d{1,2}):(\d{2})/);
           if (time24Match) {
             let hours = parseInt(time24Match[1]);
             const minutes = time24Match[2];
-            
+
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12; // Convert to 12-hour format
-            
+
             return `${hours}:${minutes} ${ampm}`;
           }
-          
+
           return timeString; // Return as-is if format is unrecognized
         };
 
+        // Filter to only upcoming scheduled games
+        const now = new Date();
+        const upcomingData = data.filter((fixture: any) => {
+          const fixtureDate = new Date(fixture.date);
+          return fixture.status === 'SCHEDULED' && fixtureDate >= now;
+        });
+
         // Transform the data to match our display format
-        const transformedData = data.map((fixture: any) => ({
+        const transformedData = upcomingData.map((fixture: any) => ({
           date: formatDateAsIs(fixture.date),
           time: formatTime(fixture.time),
-          stadium: fixture.stadium.toUpperCase(),
-          competition: fixture.competition.toUpperCase(),
+          stadium: (fixture.stadium || 'TBD').toUpperCase(),
+          competition: (fixture.competition || 'LEAGUE').toUpperCase(),
           homeTeam: fixture.homeTeam,
           awayTeam: fixture.awayTeam,
           homeTeamLogo: fixture.homeTeamLogo || "/teams/ventura.png",
@@ -115,6 +115,10 @@ const Fixtures = () => {
           // Add fields needed for filtering display
           competitionType: fixture.competitionType,
           originalCompetition: fixture.competition,
+          // FutbolCore extra fields
+          title: fixture.title,
+          location: fixture.location,
+          isHome: fixture.isHome,
         }));
 
         // Sort by date (ascending) - parse dates for sorting

@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUpcomingMatches } from "@/actions/fixture";
-import { IFixture } from "@/types/fixtures";
+import { getClubFixtures } from "@/actions/futbolcore";
 import Link from "next/link";
 import gsap from "gsap";
 
@@ -180,14 +179,20 @@ const formatTimeShort = (timeString: string) => {
 const Matches: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [matches, setMatches] = useState<IFixture[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
-      const matches = await getUpcomingMatches();
-      setMatches(matches);
+      const fixtures = await getClubFixtures();
+      // Filter to only upcoming scheduled games
+      const now = new Date();
+      const upcoming = fixtures.filter((f: any) => {
+        const gameDate = new Date(f.date);
+        return f.status === 'SCHEDULED' && gameDate >= now;
+      });
+      setMatches(upcoming);
     };
     fetchMatches();
   }, []);
@@ -382,14 +387,30 @@ const Matches: React.FC = () => {
                   {/* Top accent bar */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
-                  {/* League Logo */}
+                  {/* League Logo or Match Title */}
                   <div className="px-8 pt-12 pb-8 flex items-center justify-center relative">
                     <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-transparent"></div>
-                    <img 
-                      src={match.leagueLogo} 
-                      alt="League Logo" 
-                      className="h-16 w-auto object-contain relative z-10 filter drop-shadow-sm"
-                    />
+                    {match.leagueLogo ? (
+                      <>
+                        <img
+                          src={match.leagueLogo}
+                          alt=""
+                          className="h-16 w-auto object-contain relative z-10 filter drop-shadow-sm"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'block';
+                          }}
+                        />
+                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10 text-center leading-tight hidden">
+                          {match.title || `${match.homeTeam} vs ${match.awayTeam}`}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10 text-center leading-tight">
+                        {match.title || `${match.homeTeam} vs ${match.awayTeam}`}
+                      </p>
+                    )}
                   </div>
 
                   {/* Date & Location */}
@@ -407,18 +428,18 @@ const Matches: React.FC = () => {
                   <div className="px-8 pb-8 flex-1 flex flex-col justify-center relative">
                     {/* Logos and Score/Time */}
                     <div className="flex items-center justify-center gap-6 relative z-10">
-                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-2xl p-3">
-                        <img 
-                          src={match.homeTeamLogo} 
-                          alt={match.homeTeam} 
+                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center">
+                        <img
+                          src={match.homeTeamLogo}
+                          alt={match.homeTeam}
                           className="w-full h-full object-contain"
                         />
                       </div>
-                      
+
                       {match.status === "SCHEDULED" || match.status === "Scheduled" || (match.homeScore === 0 && match.awayScore === 0) ? (
                         <div className="bg-gradient-to-br from-[#BD9B58] to-[#d4b068] text-white text-2xl font-bebas px-6 py-3 rounded-2xl text-center min-w-[120px] shadow-lg relative overflow-hidden flex-shrink-0">
                           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-                          <span className="relative z-10">{formatTimeShort(match.time)}</span>
+                          <span className="relative z-10">{formatTime(match.time)}</span>
                         </div>
                       ) : (
                         <div className="text-white text-4xl font-bebas px-6 py-3 rounded-2xl shadow-lg relative overflow-hidden flex-shrink-0" style={{ backgroundColor: '#181819' }}>
@@ -426,11 +447,11 @@ const Matches: React.FC = () => {
                           <span className="relative z-10">{match.homeScore}-{match.awayScore}</span>
                         </div>
                       )}
-                      
-                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-2xl p-3">
-                        <img 
-                          src={match.awayTeamLogo} 
-                          alt={match.awayTeam} 
+
+                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center">
+                        <img
+                          src={match.awayTeamLogo}
+                          alt={match.awayTeam}
                           className="w-full h-full object-contain"
                         />
                       </div>
