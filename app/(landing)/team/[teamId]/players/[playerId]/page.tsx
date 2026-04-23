@@ -50,9 +50,15 @@ export default async function PlayerProfilePage({ params }: any) {
   const fcPlayer = rosterData.players.find((p) => p._id === playerId);
   if (!fcPlayer) notFound();
 
+  const GENERIC_SHORT = /^eagles\s*football\s*club$/i;
+  const stripEaglesPrefix = (s: string) =>
+    s.replace(/^(eagles\s*football\s*club|eagles?\s*fc)\s*-?\s*/i, '').trim();
   const getDisplayName = (t: typeof fcTeam) => {
-    if (t.shortName && t.shortName !== t.name) return t.shortName;
-    return t.category || t.name;
+    if (t.shortName && !GENERIC_SHORT.test(t.shortName) && t.shortName !== t.name) {
+      return t.shortName;
+    }
+    const cleaned = stripEaglesPrefix(t.name);
+    return cleaned || t.category || t.name;
   };
 
   const fcTeamTransformed: Team = {

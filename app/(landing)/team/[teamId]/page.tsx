@@ -38,11 +38,18 @@ export default async function TeamRosterPage({ params }: any) {
 
     isFutbolCore = true;
 
-    // Transform FutbolCore team to Team interface
-    // Use category as shortName when shortName is the same as name (not distinguishable)
+    // Transform FutbolCore team to Team interface.
+    // shortName is sometimes the generic "Eagles Football Club" — when that
+    // happens, derive a distinctive label from the full team name instead.
+    const GENERIC_SHORT = /^eagles\s*football\s*club$/i;
+    const stripEaglesPrefix = (s: string) =>
+      s.replace(/^(eagles\s*football\s*club|eagles?\s*fc)\s*-?\s*/i, '').trim();
     const getDisplayName = (t: typeof fcTeam) => {
-      if (t.shortName && t.shortName !== t.name) return t.shortName;
-      return t.category || t.name;
+      if (t.shortName && !GENERIC_SHORT.test(t.shortName) && t.shortName !== t.name) {
+        return t.shortName;
+      }
+      const cleaned = stripEaglesPrefix(t.name);
+      return cleaned || t.category || t.name;
     };
 
     team = {
