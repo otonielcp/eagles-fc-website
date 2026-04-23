@@ -110,6 +110,7 @@ const Fixtures = () => {
           _id: fixture._id,
           // Add the raw date for sorting and countdown (keep as string to avoid timezone issues)
           rawDate: fixture.date,
+          rawTime: fixture.time || '00:00:00',
           // Include original data elements
           season: fixture.season,
           league: fixture.league,
@@ -122,11 +123,11 @@ const Fixtures = () => {
           isHome: fixture.isHome,
         }));
 
-        // Sort by date (ascending) - parse dates for sorting
+        // Sort by full datetime (ascending) so same-day games order by time
         const sortedData = transformedData.sort((a: any, b: any) => {
-          const dateA = new Date(a.rawDate + 'T00:00:00');
-          const dateB = new Date(b.rawDate + 'T00:00:00');
-          return dateA.getTime() - dateB.getTime();
+          const keyA = `${a.rawDate}T${a.rawTime}`;
+          const keyB = `${b.rawDate}T${b.rawTime}`;
+          return keyA.localeCompare(keyB);
         });
 
         setFixtures(sortedData);
