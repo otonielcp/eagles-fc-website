@@ -283,6 +283,15 @@ export async function getClubFixtures() {
     ]);
     const clubLogo = branding.logoUrl || '';
 
+    const extractField = (...sources: (string | undefined)[]) => {
+      for (const s of sources) {
+        if (!s) continue;
+        const m = s.match(/Field\s+[\w-]+/i);
+        if (m) return m[0];
+      }
+      return '';
+    };
+
     return allGames.map((game) => {
       const eaglesIsHome = game.myTeamRole === 'HOME';
       const homeTeamLogo = eaglesIsHome
@@ -297,6 +306,7 @@ export async function getClubFixtures() {
         date: game.startDate.split('T')[0],
         time: game.startTime,
         stadium: game.venue?.name || game.location || 'TBD',
+        field: extractField(game.venue?.address, game.location),
         competition: game.type || 'League',
         competitionType: game.type || 'league',
         homeTeam: game.homeTeam.name,

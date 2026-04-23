@@ -94,6 +94,7 @@ const Fixtures = () => {
           date: formatDateAsIs(fixture.date),
           time: formatTime(fixture.time),
           stadium: (fixture.stadium || 'TBD').toUpperCase(),
+          field: (fixture.field || '').toUpperCase(),
           competition: (fixture.competition || 'LEAGUE').toUpperCase(),
           homeTeam: fixture.homeTeam,
           awayTeam: fixture.awayTeam,

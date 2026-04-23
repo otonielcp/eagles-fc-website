@@ -109,11 +109,16 @@ const FixturesData: React.FC<FixturesDataProps> = ({ fixtures, loading }) => {
                       </span>
                     </div>
 
-                    {/* Stadium */}
-                    <div className="pt-4 border-t border-gray-100 text-center">
+                    {/* Stadium + Field */}
+                    <div className="pt-4 border-t border-gray-100 text-center space-y-1">
                       <p className="text-xs text-gray-500">
                         📍 {match.stadium}
                       </p>
+                      {match.field && (
+                        <p className="text-[11px] font-semibold tracking-wider text-[#C5A464] uppercase">
+                          {match.field}
+                        </p>
+                      )}
                     </div>
                   </div>
 
