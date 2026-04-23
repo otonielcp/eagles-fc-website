@@ -180,7 +180,7 @@ async function fetchFutbolCoreWithMeta<T>(endpoint: string): Promise<{ data: T; 
 }
 
 export async function getFutbolCoreTeams(): Promise<FutbolCoreTeam[]> {
-  return fetchFutbolCore<FutbolCoreTeam[]>('/teams');
+  return fetchFutbolCore<FutbolCoreTeam[]>('/teams?limit=500');
 }
 
 export async function getFutbolCoreRoster(teamId: string): Promise<FutbolCorePlayer[]> {
