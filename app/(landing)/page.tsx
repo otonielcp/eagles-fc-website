@@ -7,10 +7,15 @@ import Standing from '@/components/landing/Standing';
 import TopProducts from '@/components/landing/TopProducts';
 import Matches from '@/components/landing/Matches';
 import { getActiveSliders } from '@/actions/slider';
+import { getFeaturedNews } from '@/actions/news';
 
 export default async function HomePage() {
-  const sliders = await getActiveSliders();
-  const initialSlides = sliders.map((s) => ({
+  const [sliders, featuredNews] = await Promise.all([
+    getActiveSliders(),
+    getFeaturedNews(),
+  ]);
+
+  const sliderSlides = sliders.map((s) => ({
     type: (s.type || 'text') as 'text' | 'game',
     title: (s.title ?? '').toUpperCase(),
     content: s.content ?? '',
@@ -20,6 +25,19 @@ export default async function HomePage() {
     _id: s._id,
     gameData: s.gameData,
   }));
+
+  // Featured news articles automatically become hero slides
+  const featuredNewsSlides = featuredNews.map((n) => ({
+    type: 'text' as const,
+    title: (n.title ?? '').toUpperCase(),
+    content: n.summary ?? '',
+    image: (n.image ?? '').trim(),
+    link: `/news/${n._id}`,
+    buttonText: 'READ MORE',
+    _id: String(n._id),
+  }));
+
+  const initialSlides = [...sliderSlides, ...featuredNewsSlides];
 
   return (
     <div className="max-w-full overflow-hidden">
