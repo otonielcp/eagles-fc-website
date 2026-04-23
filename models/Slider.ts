@@ -53,8 +53,14 @@ const SliderSchema: Schema = new Schema(
     },
     title: {
       type: String,
-      required: [true, "Please provide a slider title"],
+      required: [
+        function (this: ISlider) {
+          return this.type !== "game";
+        },
+        "Please provide a slider title",
+      ],
       trim: true,
+      default: "",
       maxlength: [200, "Title cannot be more than 200 characters"],
     },
     content: {
