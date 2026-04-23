@@ -59,12 +59,16 @@ export async function getTeamRoster(teamId: string) {
  */
 export async function getTeamRosterWithBranding(teamId: string) {
   try {
-    const result = await getFutbolCoreRosterWithMeta(teamId);
+    // Roster meta omits logoUrl, so pull it from the teams-endpoint branding.
+    const [result, teamsBranding] = await Promise.all([
+      getFutbolCoreRosterWithMeta(teamId),
+      getFutbolCoreBranding(),
+    ]);
     return {
       players: result.players,
       defaultPlayerImage: result.meta?.branding?.defaultPlayerImageUrl || '',
       teamImageUrl: result.meta?.team?.teamImageUrl || '',
-      clubLogo: result.meta?.branding?.logoUrl || '',
+      clubLogo: teamsBranding.logoUrl || result.meta?.branding?.logoUrl || '',
     };
   } catch (error) {
     console.error(`Error fetching roster with branding for team ${teamId}:`, error);
