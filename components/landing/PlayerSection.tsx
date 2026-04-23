@@ -42,19 +42,19 @@ const PlayerSection = ({ title, players, fallbackImage, cardBackground }: Player
                 <img
                   src={player.image}
                   alt=""
-                  className="object-cover w-full h-full opacity-90"
+                  className="relative z-10 object-cover w-full h-full"
                   onError={(e) => {
                     e.currentTarget.src = fallback;
-                    e.currentTarget.className = 'object-contain w-3/5 h-3/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60';
+                    e.currentTarget.className = 'relative z-10 object-contain w-3/5 h-3/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
                     e.currentTarget.onerror = null;
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="relative z-10 w-full h-full flex items-center justify-center">
                   <img
                     src={fallback}
                     alt=""
-                    className="w-3/5 h-3/5 object-contain opacity-60"
+                    className="w-3/5 h-3/5 object-contain"
                   />
                 </div>
               )}
