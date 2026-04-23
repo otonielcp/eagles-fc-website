@@ -133,7 +133,7 @@ export default function AdminLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-3 py-5 scrollbar-thin">
+          <nav className="flex-1 overflow-y-auto px-3 py-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {sections.map((section) => (
               <div key={section.label} className="mb-6 last:mb-0">
                 <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40 mb-2">
