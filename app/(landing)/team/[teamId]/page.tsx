@@ -75,7 +75,6 @@ export default async function TeamRosterPage({ params }: any) {
     // Fetch roster from FutbolCore with branding
     const rosterData = await getTeamRosterWithBranding(teamId);
     const fcRoster = rosterData.players;
-    const defaultPlayerImg = rosterData.defaultPlayerImage;
     players = fcRoster.map((p) => ({
       _id: p._id,
       firstName: p.firstName,
@@ -88,7 +87,7 @@ export default async function TeamRosterPage({ params }: any) {
       height: 0,
       weight: 0,
       biography: '',
-      image: p.profileImage || defaultPlayerImg || '',
+      image: p.profileImage || '',
       teamId: teamId,
       isActive: true,
       isCaptain: false,
@@ -113,22 +112,22 @@ export default async function TeamRosterPage({ params }: any) {
     }));
   }
 
-  // Group players by position
-  const goalkeepers = players.filter(player =>
-    player.position === "Goalkeeper"
-  );
+  // Group players by position — match on keywords so variants like
+  // "Right Back", "Left Wing Back", "Attacking Midfielder", "Right Winger",
+  // "Center Forward", "Striker" all land in the correct section.
+  const categorize = (pos: string): 'GK' | 'DEF' | 'MID' | 'FWD' | 'OTHER' => {
+    const p = (pos || '').toLowerCase();
+    if (p.includes('goalkeeper') || p === 'gk') return 'GK';
+    if (p.includes('back') || p.includes('defender') || p.includes('sweeper') || p === 'cb') return 'DEF';
+    if (p.includes('midfield')) return 'MID';
+    if (p.includes('forward') || p.includes('winger') || p.includes('striker') || p.includes('attacker')) return 'FWD';
+    return 'OTHER';
+  };
 
-  const defenders = players.filter(player =>
-    ["Defender", "Center Back", "Full Back", "Wing Back"].includes(player.position)
-  );
-
-  const midfielders = players.filter(player =>
-    ["Midfielder", "Defensive Midfielder", "Central Midfielder", "Attacking Midfielder"].includes(player.position)
-  );
-
-  const forwards = players.filter(player =>
-    ["Forward", "Winger", "Striker"].includes(player.position)
-  );
+  const goalkeepers = players.filter(p => categorize(p.position) === 'GK');
+  const defenders = players.filter(p => categorize(p.position) === 'DEF');
+  const midfielders = players.filter(p => categorize(p.position) === 'MID');
+  const forwards = players.filter(p => categorize(p.position) === 'FWD');
 
   return (
     <div className="max-w-full overflow-hidden" style={{ marginBottom: '70px' }}>
