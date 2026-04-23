@@ -9,12 +9,23 @@ interface PlayerSectionProps {
   title: string;
   players: Player[];
   fallbackImage?: string;
+  cardBackground?: string;
 }
 
-const PlayerSection = ({ title, players, fallbackImage }: PlayerSectionProps) => {
+const PlayerSection = ({ title, players, fallbackImage, cardBackground }: PlayerSectionProps) => {
   const fallback = fallbackImage || DEFAULT_CLUB_LOGO;
   const hasPlayerPhoto = (img: string | undefined | null) =>
-    img && img.length > 0 && img !== '/default.jpg' && img !== fallback && img !== DEFAULT_CLUB_LOGO;
+    img && img.length > 0 && img !== '/default.jpg' && img !== fallback && img !== DEFAULT_CLUB_LOGO && img !== cardBackground;
+
+  const cardStyle = cardBackground
+    ? {
+        backgroundImage: `url(${cardBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : {
+        background: 'radial-gradient(circle, #474747 0%, #000000 100%)',
+      };
 
   return (
     <div className="max-w-[1400px] w-9/12 mx-auto my-8">
@@ -24,10 +35,8 @@ const PlayerSection = ({ title, players, fallbackImage }: PlayerSectionProps) =>
         {players.map((player) => (
           <Link key={player._id} href={`/team/${player.teamId}/players/${player._id}`}>
             <div
-              className="rounded-md overflow-hidden aspect-square relative"
-              style={{
-                background: 'radial-gradient(circle, #474747 0%, #000000 100%)',
-              }}
+              className="rounded-md overflow-hidden aspect-square relative bg-black"
+              style={cardStyle}
             >
               {hasPlayerPhoto(player.image) ? (
                 <img
