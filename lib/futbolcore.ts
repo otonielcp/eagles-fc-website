@@ -109,6 +109,7 @@ export interface FutbolCoreBranding {
   defaultPlayerImageUrl?: string;
   defaultTeamCardImageUrl?: string;
   loginBackgroundUrl?: string;
+  logoUrl?: string;
 }
 
 export interface FutbolCoreRosterMeta {
@@ -181,6 +182,16 @@ async function fetchFutbolCoreWithMeta<T>(endpoint: string): Promise<{ data: T; 
 
 export async function getFutbolCoreTeams(): Promise<FutbolCoreTeam[]> {
   return fetchFutbolCore<FutbolCoreTeam[]>('/teams?limit=500');
+}
+
+export async function getFutbolCoreTeamsWithBranding(): Promise<{ teams: FutbolCoreTeam[]; branding: FutbolCoreBranding }> {
+  const result = await fetchFutbolCoreWithMeta<FutbolCoreTeam[]>('/teams?limit=500');
+  return { teams: result.data, branding: (result.meta?.branding as FutbolCoreBranding) || {} };
+}
+
+export async function getFutbolCoreBranding(): Promise<FutbolCoreBranding> {
+  const result = await fetchFutbolCoreWithMeta<FutbolCoreTeam[]>('/teams?limit=1');
+  return (result.meta?.branding as FutbolCoreBranding) || {};
 }
 
 export async function getFutbolCoreRoster(teamId: string): Promise<FutbolCorePlayer[]> {

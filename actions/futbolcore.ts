@@ -5,6 +5,7 @@ import {
   getFutbolCoreRoster,
   getFutbolCoreRosterWithMeta,
   getFutbolCoreGames,
+  getFutbolCoreBranding,
   type FutbolCoreTeam,
   type FutbolCoreGame,
   type FutbolCorePlayer,
@@ -271,32 +272,46 @@ export async function getFutbolCoreFixtureById(gameId: string) {
  */
 export async function getClubFixtures() {
   try {
-    const allGames = await getAllClubGames();
+    const [allGames, branding] = await Promise.all([
+      getAllClubGames(),
+      getFutbolCoreBranding(),
+    ]);
+    const clubLogo = branding.logoUrl || '';
 
-    return allGames.map((game) => ({
-      _id: game._id,
-      date: game.startDate.split('T')[0], // YYYY-MM-DD
-      time: game.startTime,
-      stadium: game.venue?.name || game.location || 'TBD',
-      competition: game.type || 'League',
-      competitionType: game.type || 'league',
-      homeTeam: game.homeTeam.name,
-      awayTeam: game.awayTeam.name,
-      homeTeamLogo: game.homeTeam.logoUrl || '/teams/ventura.png',
-      awayTeamLogo: game.awayTeam.logoUrl || '/teams/ventura.png',
-      leagueLogo: game.leagueLogo?.secure_url || '',
-      channelLogo: '/teams/ventura.png',
-      status: game.status === 'scheduled' ? 'SCHEDULED' : game.status.toUpperCase(),
-      homeScore: game.score.home,
-      awayScore: game.score.away,
-      matchReport: '',
-      matchImage: 'https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg',
-      title: game.title,
-      location: game.location,
-      venue: game.venue,
-      isHome: game.isHome,
-      myTeamRole: game.myTeamRole,
-    }));
+    return allGames.map((game) => {
+      const eaglesIsHome = game.myTeamRole === 'HOME';
+      const homeTeamLogo = eaglesIsHome
+        ? clubLogo
+        : game.homeTeam.logoUrl || '';
+      const awayTeamLogo = eaglesIsHome
+        ? game.awayTeam.logoUrl || ''
+        : clubLogo;
+
+      return {
+        _id: game._id,
+        date: game.startDate.split('T')[0],
+        time: game.startTime,
+        stadium: game.venue?.name || game.location || 'TBD',
+        competition: game.type || 'League',
+        competitionType: game.type || 'league',
+        homeTeam: game.homeTeam.name,
+        awayTeam: game.awayTeam.name,
+        homeTeamLogo,
+        awayTeamLogo,
+        leagueLogo: game.leagueLogo?.secure_url || '',
+        channelLogo: '',
+        status: game.status === 'scheduled' ? 'SCHEDULED' : game.status.toUpperCase(),
+        homeScore: game.score.home,
+        awayScore: game.score.away,
+        matchReport: '',
+        matchImage: 'https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg',
+        title: game.title,
+        location: game.location,
+        venue: game.venue,
+        isHome: game.isHome,
+        myTeamRole: game.myTeamRole,
+      };
+    });
   } catch (error) {
     console.error('Error fetching club fixtures:', error);
     return [];
