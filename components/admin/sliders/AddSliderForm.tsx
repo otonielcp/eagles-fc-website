@@ -20,6 +20,7 @@ import { Loader2 } from "lucide-react";
 import ImageUpload from "@/components/admin/news/ImageUpload";
 import LogoUploader from "@/components/admin/shared/LogoUploader";
 import TeamLogoInput from "@/components/admin/sliders/TeamLogoInput";
+import FixturePicker, { PickedFixture } from "@/components/admin/sliders/FixturePicker";
 import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 
@@ -166,6 +167,26 @@ export default function AddSliderForm() {
     }));
   };
 
+  const handleFixturePick = (f: PickedFixture) => {
+    setFormData(prev => ({
+      ...prev,
+      link: `/matchreport/${f._id}`,
+      gameData: {
+        ...defaultGameData,
+        ...prev.gameData,
+        homeTeamName: f.homeTeam,
+        homeTeamLogo: f.homeTeamLogo,
+        awayTeamName: f.awayTeam,
+        awayTeamLogo: f.awayTeamLogo,
+        leagueLogo: f.leagueLogo,
+        matchDate: f.matchDateISO,
+        matchTime: f.matchTimeDisplay,
+        matchLocation: f.matchLocation,
+      },
+    }));
+    toast.success(`Loaded "${f.homeTeam} vs ${f.awayTeam}" from API`);
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -273,6 +294,8 @@ export default function AddSliderForm() {
           {/* Game Slider Fields */}
           {sliderType === "game" && (
             <>
+              <FixturePicker onSelect={handleFixturePick} />
+
               <div className="space-y-2">
                 <Label htmlFor="title">Match Title (Optional)</Label>
                 <Input
