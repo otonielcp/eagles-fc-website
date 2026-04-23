@@ -13,7 +13,7 @@ const MiniNavbarTeams = ({ currentTeam, similarTeams }: MiniNavbarTeamsProps) =>
 
   return (
     <div className="border-b border-gray-200 bg-gray-50 shadow-lg w-full overflow-x-auto">
-      <div className="flex justify-start ml-20 space-x-8 text-gray-500 uppercase text-sm tracking-wide px-6 py-3 whitespace-nowrap">
+      <div className="flex justify-start ml-48 md:ml-56 lg:ml-64 xl:ml-72 space-x-8 text-gray-500 uppercase text-sm tracking-wide px-6 py-3 whitespace-nowrap">
         {similarTeams.map((team) => (
           <Link key={team._id} href={`/team/${team._id}`}>
             <button
