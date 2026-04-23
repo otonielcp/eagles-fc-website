@@ -3,16 +3,18 @@
 import { Player } from '@/types/team';
 import Link from 'next/link';
 
-const CLUB_LOGO_FALLBACK = 'https://res.cloudinary.com/dofpgztzm/image/upload/v1765895370/club-logo/eagles-fc-logo-2026.png';
+const DEFAULT_CLUB_LOGO = 'https://res.cloudinary.com/dofpgztzm/image/upload/v1765895370/club-logo/eagles-fc-logo-2026.png';
 
 interface PlayerSectionProps {
   title: string;
   players: Player[];
+  fallbackImage?: string;
 }
 
-const PlayerSection = ({ title, players }: PlayerSectionProps) => {
+const PlayerSection = ({ title, players, fallbackImage }: PlayerSectionProps) => {
+  const fallback = fallbackImage || DEFAULT_CLUB_LOGO;
   const hasPlayerPhoto = (img: string | undefined | null) =>
-    img && img.length > 0 && img !== '/default.jpg' && img !== CLUB_LOGO_FALLBACK;
+    img && img.length > 0 && img !== '/default.jpg' && img !== fallback && img !== DEFAULT_CLUB_LOGO;
 
   return (
     <div className="max-w-[1400px] w-9/12 mx-auto my-8">
@@ -33,8 +35,7 @@ const PlayerSection = ({ title, players }: PlayerSectionProps) => {
                   alt=""
                   className="object-cover w-full h-full opacity-90"
                   onError={(e) => {
-                    // On error, replace with club logo fallback
-                    e.currentTarget.src = CLUB_LOGO_FALLBACK;
+                    e.currentTarget.src = fallback;
                     e.currentTarget.className = 'object-contain w-3/5 h-3/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60';
                     e.currentTarget.onerror = null;
                   }}
@@ -42,7 +43,7 @@ const PlayerSection = ({ title, players }: PlayerSectionProps) => {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <img
-                    src={CLUB_LOGO_FALLBACK}
+                    src={fallback}
                     alt=""
                     className="w-3/5 h-3/5 object-contain opacity-60"
                   />

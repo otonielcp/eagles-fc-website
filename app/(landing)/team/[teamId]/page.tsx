@@ -20,6 +20,7 @@ export default async function TeamRosterPage({ params }: any) {
   let players: Player[] = [];
   let allTeams: Team[] = [];
   let isFutbolCore = false;
+  let clubLogoFallback = '';
 
   if (team) {
     // Found in MongoDB - use existing flow
@@ -75,6 +76,7 @@ export default async function TeamRosterPage({ params }: any) {
     // Fetch roster from FutbolCore with branding
     const rosterData = await getTeamRosterWithBranding(teamId);
     const fcRoster = rosterData.players;
+    clubLogoFallback = rosterData.clubLogo || '';
     players = fcRoster.map((p) => ({
       _id: p._id,
       firstName: p.firstName,
@@ -136,19 +138,19 @@ export default async function TeamRosterPage({ params }: any) {
       {!isFutbolCore && <TeamSponsor team={team} />}
 
       {goalkeepers.length > 0 && (
-        <PlayerSection title="Goalkeepers" players={goalkeepers} />
+        <PlayerSection title="Goalkeepers" players={goalkeepers} fallbackImage={clubLogoFallback} />
       )}
 
       {defenders.length > 0 && (
-        <PlayerSection title="Defenders" players={defenders} />
+        <PlayerSection title="Defenders" players={defenders} fallbackImage={clubLogoFallback} />
       )}
 
       {midfielders.length > 0 && (
-        <PlayerSection title="Midfielders" players={midfielders} />
+        <PlayerSection title="Midfielders" players={midfielders} fallbackImage={clubLogoFallback} />
       )}
 
       {forwards.length > 0 && (
-        <PlayerSection title="Forwards" players={forwards} />
+        <PlayerSection title="Forwards" players={forwards} fallbackImage={clubLogoFallback} />
       )}
 
       {!isFutbolCore && <TeamSponsor team={team} />}

@@ -64,10 +64,11 @@ export async function getTeamRosterWithBranding(teamId: string) {
       players: result.players,
       defaultPlayerImage: result.meta?.branding?.defaultPlayerImageUrl || '',
       teamImageUrl: result.meta?.team?.teamImageUrl || '',
+      clubLogo: result.meta?.branding?.logoUrl || '',
     };
   } catch (error) {
     console.error(`Error fetching roster with branding for team ${teamId}:`, error);
-    return { players: [], defaultPlayerImage: '', teamImageUrl: '' };
+    return { players: [], defaultPlayerImage: '', teamImageUrl: '', clubLogo: '' };
   }
 }
 
