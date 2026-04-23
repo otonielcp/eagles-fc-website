@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
-  FolderOpen,
-  ListOrdered ,
+  ListOrdered,
   LogOut,
-  Image,
-  MessageSquare,
+  Image as ImageIcon,
   ShoppingBag,
   Calendar,
   FileText,
@@ -21,7 +19,9 @@ import {
   SlidersHorizontal,
   Archive,
   Handshake,
-  Inbox
+  Inbox,
+  Menu,
+  X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { logout } from "@/actions/auth";
@@ -34,141 +34,180 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Close sidebar when route changes
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [pathname]);
 
-  // Don't show admin layout on login page
-  if (pathname === '/admin/login') {
+  if (pathname === "/admin/login") {
     return children;
   }
 
-  const navigation = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Inbox", href: "/admin/inbox", icon: Inbox },
-    { name: "Hero Sliders", href: "/admin/sliders", icon: SlidersHorizontal },
-    { name: "News", href: "/admin/news", icon: FileText },
-    { name: "Videos", href: "/admin/videos", icon: Video },
-    { name: "Teams", href: "/admin/teams", icon: Users },
-    { name: "Members", href: "/admin/members", icon: UserCircle },
-    { name: "Fixtures", href: "/admin/fixtures", icon: Calendar },
-    { name: "Seasons", href: "/admin/seasons", icon: Archive },
-    { name: "Tickets", href: "/admin/tickets", icon: Ticket },
-    { name: "Shop", href: "/admin/shop", icon: ShoppingBag },
-    { name: "Partnerships", href: "/admin/partnerships", icon: Handshake },
-    { name: "Sponsors", href: "/admin/sponsors", icon: Image },
-    { name: "Standings", href: "/admin/standings", icon: ListOrdered },
-    { name: "Trophies", href: "/admin/league-count", icon: Trophy },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+  const sections = [
+    {
+      label: "Overview",
+      items: [{ name: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    },
+    {
+      label: "Communications",
+      items: [
+        { name: "Inbox", href: "/admin/inbox", icon: Inbox },
+        { name: "News", href: "/admin/news", icon: FileText },
+        { name: "Hero Sliders", href: "/admin/sliders", icon: SlidersHorizontal },
+        { name: "Videos", href: "/admin/videos", icon: Video },
+      ],
+    },
+    {
+      label: "Club",
+      items: [
+        { name: "Teams", href: "/admin/teams", icon: Users },
+        { name: "Members", href: "/admin/members", icon: UserCircle },
+        { name: "Fixtures", href: "/admin/fixtures", icon: Calendar },
+        { name: "Seasons", href: "/admin/seasons", icon: Archive },
+        { name: "Standings", href: "/admin/standings", icon: ListOrdered },
+        { name: "Trophies", href: "/admin/league-count", icon: Trophy },
+      ],
+    },
+    {
+      label: "Commerce",
+      items: [
+        { name: "Shop", href: "/admin/shop", icon: ShoppingBag },
+        { name: "Tickets", href: "/admin/tickets", icon: Ticket },
+        { name: "Sponsors", href: "/admin/sponsors", icon: ImageIcon },
+        { name: "Partnerships", href: "/admin/partnerships", icon: Handshake },
+      ],
+    },
+    {
+      label: "System",
+      items: [{ name: "Settings", href: "/admin/settings", icon: Settings }],
+    },
   ];
 
   const handleLogout = async () => {
     await logout();
   };
 
+  const isItemActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F5F5F7]">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-50 
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+        className={`fixed inset-y-0 left-0 w-72 bg-[#0F1011] shadow-2xl transform transition-transform duration-300 ease-in-out z-50
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
+          border-r border-white/5`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <img
-                src="/LOGO (2).png"
-                alt="Eagles FC Logo"
-                className="h-12 w-auto object-contain"
-              />
+          {/* Brand */}
+          <div className="relative flex items-center justify-between px-6 py-5 border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[#C5A464] blur-xl opacity-20 rounded-full" />
+                <img
+                  src="/LOGO (2).png"
+                  alt="Eagles FC"
+                  className="relative h-11 w-auto object-contain"
+                />
+              </div>
+              <div>
+                <div className="text-white font-semibold leading-tight text-base">Eagles FC</div>
+                <div className="text-[10px] text-[#C5A464] uppercase tracking-[0.2em] mt-0.5 font-medium">
+                  Admin Portal
+                </div>
+              </div>
             </div>
-            {/* Close button for mobile */}
             <button
-              className="p-1 -mr-1 text-gray-500 hover:text-gray-700 md:hidden"
+              className="p-1.5 text-white/60 hover:text-white transition-colors md:hidden"
               onClick={() => setIsSidebarOpen(false)}
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive
-                    ? "bg-[#C5A464] text-white"
-                    : "text-gray-600 hover:bg-[#C5A464]/10 hover:text-[#C5A464]"
-                    }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 overflow-y-auto px-3 py-5 scrollbar-thin">
+            {sections.map((section) => (
+              <div key={section.label} className="mb-6 last:mb-0">
+                <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40 mb-2">
+                  {section.label}
+                </div>
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const active = isItemActive(item.href);
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200
+                          ${
+                            active
+                              ? "bg-gradient-to-r from-[#C5A464]/20 to-transparent text-white"
+                              : "text-white/60 hover:text-white hover:bg-white/5"
+                          }`}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-[#C5A464]" />
+                        )}
+                        <item.icon
+                          className={`w-[18px] h-[18px] transition-colors ${
+                            active ? "text-[#C5A464]" : "text-white/50 group-hover:text-white/80"
+                          }`}
+                        />
+                        <span className={active ? "font-medium" : ""}>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
 
-          {/* Logout */}
-          <div className="p-4 border-t border-gray-200">
+          {/* Footer */}
+          <div className="p-3 border-t border-white/5">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2 w-full text-gray-600 hover:text-[#C5A464] transition-colors rounded-lg hover:bg-[#C5A464]/10"
+              className="group flex items-center gap-3 px-3 py-2.5 w-full text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200"
             >
-              <LogOut className="w-5 h-5" />
-              Logout
+              <LogOut className="w-[18px] h-[18px] text-white/50 group-hover:text-white/80" />
+              <span>Logout</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Mobile Header */}
-      <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-white border-b md:hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-[#0F1011] border-b border-white/5 md:hidden">
         <button
-          className="p-2 text-gray-600 hover:text-gray-900"
+          className="p-2 text-white/70 hover:text-white transition-colors"
           onClick={() => setIsSidebarOpen(true)}
         >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
-          <img
-            src="/LOGO (2).png"
-            alt="Eagles FC Logo"
-            className="h-8 w-auto object-contain"
-          />
-          <span className="text-xl font-bold text-gray-900">Eagles FC Admin</span>
+          <img src="/LOGO (2).png" alt="Eagles FC" className="h-8 w-auto object-contain" />
+          <span className="text-sm font-semibold text-white tracking-wide">Eagles FC Admin</span>
         </div>
         <button
           onClick={handleLogout}
-          className="p-2 text-gray-600 hover:text-[#C5A464]"
+          className="p-2 text-white/70 hover:text-[#C5A464] transition-colors"
         >
           <LogOut className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Main Content */}
-      <main className="pt-[57px] md:pt-0 md:ml-64 min-h-screen">
-        <div className="p-4 md:p-8">
-          {children}
-        </div>
+      {/* Main */}
+      <main className="md:ml-72 min-h-screen">
+        <div className="p-5 md:p-8 lg:p-10 max-w-[1600px] mx-auto">{children}</div>
       </main>
     </div>
   );
-} 
+}
