@@ -81,7 +81,7 @@ const NavbarFix = () => {
 
   return (
     <div className="w-full border-b border-[#BD9B58]" style={{ backgroundColor: '#181819' }}>
-      <div className="py-2 flex flex-col sm:flex-row items-center sm:justify-between px-6 md:pl-44 lg:pl-56 xl:pl-64 md:pr-20 lg:pr-32" style={{ backgroundColor: '#181819' }}>
+      <div className="py-2 flex flex-col sm:flex-row items-center sm:justify-between px-6 pl-48 md:pl-56 lg:pl-64 xl:pl-72 md:pr-20 lg:pr-32" style={{ backgroundColor: '#181819' }}>
 
         {/* First Row - Links */}
         <div className="flex justify-center sm:justify-start space-x-8 text-white/70 uppercase text-sm font-medium tracking-wide">
