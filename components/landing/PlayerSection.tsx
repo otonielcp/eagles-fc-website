@@ -59,7 +59,7 @@ const PlayerSection = ({ title, players, fallbackImage, cardBackground }: Player
                 </div>
               )}
 
-              <div className="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black/80 to-transparent">
+              <div className="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black/80 to-transparent z-20">
                 <div className="flex flex-col">
                   <span className="text-white underline underline-offset-[10px] decoration-[2px] decoration-[#C5A464] text-lg font-bold">{player.jerseyNumber}</span>
                   <div className="pt-1.5 mt-1">
