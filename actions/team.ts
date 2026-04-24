@@ -174,6 +174,79 @@ export async function deleteTeam(id: string): Promise<{ success: boolean; messag
   }
 }
 
+// Bulk delete teams
+export async function deleteTeams(ids: string[]): Promise<{
+  success: boolean;
+  deletedCount: number;
+  skipped: { id: string; name: string; reason: string }[];
+  message: string;
+}> {
+  try {
+    await connectDB();
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return { success: true, deletedCount: 0, skipped: [], message: "No teams selected" };
+    }
+
+    const teams = await Team.find({ _id: { $in: ids } });
+    const deletableIds: string[] = [];
+    const skipped: { id: string; name: string; reason: string }[] = [];
+
+    for (const team of teams) {
+      const [playersCount, staffCount] = await Promise.all([
+        Player.countDocuments({ teamId: team._id }),
+        Staff.countDocuments({ teamId: team._id }),
+      ]);
+
+      if (playersCount > 0 || staffCount > 0) {
+        skipped.push({
+          id: team._id.toString(),
+          name: team.name,
+          reason: `${playersCount} player(s), ${staffCount} staff still assigned`,
+        });
+        continue;
+      }
+
+      deletableIds.push(team._id.toString());
+
+      if (team.image) {
+        try {
+          const publicId = team.image.split('/').pop()?.split('.')[0];
+          if (publicId) {
+            await cloudinary.uploader.destroy(`eagles-fc/teams/${publicId}`);
+          }
+        } catch (err) {
+          console.error("Error deleting image from Cloudinary:", err);
+        }
+      }
+    }
+
+    let deletedCount = 0;
+    if (deletableIds.length > 0) {
+      const result = await Team.deleteMany({ _id: { $in: deletableIds } });
+      deletedCount = result.deletedCount ?? 0;
+    }
+
+    revalidatePath('/admin/teams');
+    revalidatePath('/teams');
+
+    const message =
+      skipped.length === 0
+        ? `Deleted ${deletedCount} team(s)`
+        : `Deleted ${deletedCount} team(s); ${skipped.length} skipped`;
+
+    return { success: true, deletedCount, skipped, message };
+  } catch (error: any) {
+    console.error("Error bulk deleting teams:", error);
+    return {
+      success: false,
+      deletedCount: 0,
+      skipped: [],
+      message: error.message || "Failed to delete teams",
+    };
+  }
+}
+
 // Upload team image
 export async function uploadTeamImage(file: File): Promise<{ success: boolean; url?: string; message?: string }> {
   try {

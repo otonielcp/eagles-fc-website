@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllTeams, deleteTeam } from "@/actions/team";
+import { getAllTeams, deleteTeam, deleteTeams } from "@/actions/team";
 import { Team } from "@/types/team";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Users, UserCog } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,6 +36,60 @@ export default function TeamsManagement() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (checked: boolean) => {
+    setSelectedIds(checked ? new Set(teams.map((t) => t._id)) : new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        `Delete ${ids.length} team${ids.length === 1 ? "" : "s"}? Teams with players or staff will be skipped.`
+      )
+    ) {
+      return;
+    }
+    setBulkDeleting(true);
+    try {
+      const result = await deleteTeams(ids);
+      if (result.success) {
+        const deletedSet = new Set(
+          ids.filter((id) => !result.skipped.some((s) => s.id === id))
+        );
+        setTeams((prev) => prev.filter((t) => !deletedSet.has(t._id)));
+        setSelectedIds(new Set());
+        if (result.skipped.length > 0) {
+          toast.warning(
+            `${result.message}. Skipped: ${result.skipped
+              .map((s) => `${s.name} (${s.reason})`)
+              .join("; ")}`
+          );
+        } else {
+          toast.success(result.message);
+        }
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete teams");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -59,6 +114,11 @@ export default function TeamsManagement() {
       if (result.success) {
         toast.success(result.message);
         setTeams(teams.filter((team) => team._id !== id));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       } else {
         toast.error(result.message);
       }
@@ -83,11 +143,25 @@ export default function TeamsManagement() {
             Manage your club's teams, players, and staff
           </p>
         </div>
-        <Link href="/admin/teams/add">
-          <Button className="bg-[#C5A464] hover:bg-[#B39355]">
-            <Plus className="mr-2 h-4 w-4" /> Add Team
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {bulkDeleting
+                ? "Deleting..."
+                : `Delete Selected (${selectedIds.size})`}
+            </Button>
+          )}
+          <Link href="/admin/teams/add">
+            <Button className="bg-[#C5A464] hover:bg-[#B39355]">
+              <Plus className="mr-2 h-4 w-4" /> Add Team
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -111,6 +185,13 @@ export default function TeamsManagement() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    aria-label="Select all teams"
+                    checked={teams.length > 0 && selectedIds.size === teams.length}
+                    onCheckedChange={(checked) => toggleAll(checked === true)}
+                  />
+                </TableHead>
                 <TableHead>Team</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
@@ -121,7 +202,19 @@ export default function TeamsManagement() {
             </TableHeader>
             <TableBody>
               {teams.map((team) => (
-                <TableRow key={team._id}>
+                <TableRow
+                  key={team._id}
+                  data-state={selectedIds.has(team._id) ? "selected" : undefined}
+                >
+                  <TableCell>
+                    <Checkbox
+                      aria-label={`Select ${team.name}`}
+                      checked={selectedIds.has(team._id)}
+                      onCheckedChange={(checked) =>
+                        toggleOne(team._id, checked === true)
+                      }
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {team.image ? (
