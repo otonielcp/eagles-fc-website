@@ -236,6 +236,30 @@ export async function deleteFixture(id: string) {
     }
 }
 
+// Bulk delete fixtures
+export async function deleteFixtures(ids: string[]) {
+    try {
+        await connectDB();
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return { success: true, deletedCount: 0 };
+        }
+
+        const result = await Fixture.deleteMany({ _id: { $in: ids } });
+
+        // Remove any associated sliders for these fixtures
+        await Slider.deleteMany({ fixtureId: { $in: ids } });
+
+        revalidatePath("/admin/fixtures");
+        revalidatePath("/admin/sliders");
+        revalidatePath("/");
+        return { success: true, deletedCount: result.deletedCount ?? 0 };
+    } catch (error) {
+        console.error("Error bulk deleting fixtures:", error);
+        throw new Error("Failed to delete fixtures");
+    }
+}
+
 // Get fixtures by status
 export async function getFixturesByStatus(status: string) {
     try {

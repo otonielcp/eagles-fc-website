@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Pencil, PlusCircle, Trash2, ListChecks } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import Link from "next/link";
@@ -32,7 +33,7 @@ import img from "next/image";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllFixtures, deleteFixture } from "@/actions/fixture";
+import { getAllFixtures, deleteFixture, deleteFixtures } from "@/actions/fixture";
 
 // This would be replaced with actual API functions
 const fetchFixtures = async () => {
@@ -41,12 +42,32 @@ const fetchFixtures = async () => {
 };
 
 export default function FixturesManagement() {
-  const [fixtures, setFixtures] = useState([]);
+  const [fixtures, setFixtures] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterCompetition, setFilterCompetition] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const router = useRouter();
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleMany = (ids: string[], checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) ids.forEach((id) => next.add(id));
+      else ids.forEach((id) => next.delete(id));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const loadFixtures = async () => {
@@ -64,13 +85,45 @@ export default function FixturesManagement() {
   }, []);
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this fixture? This cannot be undone.")) {
+      return;
+    }
     try {
       await deleteFixture(id);
-      setFixtures(fixtures.filter((fixture: any) => fixture._id !== id));
+      setFixtures((prev: any[]) => prev.filter((fixture: any) => fixture._id !== id));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       toast.success("Fixture deleted successfully");
     } catch (error) {
       console.error("Failed to delete fixture:", error);
       toast.error("Failed to delete fixture");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        `Delete ${ids.length} fixture${ids.length === 1 ? "" : "s"}? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setBulkDeleting(true);
+    try {
+      const result = await deleteFixtures(ids);
+      setFixtures((prev: any[]) => prev.filter((fixture: any) => !selectedIds.has(fixture._id)));
+      setSelectedIds(new Set());
+      toast.success(`Deleted ${result.deletedCount ?? ids.length} fixture(s)`);
+    } catch (error) {
+      console.error("Failed to bulk delete fixtures:", error);
+      toast.error("Failed to delete fixtures");
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -169,10 +222,25 @@ export default function FixturesManagement() {
           </div>
 
           <Tabs defaultValue="upcoming">
-            <TabsList className="mb-4">
-              <TabsTrigger value="upcoming">Upcoming Fixtures</TabsTrigger>
-              <TabsTrigger value="past">Past Fixtures</TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="upcoming">Upcoming Fixtures</TabsTrigger>
+                <TabsTrigger value="past">Past Fixtures</TabsTrigger>
+              </TabsList>
+              {selectedIds.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {bulkDeleting
+                    ? "Deleting..."
+                    : `Delete Selected (${selectedIds.size})`}
+                </Button>
+              )}
+            </div>
 
             <TabsContent value="upcoming">
               {loading ? (
@@ -186,6 +254,21 @@ export default function FixturesManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-10">
+                          <Checkbox
+                            aria-label="Select all upcoming fixtures"
+                            checked={
+                              upcomingFixtures.length > 0 &&
+                              upcomingFixtures.every((f: any) => selectedIds.has(f._id))
+                            }
+                            onCheckedChange={(checked) =>
+                              toggleMany(
+                                upcomingFixtures.map((f: any) => f._id),
+                                checked === true
+                              )
+                            }
+                          />
+                        </TableHead>
                         <TableHead>Competition</TableHead>
                         <TableHead>Date & Time</TableHead>
                         <TableHead>Match</TableHead>
@@ -196,7 +279,16 @@ export default function FixturesManagement() {
                     </TableHeader>
                     <TableBody>
                       {upcomingFixtures.map((fixture: any) => (
-                        <TableRow key={fixture._id}>
+                        <TableRow key={fixture._id} data-state={selectedIds.has(fixture._id) ? "selected" : undefined}>
+                          <TableCell>
+                            <Checkbox
+                              aria-label="Select fixture"
+                              checked={selectedIds.has(fixture._id)}
+                              onCheckedChange={(checked) =>
+                                toggleOne(fixture._id, checked === true)
+                              }
+                            />
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               {fixture.leagueLogo && (
@@ -296,6 +388,21 @@ export default function FixturesManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-10">
+                          <Checkbox
+                            aria-label="Select all past fixtures"
+                            checked={
+                              pastFixtures.length > 0 &&
+                              pastFixtures.every((f: any) => selectedIds.has(f._id))
+                            }
+                            onCheckedChange={(checked) =>
+                              toggleMany(
+                                pastFixtures.map((f: any) => f._id),
+                                checked === true
+                              )
+                            }
+                          />
+                        </TableHead>
                         <TableHead>Competition</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Match</TableHead>
@@ -306,7 +413,16 @@ export default function FixturesManagement() {
                     </TableHeader>
                     <TableBody>
                       {pastFixtures.map((fixture: any) => (
-                        <TableRow key={fixture._id}>
+                        <TableRow key={fixture._id} data-state={selectedIds.has(fixture._id) ? "selected" : undefined}>
+                          <TableCell>
+                            <Checkbox
+                              aria-label="Select fixture"
+                              checked={selectedIds.has(fixture._id)}
+                              onCheckedChange={(checked) =>
+                                toggleOne(fixture._id, checked === true)
+                              }
+                            />
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               {fixture.leagueLogo && (
@@ -380,9 +496,7 @@ export default function FixturesManagement() {
                                 variant="ghost"
                                 size="icon"
                                 className="text-red-500"
-                                onClick={() => {
-                                  // Delete functionality would go here
-                                }}
+                                onClick={() => handleDelete(fixture._id)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
