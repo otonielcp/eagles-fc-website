@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { getSiteImage } from '@/lib/site-images';
 
-const ourmission1 = getSiteImage("/IMG_5760.JPG")
+const ourmission1 = getSiteImage("/IMG_5096.JPG")
 const ourmission2 = getSiteImage("/junior-main.jpeg")
 
 const OurMission = () => {

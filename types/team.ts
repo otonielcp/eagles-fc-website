@@ -15,6 +15,7 @@ export interface Team {
     website: string;
     isActive: boolean;
   };
+  futbolcoreId?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -14,6 +14,7 @@ export interface ITeam extends Document {
     website: string;
     isActive: boolean;
   };
+  futbolcoreId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,6 +73,11 @@ const TeamSchema: Schema = new Schema(
         type: Boolean,
         default: false,
       },
+    },
+    futbolcoreId: {
+      type: String,
+      index: true,
+      sparse: true,
     },
   },
   { timestamps: true }

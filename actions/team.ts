@@ -7,6 +7,7 @@ import Staff from '@/models/Staff';
 import { revalidatePath } from 'next/cache';
 import { Team as TeamType, TeamFormData } from '@/types/team';
 import { v2 as cloudinary } from 'cloudinary';
+import { getClubTeams } from '@/actions/futbolcore';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -243,6 +244,100 @@ export async function deleteTeams(ids: string[]): Promise<{
       deletedCount: 0,
       skipped: [],
       message: error.message || "Failed to delete teams",
+    };
+  }
+}
+
+// Sync teams from FutbolCore API
+export async function syncTeamsFromFutbolCore(): Promise<{
+  success: boolean;
+  created: number;
+  updated: number;
+  skipped: { name: string; reason: string }[];
+  message: string;
+}> {
+  try {
+    await connectDB();
+
+    const remoteTeams = await getClubTeams();
+    if (remoteTeams.length === 0) {
+      return {
+        success: false,
+        created: 0,
+        updated: 0,
+        skipped: [],
+        message: "No teams returned from FutbolCore",
+      };
+    }
+
+    let created = 0;
+    let updated = 0;
+    const skipped: { name: string; reason: string }[] = [];
+
+    for (const remote of remoteTeams) {
+      const imageUrl =
+        remote.teamImage?.secure_url || remote.logo?.secure_url || '';
+
+      const baseFields = {
+        name: remote.name,
+        shortName: remote.shortName || remote.name.slice(0, 20),
+        description: remote.description || remote.name,
+        category: remote.category || 'Senior',
+        image: imageUrl,
+        isActive: remote.isActive ?? true,
+        order: remote.displayOrder ?? 0,
+        futbolcoreId: remote._id,
+      };
+
+      try {
+        // Match by futbolcoreId first, then by name as fallback for legacy rows
+        const existing = await Team.findOne({
+          $or: [{ futbolcoreId: remote._id }, { name: remote.name }],
+        });
+
+        if (existing) {
+          // Preserve sponsor and any manual overrides; only update remote-sourced fields
+          existing.shortName = baseFields.shortName;
+          existing.description = existing.description || baseFields.description;
+          existing.category = baseFields.category;
+          if (baseFields.image) existing.image = baseFields.image;
+          existing.isActive = baseFields.isActive;
+          existing.order = baseFields.order;
+          existing.futbolcoreId = baseFields.futbolcoreId;
+          await existing.save();
+          updated++;
+        } else {
+          await Team.create({
+            ...baseFields,
+            sponsor: { name: '', logo: '', website: '', isActive: false },
+          });
+          created++;
+        }
+      } catch (err: any) {
+        skipped.push({
+          name: remote.name,
+          reason: err?.message || 'unknown error',
+        });
+      }
+    }
+
+    revalidatePath('/admin/teams');
+    revalidatePath('/teams');
+
+    const message =
+      skipped.length === 0
+        ? `Synced ${created} new, ${updated} updated`
+        : `Synced ${created} new, ${updated} updated; ${skipped.length} skipped`;
+
+    return { success: true, created, updated, skipped, message };
+  } catch (error: any) {
+    console.error("Error syncing teams from FutbolCore:", error);
+    return {
+      success: false,
+      created: 0,
+      updated: 0,
+      skipped: [],
+      message: error?.message || "Failed to sync teams",
     };
   }
 }

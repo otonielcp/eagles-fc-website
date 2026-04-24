@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllTeams, deleteTeam, deleteTeams } from "@/actions/team";
+import { getAllTeams, deleteTeam, deleteTeams, syncTeamsFromFutbolCore } from "@/actions/team";
 import { Team } from "@/types/team";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Users, UserCog } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, UserCog, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -38,6 +38,34 @@ export default function TeamsManagement() {
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncTeamsFromFutbolCore();
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+      const refreshed = await getAllTeams();
+      setTeams(refreshed);
+      if (result.skipped.length > 0) {
+        toast.warning(
+          `${result.message}. Issues: ${result.skipped
+            .map((s) => `${s.name} (${s.reason})`)
+            .join("; ")}`
+        );
+      } else {
+        toast.success(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const toggleOne = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
@@ -156,6 +184,14 @@ export default function TeamsManagement() {
                 : `Delete Selected (${selectedIds.size})`}
             </Button>
           )}
+          <Button
+            variant="outline"
+            onClick={handleSync}
+            disabled={syncing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing..." : "Sync from FutbolCore"}
+          </Button>
           <Link href="/admin/teams/add">
             <Button className="bg-[#C5A464] hover:bg-[#B39355]">
               <Plus className="mr-2 h-4 w-4" /> Add Team
