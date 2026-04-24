@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllTeams, deleteTeam, deleteTeams, syncTeamsFromFutbolCore } from "@/actions/team";
+import {
+  getAllTeams,
+  deleteTeam,
+  deleteTeams,
+  syncTeamsFromFutbolCore,
+  countTeamDependencies,
+} from "@/actions/team";
 import { Team } from "@/types/team";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
@@ -83,31 +89,23 @@ export default function TeamsManagement() {
   const handleBulkDelete = async () => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
-    if (
-      !window.confirm(
-        `Delete ${ids.length} team${ids.length === 1 ? "" : "s"}? Teams with players or staff will be skipped.`
-      )
-    ) {
-      return;
-    }
+
     setBulkDeleting(true);
     try {
+      const counts = await countTeamDependencies(ids);
+      const parts = [`${counts.teams} team${counts.teams === 1 ? "" : "s"}`];
+      if (counts.players > 0) parts.push(`${counts.players} player(s)`);
+      if (counts.staff > 0) parts.push(`${counts.staff} staff`);
+      const confirmMsg = `Delete ${parts.join(", ")}? This cannot be undone.`;
+      if (!window.confirm(confirmMsg)) {
+        return;
+      }
+
       const result = await deleteTeams(ids);
       if (result.success) {
-        const deletedSet = new Set(
-          ids.filter((id) => !result.skipped.some((s) => s.id === id))
-        );
-        setTeams((prev) => prev.filter((t) => !deletedSet.has(t._id)));
+        setTeams((prev) => prev.filter((t) => !selectedIds.has(t._id)));
         setSelectedIds(new Set());
-        if (result.skipped.length > 0) {
-          toast.warning(
-            `${result.message}. Skipped: ${result.skipped
-              .map((s) => `${s.name} (${s.reason})`)
-              .join("; ")}`
-          );
-        } else {
-          toast.success(result.message);
-        }
+        toast.success(result.message);
       } else {
         toast.error(result.message);
       }
@@ -338,9 +336,8 @@ export default function TeamsManagement() {
                             </AlertDialogTitle>
                             <AlertDialogDescription>
                               This action cannot be undone. This will permanently
-                              delete the team and remove the data from our servers.
-                              <br /><br />
-                              <strong>Note:</strong> You cannot delete a team that has players or staff assigned to it.
+                              delete the team along with all of its assigned
+                              players and staff.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

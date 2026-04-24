@@ -125,29 +125,26 @@ export async function updateTeam(id: string, teamData: TeamFormData): Promise<{ 
   }
 }
 
-// Delete team
-export async function deleteTeam(id: string): Promise<{ success: boolean; message: string }> {
+// Delete team (cascades to players and staff)
+export async function deleteTeam(id: string): Promise<{
+  success: boolean;
+  message: string;
+  playersDeleted?: number;
+  staffDeleted?: number;
+}> {
   try {
     await connectDB();
-    
-    // Check if team exists
+
     const team = await Team.findById(id);
     if (!team) {
       return { success: false, message: "Team not found" };
     }
-    
-    // Check if team has players or staff
-    const playersCount = await Player.countDocuments({ teamId: id });
-    const staffCount = await Staff.countDocuments({ teamId: id });
-    
-    if (playersCount > 0 || staffCount > 0) {
-      return { 
-        success: false, 
-        message: `Cannot delete team with associated players or staff. Please remove ${playersCount} players and ${staffCount} staff members first.` 
-      };
-    }
-    
-    // Delete team image from Cloudinary if it exists
+
+    const [playersResult, staffResult] = await Promise.all([
+      Player.deleteMany({ teamId: id }),
+      Staff.deleteMany({ teamId: id }),
+    ]);
+
     if (team.image) {
       try {
         const publicId = team.image.split('/').pop()?.split('.')[0];
@@ -156,93 +153,119 @@ export async function deleteTeam(id: string): Promise<{ success: boolean; messag
         }
       } catch (error) {
         console.error("Error deleting image from Cloudinary:", error);
-        // Continue with team deletion even if image deletion fails
       }
     }
-    
+
     await Team.findByIdAndDelete(id);
-    
+
     revalidatePath('/admin/teams');
     revalidatePath('/teams');
-    
-    return { success: true, message: "Team deleted successfully" };
+
+    const playersDeleted = playersResult.deletedCount ?? 0;
+    const staffDeleted = staffResult.deletedCount ?? 0;
+
+    return {
+      success: true,
+      message:
+        playersDeleted || staffDeleted
+          ? `Deleted team, ${playersDeleted} player(s), ${staffDeleted} staff`
+          : "Team deleted successfully",
+      playersDeleted,
+      staffDeleted,
+    };
   } catch (error: any) {
     console.error("Error deleting team:", error);
-    return { 
-      success: false, 
-      message: error.message || "Failed to delete team" 
+    return {
+      success: false,
+      message: error.message || "Failed to delete team"
     };
   }
 }
 
-// Bulk delete teams
+// Count players/staff for a set of team ids — used for confirm dialogs
+export async function countTeamDependencies(ids: string[]): Promise<{
+  teams: number;
+  players: number;
+  staff: number;
+}> {
+  try {
+    await connectDB();
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return { teams: 0, players: 0, staff: 0 };
+    }
+    const [players, staff] = await Promise.all([
+      Player.countDocuments({ teamId: { $in: ids } }),
+      Staff.countDocuments({ teamId: { $in: ids } }),
+    ]);
+    return { teams: ids.length, players, staff };
+  } catch (error) {
+    console.error("Error counting team dependencies:", error);
+    return { teams: 0, players: 0, staff: 0 };
+  }
+}
+
+// Bulk delete teams (cascades to players and staff)
 export async function deleteTeams(ids: string[]): Promise<{
   success: boolean;
   deletedCount: number;
-  skipped: { id: string; name: string; reason: string }[];
+  playersDeleted: number;
+  staffDeleted: number;
   message: string;
 }> {
   try {
     await connectDB();
 
     if (!Array.isArray(ids) || ids.length === 0) {
-      return { success: true, deletedCount: 0, skipped: [], message: "No teams selected" };
+      return {
+        success: true,
+        deletedCount: 0,
+        playersDeleted: 0,
+        staffDeleted: 0,
+        message: "No teams selected",
+      };
     }
 
     const teams = await Team.find({ _id: { $in: ids } });
-    const deletableIds: string[] = [];
-    const skipped: { id: string; name: string; reason: string }[] = [];
 
     for (const team of teams) {
-      const [playersCount, staffCount] = await Promise.all([
-        Player.countDocuments({ teamId: team._id }),
-        Staff.countDocuments({ teamId: team._id }),
-      ]);
-
-      if (playersCount > 0 || staffCount > 0) {
-        skipped.push({
-          id: team._id.toString(),
-          name: team.name,
-          reason: `${playersCount} player(s), ${staffCount} staff still assigned`,
-        });
-        continue;
-      }
-
-      deletableIds.push(team._id.toString());
-
-      if (team.image) {
-        try {
-          const publicId = team.image.split('/').pop()?.split('.')[0];
-          if (publicId) {
-            await cloudinary.uploader.destroy(`eagles-fc/teams/${publicId}`);
-          }
-        } catch (err) {
-          console.error("Error deleting image from Cloudinary:", err);
+      if (!team.image) continue;
+      try {
+        const publicId = team.image.split('/').pop()?.split('.')[0];
+        if (publicId) {
+          await cloudinary.uploader.destroy(`eagles-fc/teams/${publicId}`);
         }
+      } catch (err) {
+        console.error("Error deleting image from Cloudinary:", err);
       }
     }
 
-    let deletedCount = 0;
-    if (deletableIds.length > 0) {
-      const result = await Team.deleteMany({ _id: { $in: deletableIds } });
-      deletedCount = result.deletedCount ?? 0;
-    }
+    const [playersResult, staffResult, teamsResult] = await Promise.all([
+      Player.deleteMany({ teamId: { $in: ids } }),
+      Staff.deleteMany({ teamId: { $in: ids } }),
+      Team.deleteMany({ _id: { $in: ids } }),
+    ]);
 
     revalidatePath('/admin/teams');
     revalidatePath('/teams');
 
-    const message =
-      skipped.length === 0
-        ? `Deleted ${deletedCount} team(s)`
-        : `Deleted ${deletedCount} team(s); ${skipped.length} skipped`;
+    const deletedCount = teamsResult.deletedCount ?? 0;
+    const playersDeleted = playersResult.deletedCount ?? 0;
+    const staffDeleted = staffResult.deletedCount ?? 0;
 
-    return { success: true, deletedCount, skipped, message };
+    return {
+      success: true,
+      deletedCount,
+      playersDeleted,
+      staffDeleted,
+      message: `Deleted ${deletedCount} team(s), ${playersDeleted} player(s), ${staffDeleted} staff`,
+    };
   } catch (error: any) {
     console.error("Error bulk deleting teams:", error);
     return {
       success: false,
       deletedCount: 0,
-      skipped: [],
+      playersDeleted: 0,
+      staffDeleted: 0,
       message: error.message || "Failed to delete teams",
     };
   }
