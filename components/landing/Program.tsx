@@ -5,7 +5,6 @@ import { UserCheck, GitCompareArrows, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { getSiteImage } from '@/lib/site-images';
 
 // Dynamic import for Three.js to prevent build errors - Temporarily disabled
 // let Canvas: any;
@@ -24,7 +23,7 @@ import { getSiteImage } from '@/lib/site-images';
 //   console.warn('Three.js not available, using fallback');
 // }
 
-const programpic = getSiteImage("/photos/IMG_3418.JPG");
+const programpic = "/IMG_4983.JPG";
 
 // Three.js Soccer Ball Component - Temporarily disabled
 const SoccerBall = () => {
