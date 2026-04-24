@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { getSiteImage } from '@/lib/site-images';
 
-const coreValueImage = getSiteImage("/ourphilosophybg.png")
+const coreValueImage = getSiteImage("/IMG_5613.JPG")
 
 const CoreValues = () => {
   const containerRef = useRef<HTMLDivElement>(null);

@@ -3,7 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { getSiteImage } from '@/lib/site-images';
 
-const eaglesImage = getSiteImage("/photos/IMG_3461.JPG")
+const eaglesImage = getSiteImage("/IMG_5046.JPG")
 
 const AboutEagles = () => {
   return (
