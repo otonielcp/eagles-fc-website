@@ -2,6 +2,7 @@ import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
 import { getClubTeams, getTeamRosterWithBranding } from "@/actions/futbolcore";
 import PlayerSection from "@/components/landing/PlayerSection";
 import { notFound } from "next/navigation";
+import { getTeamDisplayName } from "@/lib/teamName";
 import { Team, Player } from "@/types/team";
 
 export default async function TeamRosterPage({ params }: any) {
@@ -17,23 +18,10 @@ export default async function TeamRosterPage({ params }: any) {
     notFound();
   }
 
-  // shortName is sometimes the generic "Eagles Football Club" — when that
-  // happens, derive a distinctive label from the full team name instead.
-  const GENERIC_SHORT = /^eagles\s*football\s*club$/i;
-  const stripEaglesPrefix = (s: string) =>
-    s.replace(/^(eagles\s*football\s*club|eagles?\s*fc)\s*-?\s*/i, '').trim();
-  const getDisplayName = (t: typeof fcTeam) => {
-    if (t.shortName && !GENERIC_SHORT.test(t.shortName) && t.shortName !== t.name) {
-      return t.shortName;
-    }
-    const cleaned = stripEaglesPrefix(t.name);
-    return cleaned || t.category || t.name;
-  };
-
   const toTeam = (t: typeof fcTeam): Team => ({
     _id: t._id,
     name: t.name,
-    shortName: getDisplayName(t),
+    shortName: getTeamDisplayName(t),
     description: t.description || '',
     category: t.category,
     image: t.teamImage?.secure_url || t.logo?.secure_url || '',

@@ -10,6 +10,7 @@ import {
   type FutbolCoreGame,
   type FutbolCorePlayer,
 } from '@/lib/futbolcore';
+import { getTeamDisplayName } from '@/lib/teamName';
 
 /**
  * Get all Eagles FC teams (excludes opponent teams)
@@ -213,7 +214,7 @@ export async function getEnrichedClubTeams() {
         return {
           _id: team._id,
           name: team.name,
-          shortName: team.shortName || '',
+          shortName: getTeamDisplayName(team),
           description: team.description || '',
           category: team.category,
           image: teamImageUrl,
