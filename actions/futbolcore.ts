@@ -200,13 +200,13 @@ export async function getEnrichedClubTeams() {
           }
         }
 
-        // Get player avatars (first 4 with profile images, fallback to default)
+        // Players are minors — always the club's generic placeholder, never their photo.
         const defaultPlayerImg = branding?.defaultPlayerImageUrl || '';
         const playerAvatars = roster
           .slice(0, 4)
           .map((p) => ({
             id: p._id,
-            image: p.profileImage || defaultPlayerImg,
+            image: defaultPlayerImg,
             name: `${p.firstName} ${p.lastName}`,
           }));
 

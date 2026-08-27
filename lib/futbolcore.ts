@@ -43,11 +43,13 @@ export interface FutbolCoreTeam {
   };
 }
 
+// NOTE: every club team is a youth team (U7–U15), so every player here is a minor.
+// `profileImage` is deliberately absent — the API returns it, but we never carry a
+// child's photo past this boundary. See sanitizePlayer below.
 export interface FutbolCorePlayer {
   _id: string;
   firstName: string;
   lastName: string;
-  profileImage: string | null;
   position: string;
   jerseyNumber: number;
   statistics: {
@@ -180,13 +182,39 @@ async function fetchFutbolCoreWithMeta<T>(endpoint: string): Promise<{ data: T; 
   return { data: json.data, meta: json.meta || {} };
 }
 
+// The API silently caps `limit` at 100 no matter what we ask for, and the club's
+// own teams sort after the opponents — so a single page comes back all-Opponent
+// and every Eagles team is filtered away. Always walk the pages.
+const TEAMS_PAGE_SIZE = 100;
+
+async function fetchAllTeams(): Promise<{ teams: FutbolCoreTeam[]; branding: FutbolCoreBranding }> {
+  const first = await fetchFutbolCoreWithMeta<FutbolCoreTeam[]>(
+    `/teams?limit=${TEAMS_PAGE_SIZE}&page=1`
+  );
+
+  const teams = [...first.data];
+  const pageSize = Number(first.meta?.limit) || TEAMS_PAGE_SIZE;
+  const total = Number(first.meta?.total) || teams.length;
+  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 1;
+
+  if (totalPages > 1) {
+    const rest = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, i) =>
+        fetchFutbolCoreWithMeta<FutbolCoreTeam[]>(`/teams?limit=${pageSize}&page=${i + 2}`)
+      )
+    );
+    for (const page of rest) teams.push(...page.data);
+  }
+
+  return { teams, branding: (first.meta?.branding as FutbolCoreBranding) || {} };
+}
+
 export async function getFutbolCoreTeams(): Promise<FutbolCoreTeam[]> {
-  return fetchFutbolCore<FutbolCoreTeam[]>('/teams?limit=500');
+  return (await fetchAllTeams()).teams;
 }
 
 export async function getFutbolCoreTeamsWithBranding(): Promise<{ teams: FutbolCoreTeam[]; branding: FutbolCoreBranding }> {
-  const result = await fetchFutbolCoreWithMeta<FutbolCoreTeam[]>('/teams?limit=500');
-  return { teams: result.data, branding: (result.meta?.branding as FutbolCoreBranding) || {} };
+  return fetchAllTeams();
 }
 
 export async function getFutbolCoreBranding(): Promise<FutbolCoreBranding> {
@@ -194,13 +222,49 @@ export async function getFutbolCoreBranding(): Promise<FutbolCoreBranding> {
   return (result.meta?.branding as FutbolCoreBranding) || {};
 }
 
+// Whitelist the fields we actually render. A TypeScript interface strips nothing at
+// runtime, so without this every field the API returns — today's profileImage, and
+// any birthdate or guardian contact added later — would flow straight into a public
+// page's payload. Adding a field to a public page must be a deliberate edit here.
+function sanitizePlayer(raw: any): FutbolCorePlayer {
+  const s = raw?.statistics ?? {};
+  const num = (v: unknown) => Number(v) || 0;
+
+  return {
+    _id: String(raw?._id ?? ''),
+    firstName: String(raw?.firstName ?? ''),
+    lastName: String(raw?.lastName ?? ''),
+    position: String(raw?.position ?? ''),
+    jerseyNumber: num(raw?.jerseyNumber),
+    statistics: {
+      goals: num(s.goals),
+      assists: num(s.assists),
+      yellowCards: num(s.yellowCards),
+      redCards: num(s.redCards),
+      matchesPlayed: num(s.matchesPlayed),
+      minutesPlayed: num(s.minutesPlayed),
+      starts: num(s.starts),
+      shots: num(s.shots),
+      fouls: num(s.fouls),
+      substitutions: num(s.substitutions),
+      penalties: num(s.penalties),
+      doubleYellows: num(s.doubleYellows),
+      cleanSheets: num(s.cleanSheets),
+    },
+  };
+}
+
 export async function getFutbolCoreRoster(teamId: string): Promise<FutbolCorePlayer[]> {
-  return fetchFutbolCore<FutbolCorePlayer[]>(`/teams/${teamId}/roster`);
+  const raw = await fetchFutbolCore<any[]>(`/teams/${teamId}/roster`);
+  return (raw ?? []).map(sanitizePlayer);
 }
 
 export async function getFutbolCoreRosterWithMeta(teamId: string): Promise<{ players: FutbolCorePlayer[]; meta: FutbolCoreRosterMeta }> {
-  const result = await fetchFutbolCoreWithMeta<FutbolCorePlayer[]>(`/teams/${teamId}/roster`);
-  return { players: result.data, meta: result.meta as FutbolCoreRosterMeta };
+  const result = await fetchFutbolCoreWithMeta<any[]>(`/teams/${teamId}/roster`);
+  return {
+    players: (result.data ?? []).map(sanitizePlayer),
+    meta: result.meta as FutbolCoreRosterMeta,
+  };
 }
 
 export async function getFutbolCoreGames(teamId: string): Promise<FutbolCoreGame[]> {

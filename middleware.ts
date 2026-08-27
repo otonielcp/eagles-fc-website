@@ -1,24 +1,23 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { ADMIN_COOKIE_NAME, verifySessionToken } from '@/lib/adminSession'
 
-export function middleware(request: NextRequest) {
-  // Get the pathname
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
-  // Check if it's an admin path
   if (path.startsWith('/admin')) {
-    // Allow access to login page
     if (path === '/admin/login') {
       return NextResponse.next()
     }
 
-    // Check for auth cookie
-    const authCookie = request.cookies.get('admin_auth')
-
-    // Redirect to login if no auth cookie
-    if (!authCookie || authCookie.value !== 'authenticated') {
+    // Verify the signature — the cookie's presence alone proves nothing.
+    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value
+    if (!(await verifySessionToken(token))) {
       const loginUrl = new URL('/admin/login', request.url)
-      return NextResponse.redirect(loginUrl)
+      const response = NextResponse.redirect(loginUrl)
+      // Clear a forged or expired cookie so it stops being replayed.
+      response.cookies.delete(ADMIN_COOKIE_NAME)
+      return response
     }
   }
 
@@ -27,4 +26,4 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: '/admin/:path*',
-} 
+}

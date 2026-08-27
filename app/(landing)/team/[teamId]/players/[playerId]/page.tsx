@@ -1,9 +1,6 @@
-import { getPlayerById, getPlayersByTeamId, getTeamStats } from "@/actions/player";
-import { getTeamById, getSimilarTeams } from "@/actions/team";
 import { getClubTeams, getTeamRosterWithBranding } from "@/actions/futbolcore";
 
 import PlayerProfile from "@/components/landing/PlayerProfile";
-import TeamSponsor from "@/components/landing/TeamSponsor";
 import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
 
 import { notFound } from "next/navigation";
@@ -12,36 +9,10 @@ import { Player, Team } from "@/types/team";
 export default async function PlayerProfilePage({ params }: any) {
   const { teamId, playerId } = await params;
 
-  // Try MongoDB first
-  let player: Player | null = null;
-  let team: Team | null = null;
-  try {
-    player = await getPlayerById(playerId);
-    team = await getTeamById(teamId);
-  } catch {
-    // IDs aren't valid MongoDB ObjectIds — fall through to FutbolCore
-  }
-
-  if (player && team) {
-    const similarTeams = await getSimilarTeams(team.name);
-    const teamPlayers = await getPlayersByTeamId(teamId);
-    const teamStats = await getTeamStats(teamId);
-
-    return (
-      <div className="max-w-full overflow-hidden">
-        <MiniNavbarTeams currentTeam={team} similarTeams={similarTeams} />
-        <PlayerProfile
-          player={player}
-          team={team}
-          teamPlayers={teamPlayers}
-          teamAvg={teamStats.averages}
-        />
-        <TeamSponsor team={team} />
-      </div>
-    );
-  }
-
-  // FutbolCore fallback
+  // FutbolCore is the single source of truth. The old MongoDB path was removed:
+  // it passed whole player documents into PlayerProfile, a client component, so
+  // every field — dateOfBirth, height, weight — was serialized into the page
+  // payload and readable in source whether or not it was ever rendered.
   const fcTeams = await getClubTeams();
   const fcTeam = fcTeams.find((t) => t._id === teamId);
   if (!fcTeam) notFound();
@@ -61,21 +32,7 @@ export default async function PlayerProfilePage({ params }: any) {
     return cleaned || t.category || t.name;
   };
 
-  const fcTeamTransformed: Team = {
-    _id: fcTeam._id,
-    name: fcTeam.name,
-    shortName: getDisplayName(fcTeam),
-    description: fcTeam.description || '',
-    category: fcTeam.category,
-    image: fcTeam.teamImage?.secure_url || fcTeam.logo?.secure_url || '',
-    isActive: fcTeam.isActive,
-    order: fcTeam.displayOrder || 0,
-    sponsor: { name: '', logo: '', website: '', isActive: false },
-    createdAt: '',
-    updatedAt: '',
-  };
-
-  const similarTeams: Team[] = fcTeams.map((t) => ({
+  const toTeam = (t: typeof fcTeam): Team => ({
     _id: t._id,
     name: t.name,
     shortName: getDisplayName(t),
@@ -87,7 +44,10 @@ export default async function PlayerProfilePage({ params }: any) {
     sponsor: { name: '', logo: '', website: '', isActive: false },
     createdAt: '',
     updatedAt: '',
-  }));
+  });
+
+  const fcTeamTransformed = toTeam(fcTeam);
+  const similarTeams: Team[] = fcTeams.map(toTeam);
 
   const toPlayer = (p: (typeof rosterData.players)[number]): Player => ({
     _id: p._id,
@@ -96,12 +56,13 @@ export default async function PlayerProfilePage({ params }: any) {
     displayName: `${p.firstName} ${p.lastName}`,
     jerseyNumber: p.jerseyNumber,
     position: p.position,
+    // Players are minors: no birthdate, no measurements, no photo.
     dateOfBirth: '',
     nationality: '',
     height: 0,
     weight: 0,
     biography: '',
-    image: p.profileImage || rosterData.clubLogo || '',
+    image: rosterData.defaultPlayerImage || rosterData.clubLogo || '',
     teamId,
     isActive: true,
     isCaptain: false,

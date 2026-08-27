@@ -11,7 +11,6 @@ import {
   ShoppingBag,
   Calendar,
   FileText,
-  Settings,
   Ticket,
   Video,
   Trophy,
@@ -75,10 +74,6 @@ export default function AdminLayout({
         { name: "Sponsors", href: "/admin/sponsors", icon: ImageIcon },
         { name: "Partnerships", href: "/admin/partnerships", icon: Handshake },
       ],
-    },
-    {
-      label: "System",
-      items: [{ name: "Settings", href: "/admin/settings", icon: Settings }],
     },
   ];
 

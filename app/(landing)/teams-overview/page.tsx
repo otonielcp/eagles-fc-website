@@ -1,6 +1,4 @@
-import { getActiveTeams } from '@/actions/team';
-import { getPlayersByTeamId } from '@/actions/player';
-import { getStaffByTeamId } from '@/actions/staff';
+import { getEnrichedClubTeams } from '@/actions/futbolcore';
 import { TeamCard } from '@/components/landing/TeamCard';
 
 export const dynamic = 'force-dynamic';
@@ -10,33 +8,10 @@ export const metadata = {
   description: 'View all Eagles FC teams, players, and coaching staff',
 };
 
-async function getTeamsWithData() {
-  const teams = await getActiveTeams();
-
-  // Get player count and coach count for each team
-  const teamsWithData = await Promise.all(
-    teams.map(async (team) => {
-      const players = await getPlayersByTeamId(team._id);
-      const staff = await getStaffByTeamId(team._id);
-
-      // Count coaches (roles that include 'Coach')
-      const coaches = staff.filter(member =>
-        member.role.toLowerCase().includes('coach')
-      );
-
-      return {
-        ...team,
-        totalPlayers: players.length,
-        coaches: coaches.length,
-      };
-    })
-  );
-
-  return teamsWithData;
-}
-
 export default async function TeamsOverviewPage() {
-  const teams = await getTeamsWithData();
+  // FutbolCore is the single source of truth; this already carries the
+  // totalPlayers and coaches counts the cards render.
+  const teams = await getEnrichedClubTeams();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-24">
