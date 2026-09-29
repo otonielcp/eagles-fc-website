@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { formatWallClock } from "@/lib/hiring";
 
-const SITE_URL = (process.env.SITE_URL || "https://eaglesfc.org").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://eaglesfcgi.org").replace(/\/$/, "");
 const GOLD = "#C6A76D";
 
 /** Where new-application alerts go. Falls back to the general club inbox. */

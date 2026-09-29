@@ -44,12 +44,11 @@ function jobPostingJsonLd(job: PublicJob) {
     datePosted: job.createdAt.slice(0, 10),
     ...(job.applicationDeadline ? { validThrough: `${job.applicationDeadline}T23:59:59-06:00` } : {}),
     employmentType: GOOGLE_EMPLOYMENT_TYPE[job.employmentType],
-    // Matches the site-wide SportsOrganization block in the root layout.
     hiringOrganization: {
       "@type": "SportsOrganization",
       name: "Eagles Football Club",
-      sameAs: "https://eaglesfc.org",
-      logo: "https://eaglesfc.org/LOGO%20(2).png",
+      sameAs: "https://eaglesfcgi.org",
+      logo: "https://eaglesfcgi.org/LOGO%20(2).png",
     },
     jobLocation: {
       "@type": "Place",
