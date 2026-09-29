@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getClubTeams } from '@/actions/futbolcore';
+import { getOpenJobs } from '@/actions/careers';
 
 const BASE_URL = 'https://eaglesfc.org';
 
@@ -20,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/partners`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/sponsorship`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/playerinquiries`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE_URL}/careers`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.6 },
     { url: `${BASE_URL}/ticketing`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.6 },
     { url: `${BASE_URL}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
@@ -40,5 +42,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If API fails, just skip dynamic team pages
   }
 
-  return [...staticPages, ...teamPages];
+  // Open job postings (getOpenJobs already returns [] on failure)
+  const jobPages: MetadataRoute.Sitemap = (await getOpenJobs()).map((job) => ({
+    url: `${BASE_URL}/careers/${job.slug}`,
+    lastModified: new Date(job.createdAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...teamPages, ...jobPages];
 }

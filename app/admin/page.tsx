@@ -12,6 +12,7 @@ import {
   Trophy,
   Pencil,
   Handshake,
+  ClipboardList,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -84,6 +85,12 @@ const quickActions = [
     subtitle: "Review inquiries",
     href: "/admin/partnerships",
     icon: Handshake,
+  },
+  {
+    title: "Hiring",
+    subtitle: "Review job applicants",
+    href: "/admin/hiring/applications",
+    icon: ClipboardList,
   },
 ];
 

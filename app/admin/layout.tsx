@@ -21,6 +21,8 @@ import {
   Inbox,
   Menu,
   X,
+  ClipboardList,
+  Briefcase,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { logout } from "@/actions/auth";
@@ -64,6 +66,13 @@ export default function AdminLayout({
         { name: "Seasons", href: "/admin/seasons", icon: Archive },
         { name: "Standings", href: "/admin/standings", icon: ListOrdered },
         { name: "Trophies", href: "/admin/league-count", icon: Trophy },
+      ],
+    },
+    {
+      label: "Hiring",
+      items: [
+        { name: "Applications", href: "/admin/hiring/applications", icon: ClipboardList },
+        { name: "Job Postings", href: "/admin/hiring/jobs", icon: Briefcase },
       ],
     },
     {

@@ -125,6 +125,10 @@ const InternalNavbar = () => {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#BD9B58] opacity-0 group-hover/item:opacity-100 transition-opacity duration-200"></span>
                   <span className="font-medium tracking-wide">Programs</span>
                 </Link>
+                <Link href="/careers" className="group/item flex items-center gap-3 px-5 py-3 text-sm text-white/90 hover:text-white transition-all duration-200 hover:bg-white/5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#BD9B58] opacity-0 group-hover/item:opacity-100 transition-opacity duration-200"></span>
+                  <span className="font-medium tracking-wide">Careers</span>
+                </Link>
 
                 {/* Subtle bottom gradient */}
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
@@ -196,6 +200,7 @@ const InternalNavbar = () => {
                     { href: '/news', label: 'News' },
                     { href: '/shop', label: 'Shop' },
                     { href: '/partners', label: 'Partners' },
+                    { href: '/careers', label: 'Careers' },
                     { href: '/ticketing', label: 'Contact' }
                   ].map((item) => (
                     <li key={item.href}>

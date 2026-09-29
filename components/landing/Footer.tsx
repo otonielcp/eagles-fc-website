@@ -33,6 +33,7 @@ const Footer = async () => {
     { name: 'News', to: '/news' },
     { name: 'Coaches', to: '/coaches' },
     { name: 'Teams', to: '/teams' },
+    { name: 'Careers', to: '/careers' },
     { name: 'Contact us', to: '/ticketing' },
   ];
 
