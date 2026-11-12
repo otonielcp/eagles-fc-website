@@ -50,7 +50,7 @@ export default async function HomePage() {
       <CoreValues />
       <Program />
       <GameResult />
-      <Standing isHomePage={true} />
+      <Standing />
       <TopProducts />
 
     </div>

@@ -5,6 +5,13 @@ import { requireAdmin } from '@/lib/requireAdmin';
 
 import connectDB from '@/lib/dbConnect';
 import Standing from '@/models/Standings';
+import { revalidatePath } from 'next/cache';
+
+// Public pages that show standings. Not exported, so not a server action.
+function revalidateStandingsPages() {
+  revalidatePath('/tables');
+  revalidatePath('/');
+}
 
 export async function getAllStandings(): Promise<any> {
   try {
@@ -44,9 +51,15 @@ export async function updateStanding(id: string, data: any): Promise<any> {
   try {
     await connectDB();
 
+    // New rows mean new standings: record when, for the "Updated" line on /tables.
+    const update =
+      data && typeof data === 'object' && 'standings' in data && !('metadata' in data)
+        ? { ...data, 'metadata.lastUpdated': new Date() }
+        : data;
+
     const updatedStanding = await Standing.findByIdAndUpdate(
       id,
-      data,
+      update,
       { new: true, runValidators: true }
     ).lean();
 
@@ -54,6 +67,7 @@ export async function updateStanding(id: string, data: any): Promise<any> {
       throw new Error("Standing not found");
     }
 
+    revalidateStandingsPages();
     return JSON.parse(JSON.stringify(updatedStanding));
   } catch (error) {
     console.error("Error updating standing:", error);
@@ -83,7 +97,9 @@ export async function updateTeamInStanding(
       Object.assign(standing.standings[teamIndex], teamData);
 
       // Save the updated document
+      standing.set('metadata.lastUpdated', new Date());
       await standing.save();
+      revalidateStandingsPages();
 
       return JSON.parse(JSON.stringify(standing));
     } else {
@@ -107,6 +123,7 @@ export async function deleteStanding(id: string): Promise<boolean> {
       throw new Error("Standing not found");
     }
     
+    revalidateStandingsPages();
     return true;
   } catch (error) {
     console.error("Error deleting standing:", error);
@@ -119,6 +136,7 @@ export async function createStanding(data: {
     league: string; 
     group: string; 
     season: string; 
+    teamId?: string;
   };
   standings?: any[];
 }): Promise<any> {
@@ -128,9 +146,10 @@ export async function createStanding(data: {
     
     // Create a new standing document
     const newStanding = await Standing.create({
-      metadata: data.metadata,
+      metadata: { ...data.metadata, lastUpdated: new Date() },
       standings: data.standings || [] // Default to empty array if not provided
     });
+    revalidateStandingsPages();
     
     return JSON.parse(JSON.stringify(newStanding));
   } catch (error) {

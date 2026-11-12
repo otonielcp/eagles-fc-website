@@ -25,6 +25,9 @@ const standingSchema = new mongoose.Schema(
       group: String,
       season: String,
       lastUpdated: Date,
+      // FutbolCore id of the Eagles FC team this table belongs to. Only linked
+      // tables are shown on the public Tables page (picked by team).
+      teamId: String,
     },
     standings: [teamSchema],
   },

@@ -1,7 +1,9 @@
 "use client"
 import { useState, useEffect } from "react";
 import { getAllStandings, updateStanding, updateTeamInStanding, deleteStanding, createStanding } from "@/actions/standings";
-import axios from "axios";
+import { getClubTeams } from "@/actions/futbolcore";
+import { parsePastedStandings, type PastedStandingRow } from "@/lib/standingsPaste";
+import { Textarea } from "@/components/ui/textarea";
 // Import Shadcn UI components
 import {
   Dialog,
@@ -50,7 +52,15 @@ interface StandingMetadata {
   league: string;
   group: string;
   season: string;
+  /** FutbolCore id of the Eagles FC team whose standings these are. */
+  teamId?: string;
 }
+
+type ClubTeamOption = { id: string; name: string };
+
+// Plain select styled like the shadcn Input.
+const selectClass =
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 interface StandingDocument {
   _id: string;
@@ -78,10 +88,14 @@ const AdminStandings = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
-  // Scraper state
-  const [scrapingUrl, setScrapingUrl] = useState<string>('');
-  const [isScraping, setIsScraping] = useState(false);
-  const [scrapingError, setScrapingError] = useState<string | null>(null);
+  // Eagles FC teams (FutbolCore) that a table can be linked to
+  const [clubTeams, setClubTeams] = useState<ClubTeamOption[]>([]);
+
+  // "Paste Table" dialog
+  const [pasteStandingId, setPasteStandingId] = useState<string | null>(null);
+  const [pasteText, setPasteText] = useState('');
+  const [pasteRows, setPasteRows] = useState<PastedStandingRow[]>([]);
+  const [pasteError, setPasteError] = useState<string | null>(null);
 
   // Dialog saves; kept separate from the importer so saving a team doesn't
   // relabel the import button, and from deletes so each card's spinner is its own.
@@ -100,7 +114,8 @@ const AdminStandings = () => {
   const [newStandingMetadata, setNewStandingMetadata] = useState<StandingMetadata>({
     league: '',
     group: '',
-    season: ''
+    season: '',
+    teamId: ''
   });
 
   // Add a new state for the Add Team dialog
@@ -119,7 +134,18 @@ const AdminStandings = () => {
 
   useEffect(() => {
     fetchStandings();
+    getClubTeams()
+      .then((teams) =>
+        setClubTeams(
+          teams
+            .map((t) => ({ id: t._id, name: t.name.replace(/\s+/g, ' ').trim() }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+        )
+      )
+      .catch((err) => console.error("Error loading club teams:", err));
   }, []);
+
+  const teamName = (id?: string) => clubTeams.find((t) => t.id === id)?.name;
 
   const fetchStandings = async () => {
     try {
@@ -134,47 +160,46 @@ const AdminStandings = () => {
     }
   };
 
-  // Function to handle scraping standings
-  const handleScrapeStandings = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Paste a table copied from the league website
+  const openPasteDialog = (standingId: string) => {
+    setPasteStandingId(standingId);
+    setPasteText('');
+    setPasteRows([]);
+    setPasteError(null);
+  };
 
-    if (!scrapingUrl.trim()) {
-      setScrapingError("Please enter a valid URL");
+  const handlePasteChange = (text: string) => {
+    setPasteText(text);
+    if (!text.trim()) {
+      setPasteRows([]);
+      setPasteError(null);
       return;
     }
+    const { rows, error } = parsePastedStandings(text);
+    setPasteRows(rows);
+    setPasteError(error ?? null);
+  };
 
+  const handleSavePaste = async () => {
+    if (!pasteStandingId || pasteRows.length === 0) return;
     try {
-      setIsScraping(true);
-      setScrapingError(null);
+      setIsSubmitting(true);
+      // Keep logos of clubs already in the table.
+      const current = standings.find((s) => s._id === pasteStandingId);
+      const logoFor = (name: string) =>
+        current?.standings.find((t) => t.teamName.trim().toLowerCase() === name.trim().toLowerCase())?.teamLogo || '';
+      const rows = pasteRows.map((row) => ({ ...row, teamLogo: logoFor(row.teamName) }));
 
-      const response = await axios.post('https://backend.eaglesnebraskafc.com/api/scrape', {
-        url: scrapingUrl,
-      });
-
-      // Update the standings directly from the response if available
-      // or refetch them from the server
-      if (response.data.standings) {
-        setStandings(prev => [...prev, response.data.standings]);
-      } else {
-        const data = await getAllStandings();
-        setStandings(data);
-      }
-
-      // Show success message
-      setSuccessMessage("Standings scraped successfully!");
+      const updated = await updateStanding(pasteStandingId, { standings: rows });
+      setStandings((prev) => prev.map((s) => (s._id === pasteStandingId ? updated : s)));
+      setSuccessMessage(`Table updated with ${rows.length} teams`);
       setTimeout(() => setSuccessMessage(null), 3000);
-
-      // Reset form
-      setScrapingUrl('');
+      setPasteStandingId(null);
     } catch (err) {
-      console.error("Error scraping standings:", err);
-      if (axios.isAxiosError(err)) {
-        setScrapingError(err.response?.data?.message || err.message || "Failed to scrape standings");
-      } else {
-        setScrapingError(err instanceof Error ? err.message : "Failed to scrape standings");
-      }
+      setError("Failed to save the pasted table");
+      console.error("Error saving pasted standings:", err);
     } finally {
-      setIsScraping(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -392,9 +417,9 @@ const AdminStandings = () => {
     if (!editLeagueId || !editMetadata) return;
 
     // Validate metadata
-    if (!editMetadata.league.trim() || !editMetadata.group.trim() || !editMetadata.season.trim()) {
+    if (!editMetadata.teamId || !editMetadata.league.trim() || !editMetadata.group.trim() || !editMetadata.season.trim()) {
       setValidationErrors({
-        metadata: "All league information fields are required"
+        metadata: "Choose the Eagles team and fill in the league, group and season"
       });
       return;
     }
@@ -402,7 +427,13 @@ const AdminStandings = () => {
     try {
       setIsSubmitting(true);
 
-      await updateStanding(editLeagueId, { metadata: editMetadata });
+      // Only these fields, so lastUpdated is kept.
+      await updateStanding(editLeagueId, {
+        'metadata.teamId': editMetadata.teamId,
+        'metadata.league': editMetadata.league,
+        'metadata.group': editMetadata.group,
+        'metadata.season': editMetadata.season,
+      });
 
       // Update the state directly rather than refetching
       setStandings(prevStandings => {
@@ -478,9 +509,9 @@ const AdminStandings = () => {
   // Create a new standing
   const handleCreateStanding = async () => {
     // Validate metadata
-    if (!newStandingMetadata.league.trim() || !newStandingMetadata.group.trim() || !newStandingMetadata.season.trim()) {
+    if (!newStandingMetadata.teamId || !newStandingMetadata.league.trim() || !newStandingMetadata.group.trim() || !newStandingMetadata.season.trim()) {
       setValidationErrors({
-        metadata: "All league information fields are required"
+        metadata: "Choose the Eagles team and fill in the league, group and season"
       });
       return;
     }
@@ -504,7 +535,8 @@ const AdminStandings = () => {
       setNewStandingMetadata({
         league: '',
         group: '',
-        season: ''
+        season: '',
+        teamId: ''
       });
       setIsCreateDialogOpen(false);
       setValidationErrors({});
@@ -686,50 +718,17 @@ const AdminStandings = () => {
         </Alert>
       )}
 
-      {/* Scraper Form */}
+      {/* How standings work */}
       <Card className="mb-8 border border-gray-200 shadow-sm rounded-lg overflow-hidden">
-        <CardHeader className="bg-gray-50 border-b border-gray-200 py-4 px-6">
-          <CardTitle className="text-lg font-semibold text-gray-900">
-            Import Standings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleScrapeStandings} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="scrapingUrl">Standings URL</Label>
-              <div className="flex gap-3">
-                <Input
-                  id="scrapingUrl"
-                  placeholder="Enter standings page URL to scrape"
-                  value={scrapingUrl}
-                  onChange={(e) => setScrapingUrl(e.target.value)}
-                  className="flex-1"
-                  disabled={isScraping}
-                />
-                <Button
-                  type="submit"
-                  className="bg-[#C5A464] hover:bg-[#B39355] text-white flex items-center gap-2 whitespace-nowrap"
-                  disabled={isScraping}
-                >
-                  {isScraping ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Importing...</span>
-                    </>
-                  ) : (
-                    'Import Standings'
-                  )}
-                </Button>
-              </div>
-              {scrapingError && (
-                <p className="text-red-500 text-sm mt-1">{scrapingError}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-2">
-                Enter the URL of a standings page to import the data directly into the system.
-                Supported formats: SportsAffinity, GotSport, and other league management systems.
-              </p>
-            </div>
-          </form>
+        <CardContent className="p-6 text-sm text-gray-600 space-y-2">
+          <p>
+            Each table belongs to one Eagles team. On the public Tables page, visitors pick a team and see its tables.
+            Tables that are not linked to a team are not shown.
+          </p>
+          <p>
+            To fill or refresh a table, open the league&apos;s standings page (PlayMetrics, GotSport...), select the whole
+            table including the heading row, copy it, and use <strong>Paste Table</strong>.
+          </p>
         </CardContent>
       </Card>
 
@@ -755,13 +754,27 @@ const AdminStandings = () => {
 
           <div className="grid grid-cols-1 gap-4 py-4">
             <div className="space-y-2">
+              <Label htmlFor="new-team">Eagles Team</Label>
+              <select
+                id="new-team"
+                className={selectClass}
+                value={newStandingMetadata.teamId || ''}
+                onChange={(e) => setNewStandingMetadata({ ...newStandingMetadata, teamId: e.target.value })}
+              >
+                <option value="">Choose the team these standings belong to</option>
+                {clubTeams.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="new-league">League Name</Label>
               <Input
                 id="new-league"
                 name="league"
                 value={newStandingMetadata.league}
                 onChange={handleNewMetadataInputChange}
-                placeholder="e.g. Premier League"
+                placeholder="e.g. Nebraska Youth Soccer League"
               />
             </div>
             <div className="space-y-2">
@@ -771,7 +784,7 @@ const AdminStandings = () => {
                 name="group"
                 value={newStandingMetadata.group}
                 onChange={handleNewMetadataInputChange}
-                placeholder="e.g. Group A"
+                placeholder="e.g. U15 Boys Division 1"
               />
             </div>
             <div className="space-y-2">
@@ -781,7 +794,7 @@ const AdminStandings = () => {
                 name="season"
                 value={newStandingMetadata.season}
                 onChange={handleNewMetadataInputChange}
-                placeholder="e.g. 2023-2024"
+                placeholder="e.g. Fall 2026"
               />
             </div>
 
@@ -1074,12 +1087,26 @@ const AdminStandings = () => {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Edit League Information</DialogTitle>
             <DialogDescription className="text-gray-500">
-              Update league name, group, and season
+              Update the team, league name, group, and season
             </DialogDescription>
           </DialogHeader>
 
           {editMetadata && (
             <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-team">Eagles Team</Label>
+                <select
+                  id="edit-team"
+                  className={selectClass}
+                  value={editMetadata.teamId || ''}
+                  onChange={(e) => setEditMetadata({ ...editMetadata, teamId: e.target.value })}
+                >
+                  <option value="">Choose the team these standings belong to</option>
+                  {clubTeams.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="league">League Name</Label>
                 <Input
@@ -1379,14 +1406,101 @@ const AdminStandings = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Paste Table Dialog */}
+      <Dialog open={pasteStandingId !== null} onOpenChange={(open) => { if (!open) setPasteStandingId(null); }}>
+        <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Paste Table</DialogTitle>
+            <DialogDescription className="text-gray-500">
+              Copy the whole standings table from the league website, including the heading row
+              (Team, GP, W, L, T...), and paste it below. It replaces the teams in this table.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 overflow-y-auto">
+            <Textarea
+              value={pasteText}
+              onChange={(e) => handlePasteChange(e.target.value)}
+              rows={8}
+              placeholder="Paste the copied table here"
+              className="font-mono text-xs"
+            />
+            {pasteError && (
+              <Alert variant="destructive" className="bg-red-50 border-red-300">
+                <AlertDescription className="text-red-700">{pasteError}</AlertDescription>
+              </Alert>
+            )}
+            {pasteRows.length > 0 && (
+              <div className="border rounded-md overflow-x-auto">
+                <p className="text-sm font-medium px-3 py-2 bg-gray-50 border-b">Preview: {pasteRows.length} teams</p>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-gray-600">
+                      {['Pos', 'Team', 'P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'].map((h) => (
+                        <th key={h} className={h === 'Team' ? 'py-2 px-2 text-left' : 'py-2 px-2 text-center'}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pasteRows.map((row, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="py-1.5 px-2 text-center">{row.rank}</td>
+                        <td className="py-1.5 px-2">{row.teamName}</td>
+                        <td className="py-1.5 px-2 text-center">{row.gamesPlayed}</td>
+                        <td className="py-1.5 px-2 text-center">{row.wins}</td>
+                        <td className="py-1.5 px-2 text-center">{row.ties}</td>
+                        <td className="py-1.5 px-2 text-center">{row.losses}</td>
+                        <td className="py-1.5 px-2 text-center">{row.goalsFor}</td>
+                        <td className="py-1.5 px-2 text-center">{row.goalsAgainst}</td>
+                        <td className="py-1.5 px-2 text-center">{row.goalDifference}</td>
+                        <td className="py-1.5 px-2 text-center font-semibold">{row.totalPoints}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPasteStandingId(null)}>Cancel</Button>
+            <Button
+              onClick={handleSavePaste}
+              className="bg-[#C5A464] hover:bg-[#B39355] text-white"
+              disabled={isSubmitting || pasteRows.length === 0}
+            >
+              {isSubmitting ? 'Saving...' : pasteRows.length ? `Save ${pasteRows.length} teams` : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Standings List */}
       {standings.map((league: any) => (
         <Card key={league._id} className="mb-8 border border-gray-200 shadow-sm rounded-lg overflow-hidden">
           <CardHeader className="bg-gray-50 border-b border-gray-200 py-4 px-6 flex flex-row justify-between items-center">
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {league.metadata.league} - {league.metadata.group} {league.metadata.season}
-            </CardTitle>
-            <div className="flex gap-2">
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                {league.metadata.league} - {league.metadata.group} {league.metadata.season}
+              </CardTitle>
+              {league.metadata.teamId ? (
+                <p className="text-sm text-gray-600 mt-1">
+                  Team: <strong>{teamName(league.metadata.teamId) || 'Loading...'}</strong>
+                </p>
+              ) : (
+                <p className="text-sm text-red-600 mt-1">
+                  Not linked to a team, so it is not shown on the Tables page. Use Edit League Info to choose the team.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <Button
+                variant="outline"
+                className="bg-gray-900 hover:bg-gray-800 text-white border-none"
+                onClick={() => openPasteDialog(league._id)}
+              >
+                Paste Table
+              </Button>
               <Button
                 variant="outline"
                 className="bg-[#4CAF50] hover:bg-[#3e8e41] text-white border-none"

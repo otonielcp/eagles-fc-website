@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import useLeagueStore from "@/store/leaguestore";
 import { getClubGameFilters } from "@/actions/futbolcore";
 import { ALL_COMPETITIONS, ALL_LEAGUES, ALL_SEASONS, type GameFilterOptions } from "@/lib/gameFilters";
@@ -12,8 +12,19 @@ import { ALL_COMPETITIONS, ALL_LEAGUES, ALL_SEASONS, type GameFilterOptions } fr
 const selectClass =
   "bg-transparent focus:outline-none cursor-pointer border border-white/30 px-3 py-2 rounded-md text-white [&>option]:text-gray-900";
 
-const NavbarFix = () => {
+type TeamPicker = {
+  teams: { id: string; name: string; hasStandings: boolean }[];
+  selectedId?: string;
+};
+
+// On /tables the filters are replaced by a team picker (props from the page).
+const NavbarFix = ({ teamPicker }: { teamPicker?: TeamPicker } = {}) => {
   const currentPath = usePathname();
+  const router = useRouter();
+  const [pickedTeam, setPickedTeam] = useState(teamPicker?.selectedId ?? "");
+  useEffect(() => {
+    setPickedTeam(teamPicker?.selectedId ?? "");
+  }, [teamPicker?.selectedId]);
   const [options, setOptions] = useState<GameFilterOptions>({ leagues: [], seasons: [], competitions: [] });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,7 +37,7 @@ const NavbarFix = () => {
     setSelectedCompetition,
   } = useLeagueStore();
 
-  // Tables show season records, which can't be split by league or season.
+  // Tables are picked by team instead of league / season / competition.
   const showFilters = currentPath !== "/tables";
 
   useEffect(() => {
@@ -95,6 +106,27 @@ const NavbarFix = () => {
             </button>
           </Link>
         </div>
+
+        {/* Second Row - Team picker (Tables) */}
+        {!showFilters && teamPicker && teamPicker.teams.length > 0 && (
+          <div className="flex justify-center sm:justify-end text-white text-xs mt-2 sm:mt-0">
+            <select
+              aria-label="Choose a team"
+              className={`${selectClass} min-w-[220px]`}
+              value={pickedTeam}
+              onChange={(e) => {
+                setPickedTeam(e.target.value);
+                router.push(`/tables?team=${encodeURIComponent(e.target.value)}`, { scroll: false });
+              }}
+            >
+              {teamPicker.teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}{team.hasStandings ? "" : " (not posted yet)"}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Second Row - Filters */}
         {showFilters && (
