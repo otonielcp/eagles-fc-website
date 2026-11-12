@@ -1,29 +1,30 @@
-import { getClubTeams, getTeamRosterWithBranding } from "@/actions/futbolcore";
+import { getTeamRosterWithBranding } from "@/actions/futbolcore";
+import { findVisibleTeam, getVisibleTeams, withRouteIds } from "@/lib/publicTeams";
 
 import PlayerProfile from "@/components/landing/PlayerProfile";
 import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
 
 import { notFound } from "next/navigation";
-import { getTeamDisplayName } from "@/lib/teamName";
-import { Player, Team } from "@/types/team";
+import { Player } from "@/types/team";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 type PlayerPageProps = { params: Promise<{ teamId: string; playerId: string }> };
 
 // generateMetadata and the page share these fetches; run each once per request.
-const getTeams = cache(() => getClubTeams());
+// Only teams switched on in the admin Teams list (and linked to FutbolCore) have player pages.
+const getTeams = cache(() => getVisibleTeams());
 const getRoster = cache((teamId: string) => getTeamRosterWithBranding(teamId));
 
 export async function generateMetadata({ params }: PlayerPageProps): Promise<Metadata> {
   const { teamId, playerId } = await params;
-  const fcTeam = (await getTeams()).find((t) => t._id === teamId);
-  const fcPlayer = fcTeam ? (await getRoster(teamId)).players.find((p) => p._id === playerId) : undefined;
-  if (!fcTeam || !fcPlayer) return { title: "Player Not Found" };
+  const shown = findVisibleTeam(await getTeams(), teamId);
+  const fcPlayer = shown?.futbolcoreId ? (await getRoster(shown.futbolcoreId)).players.find((p) => p._id === playerId) : undefined;
+  if (!shown || !fcPlayer) return { title: "Player Not Found" };
 
   // Players are minors: metadata carries only the team and jersey number —
   // no name, birthdate or photo.
-  const teamName = getTeamDisplayName(fcTeam);
+  const teamName = shown.shortName;
   const number = fcPlayer.jerseyNumber ? ` #${fcPlayer.jerseyNumber}` : "";
   return {
     title: `${teamName}${number} Player Profile`,
@@ -34,34 +35,21 @@ export async function generateMetadata({ params }: PlayerPageProps): Promise<Met
 export default async function PlayerProfilePage({ params }: PlayerPageProps) {
   const { teamId, playerId } = await params;
 
-  // FutbolCore is the single source of truth. The old MongoDB path was removed:
+  // The admin Teams list decides which teams are shown; rosters come only from
+  // FutbolCore. The old MongoDB roster path was removed:
   // it passed whole player documents into PlayerProfile, a client component, so
   // every field — dateOfBirth, height, weight — was serialized into the page
   // payload and readable in source whether or not it was ever rendered.
-  const fcTeams = await getTeams();
-  const fcTeam = fcTeams.find((t) => t._id === teamId);
-  if (!fcTeam) notFound();
+  const teams = await getTeams();
+  const shown = findVisibleTeam(teams, teamId);
+  if (!shown?.futbolcoreId) notFound();
 
-  const rosterData = await getRoster(teamId);
+  const rosterData = await getRoster(shown.futbolcoreId);
   const fcPlayer = rosterData.players.find((p) => p._id === playerId);
   if (!fcPlayer) notFound();
 
-  const toTeam = (t: typeof fcTeam): Team => ({
-    _id: t._id,
-    name: t.name,
-    shortName: getTeamDisplayName(t),
-    description: t.description || '',
-    category: t.category,
-    image: t.teamImage?.secure_url || t.logo?.secure_url || '',
-    isActive: t.isActive,
-    order: t.displayOrder || 0,
-    sponsor: { name: '', logo: '', website: '', isActive: false },
-    createdAt: '',
-    updatedAt: '',
-  });
-
-  const fcTeamTransformed = toTeam(fcTeam);
-  const similarTeams: Team[] = fcTeams.map(toTeam);
+  const similarTeams = withRouteIds(teams);
+  const fcTeamTransformed = similarTeams.find((t) => t._id === teamId) ?? similarTeams[0];
 
   const toPlayer = (p: (typeof rosterData.players)[number]): Player => ({
     _id: p._id,

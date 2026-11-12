@@ -10,7 +10,6 @@ import {
   type FutbolCoreGame,
   type FutbolCorePlayer,
 } from '@/lib/futbolcore';
-import { getTeamDisplayName } from '@/lib/teamName';
 
 /**
  * Get all Eagles FC teams (excludes opponent teams)
@@ -151,99 +150,6 @@ export async function getAllClubRosters() {
     return rostersWithTeam;
   } catch (error) {
     console.error('Error fetching all club rosters:', error);
-    return [];
-  }
-}
-
-/**
- * Get club teams enriched with player counts, coach info, and game counts.
- * Designed to integrate with the existing teams page.
- */
-export async function getEnrichedClubTeams() {
-  try {
-    const clubTeams = await getClubTeams();
-
-    const enrichedTeams = await Promise.all(
-      clubTeams.map(async (team) => {
-        const [rosterResult, games] = await Promise.all([
-          getFutbolCoreRosterWithMeta(team._id),
-          getFutbolCoreGames(team._id),
-        ]);
-
-        const roster = rosterResult.players;
-        const meta = rosterResult.meta;
-        const branding = meta?.branding;
-        const teamImageUrl = meta?.team?.teamImageUrl || team.teamImage?.secure_url || branding?.defaultTeamCardImageUrl || '';
-
-        // Upcoming games sorted by date
-        const now = new Date();
-        const upcoming = games
-          .filter((g) => new Date(g.startDate) >= now && g.status === 'scheduled')
-          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-        const upcomingGames = upcoming.length;
-
-        // Next opponent name
-        let nextOpponent = '';
-        if (upcoming.length > 0) {
-          const next = upcoming[0];
-          nextOpponent = next.myTeamRole === 'HOME'
-            ? next.awayTeam.name.trim()
-            : next.homeTeam.name.trim();
-        }
-
-        // Extract unique league logos from games
-        const seenLogos = new Set<string>();
-        const leagueLogos: { url: string }[] = [];
-        for (const game of games) {
-          if (game.leagueLogo?.secure_url && !seenLogos.has(game.leagueLogo.secure_url)) {
-            seenLogos.add(game.leagueLogo.secure_url);
-            leagueLogos.push({ url: game.leagueLogo.secure_url });
-          }
-        }
-
-        // Players are minors — always the club's generic placeholder, never their photo.
-        const defaultPlayerImg = branding?.defaultPlayerImageUrl || '';
-        const playerAvatars = roster
-          .slice(0, 4)
-          .map((p) => ({
-            id: p._id,
-            image: defaultPlayerImg,
-            name: `${p.firstName} ${p.lastName}`,
-          }));
-
-        return {
-          _id: team._id,
-          name: team.name,
-          shortName: getTeamDisplayName(team),
-          description: team.description || '',
-          category: team.category,
-          image: teamImageUrl,
-          isActive: team.isActive,
-          order: team.displayOrder || 0,
-          sponsor: { name: '', logo: '', website: '', isActive: false },
-          createdAt: '',
-          updatedAt: '',
-          season: team.season,
-          formation: team.formation,
-          tier: team.tier,
-          colors: team.colors,
-          logo: team.logo,
-          coach: team.coach,
-          totalPlayers: roster.length,
-          coaches: team.coach ? 1 : 0,
-          playerAvatars,
-          competitions: [] as { name: string; logo: string | null }[],
-          upcomingGames,
-          nextOpponent,
-          leagueLogos,
-          defaultPlayerImage: defaultPlayerImg,
-        };
-      })
-    );
-
-    return enrichedTeams;
-  } catch (error) {
-    console.error('Error fetching enriched club teams:', error);
     return [];
   }
 }

@@ -3,8 +3,9 @@ import type { NextConfig } from "next";
 
 // Hashed build assets and files served from /public. These must stay cacheable;
 // only page/data responses get the no-store headers below.
+// /api/images serves uploaded images whose bytes never change for a given id.
 const STATIC_ASSET_EXCLUSION =
-  "_next/static|_next/image|.*\\.(?:png|jpe?g|jfif|webp|avif|gif|svg|ico|mp4|webm|woff2?|ttf|otf|css|js|map)$";
+  "_next/static|_next/image|api/images/|.*\\.(?:png|jpe?g|jfif|webp|avif|gif|svg|ico|mp4|webm|woff2?|ttf|otf|css|js|map)$";
 
 const nextConfig: NextConfig = {
   // A stray lockfile in the user's home directory made Next infer the wrong

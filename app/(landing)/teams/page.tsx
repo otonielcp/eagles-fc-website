@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import TeamClasses from "@/components/landing/TeamClasses";
-import { getEnrichedClubTeams } from '@/actions/futbolcore';
+import { getTeamCards } from '@/lib/publicTeams';
 
 export const metadata: Metadata = {
   title: "Teams",
@@ -13,9 +13,12 @@ export const metadata: Metadata = {
   },
 };
 
+// Admin changes revalidate this page right away; this also refreshes FutbolCore stats.
+export const revalidate = 60;
+
 export default async function Teams() {
-  // Fetch active teams from FutbolCore API with rosters and game counts
-  const teamsWithData = await getEnrichedClubTeams();
+  // Teams switched on in the admin Teams list, with FutbolCore rosters and games
+  const teamsWithData = await getTeamCards();
 
   return (
     <div className="max-w-full overflow-hidden" style={{ marginTop: '70px' }}>

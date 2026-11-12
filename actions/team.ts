@@ -8,15 +8,18 @@ import Player from '@/models/Player';
 import Staff from '@/models/Staff';
 import { revalidatePath } from 'next/cache';
 import { Team as TeamType, TeamFormData } from '@/types/team';
-import { v2 as cloudinary } from 'cloudinary';
 import { getClubTeams } from '@/actions/futbolcore';
+import { deleteStoredImage, saveUploadedImage } from '@/lib/imageStore';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Every public page that lists teams. Not exported, so not a server action.
+function revalidateTeamPages() {
+  revalidatePath('/admin/teams');
+  revalidatePath('/teams');
+  revalidatePath('/teams-overview');
+  revalidatePath('/team/[teamId]', 'page');
+  revalidatePath('/team/[teamId]/players/[playerId]', 'page');
+  revalidatePath('/sitemap.xml');
+}
 
 // Get all teams
 export async function getAllTeams(): Promise<TeamType[]> {
@@ -69,8 +72,7 @@ export async function createTeam(teamData: TeamFormData): Promise<{ success: boo
     }
     
     const newTeam = await Team.create(teamData);
-    revalidatePath('/admin/teams');
-    revalidatePath('/teams');
+    revalidateTeamPages();
     
     return { 
       success: true, 
@@ -110,10 +112,12 @@ export async function updateTeam(id: string, teamData: TeamFormData): Promise<{ 
       { new: true, runValidators: true }
     );
     
-    revalidatePath('/admin/teams');
+    // Replaced photos/logos that were uploaded here are no longer used.
+    if (existingTeam.image !== teamData.image) await deleteStoredImage(existingTeam.image);
+    if (existingTeam.sponsor?.logo !== teamData.sponsor?.logo) await deleteStoredImage(existingTeam.sponsor?.logo);
+
     revalidatePath(`/admin/teams/${id}`);
-    revalidatePath('/teams');
-    revalidatePath(`/teams/${id}`);
+    revalidateTeamPages();
     
     return { 
       success: true, 
@@ -126,6 +130,24 @@ export async function updateTeam(id: string, teamData: TeamFormData): Promise<{ 
       success: false, 
       message: error.message || "Failed to update team" 
     };
+  }
+}
+
+// Show or hide a team on the public Teams page
+export async function setTeamVisibility(id: string, visible: boolean): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
+  try {
+    await connectDB();
+    const team = await Team.findByIdAndUpdate(id, { isActive: visible === true }, { new: true });
+    if (!team) return { success: false, message: "Team not found" };
+    revalidateTeamPages();
+    return {
+      success: true,
+      message: visible ? `${team.name} is now shown on the Teams page` : `${team.name} is now hidden from the Teams page`,
+    };
+  } catch (error: any) {
+    console.error("Error changing team visibility:", error);
+    return { success: false, message: error.message || "Failed to update the team" };
   }
 }
 
@@ -150,21 +172,11 @@ export async function deleteTeam(id: string): Promise<{
       Staff.deleteMany({ teamId: id }),
     ]);
 
-    if (team.image) {
-      try {
-        const publicId = team.image.split('/').pop()?.split('.')[0];
-        if (publicId) {
-          await cloudinary.uploader.destroy(`eagles-fc/teams/${publicId}`);
-        }
-      } catch (error) {
-        console.error("Error deleting image from Cloudinary:", error);
-      }
-    }
-
     await Team.findByIdAndDelete(id);
+    await deleteStoredImage(team.image);
+    await deleteStoredImage(team.sponsor?.logo);
 
-    revalidatePath('/admin/teams');
-    revalidatePath('/teams');
+    revalidateTeamPages();
 
     const playersDeleted = playersResult.deletedCount ?? 0;
     const staffDeleted = staffResult.deletedCount ?? 0;
@@ -234,26 +246,18 @@ export async function deleteTeams(ids: string[]): Promise<{
 
     const teams = await Team.find({ _id: { $in: ids } });
 
-    for (const team of teams) {
-      if (!team.image) continue;
-      try {
-        const publicId = team.image.split('/').pop()?.split('.')[0];
-        if (publicId) {
-          await cloudinary.uploader.destroy(`eagles-fc/teams/${publicId}`);
-        }
-      } catch (err) {
-        console.error("Error deleting image from Cloudinary:", err);
-      }
-    }
-
     const [playersResult, staffResult, teamsResult] = await Promise.all([
       Player.deleteMany({ teamId: { $in: ids } }),
       Staff.deleteMany({ teamId: { $in: ids } }),
       Team.deleteMany({ _id: { $in: ids } }),
     ]);
 
-    revalidatePath('/admin/teams');
-    revalidatePath('/teams');
+    for (const team of teams) {
+      await deleteStoredImage(team.image);
+      await deleteStoredImage(team.sponsor?.logo);
+    }
+
+    revalidateTeamPages();
 
     const deletedCount = teamsResult.deletedCount ?? 0;
     const playersDeleted = playersResult.deletedCount ?? 0;
@@ -329,19 +333,22 @@ export async function syncTeamsFromFutbolCore(): Promise<{
         });
 
         if (existing) {
-          // Preserve sponsor and any manual overrides; only update remote-sourced fields
+          // Keep what the admin chose: shown/hidden, photo, order and sponsor.
+          // A team FutbolCore has retired is hidden; a hidden one is never re-shown.
           existing.shortName = baseFields.shortName;
           existing.description = existing.description || baseFields.description;
           existing.category = baseFields.category;
-          if (baseFields.image) existing.image = baseFields.image;
-          existing.isActive = baseFields.isActive;
-          existing.order = baseFields.order;
+          if (!existing.image && baseFields.image) existing.image = baseFields.image;
+          if (baseFields.isActive === false) existing.isActive = false;
           existing.futbolcoreId = baseFields.futbolcoreId;
           await existing.save();
           updated++;
         } else {
+          // New (or previously deleted) teams start hidden: nothing appears on
+          // the public Teams page until the admin switches it on.
           await Team.create({
             ...baseFields,
+            isActive: false,
             sponsor: { name: '', logo: '', website: '', isActive: false },
           });
           created++;
@@ -354,13 +361,13 @@ export async function syncTeamsFromFutbolCore(): Promise<{
       }
     }
 
-    revalidatePath('/admin/teams');
-    revalidatePath('/teams');
+    revalidateTeamPages();
 
+    const added = created > 0 ? `${created} new (hidden until you switch them on)` : '0 new';
     const message =
       skipped.length === 0
-        ? `Synced ${created} new, ${updated} updated`
-        : `Synced ${created} new, ${updated} updated; ${skipped.length} skipped`;
+        ? `Synced ${added}, ${updated} updated`
+        : `Synced ${added}, ${updated} updated; ${skipped.length} skipped`;
 
     return { success: true, created, updated, skipped, message };
   } catch (error: any) {
@@ -379,25 +386,8 @@ export async function syncTeamsFromFutbolCore(): Promise<{
 export async function uploadTeamImage(file: File): Promise<{ success: boolean; url?: string; message?: string }> {
   await requireAdmin();
   try {
-    if (!file) {
-      return { success: false, message: "No file provided" };
-    }
-
-    // Convert file to base64
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64String = `data:${file.type};base64,${buffer.toString('base64')}`;
-
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(base64String, {
-      folder: 'eagles-fc/teams',
-      resource_type: 'auto',
-    });
-
-    return {
-      success: true,
-      url: result.secure_url,
-    };
+    // Stored in MongoDB and served from /api/images (the club does not use Cloudinary).
+    return await saveUploadedImage(file);
   } catch (error: any) {
     console.error("Error uploading image:", error);
     return {

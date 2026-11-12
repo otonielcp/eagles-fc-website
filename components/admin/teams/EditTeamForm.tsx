@@ -303,7 +303,7 @@ export default function EditTeamForm({ team, onCancel, onTeamUpdated }: EditTeam
                 handleSwitchChange("isActive", checked)
               }
             />
-            <Label htmlFor="isActive">Active</Label>
+            <Label htmlFor="isActive">Show on Teams page</Label>
           </div>
 
           <div className="space-y-6 mt-8">

@@ -1,23 +1,24 @@
 import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
-import { getClubTeams, getTeamRosterWithBranding } from "@/actions/futbolcore";
+import { getTeamRosterWithBranding } from "@/actions/futbolcore";
+import { findVisibleTeam, getVisibleTeams, withRouteIds } from "@/lib/publicTeams";
 import PlayerSection from "@/components/landing/PlayerSection";
 import { notFound } from "next/navigation";
-import { getTeamDisplayName } from "@/lib/teamName";
-import { Team, Player } from "@/types/team";
+import { Player } from "@/types/team";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 type TeamPageProps = { params: Promise<{ teamId: string }> };
 
 // generateMetadata and the page both need the team list; fetch it once per request.
-const getTeams = cache(() => getClubTeams());
+// Only teams switched on in the admin Teams list have a page.
+const getTeams = cache(() => getVisibleTeams());
 
 export async function generateMetadata({ params }: TeamPageProps): Promise<Metadata> {
   const { teamId } = await params;
-  const fcTeam = (await getTeams()).find((t) => t._id === teamId);
-  if (!fcTeam) return { title: "Team Not Found" };
+  const shown = findVisibleTeam(await getTeams(), teamId);
+  if (!shown) return { title: "Team Not Found" };
 
-  const teamName = getTeamDisplayName(fcTeam);
+  const teamName = shown.shortName;
   return {
     title: `${teamName} Roster`,
     description: `Roster and season stats for the Eagles FC ${teamName} youth soccer team in Grand Island, Nebraska.`,
@@ -27,34 +28,22 @@ export async function generateMetadata({ params }: TeamPageProps): Promise<Metad
 export default async function TeamRosterPage({ params }: TeamPageProps) {
   const { teamId } = await params;
 
-  // FutbolCore is the single source of truth for teams and rosters. The old
-  // MongoDB path was removed: it served stale local records and passed whole
-  // player documents — birthdates included — into client components.
-  const fcTeams = await getTeams();
-  const fcTeam = fcTeams.find((t) => t._id === teamId);
+  // The admin Teams list decides which teams have a page. Rosters come only
+  // from FutbolCore: the old MongoDB roster path was removed because it passed
+  // whole player documents (birthdates included) into client components.
+  const teams = await getTeams();
+  const shown = findVisibleTeam(teams, teamId);
 
-  if (!fcTeam) {
+  if (!shown) {
     notFound();
   }
 
-  const toTeam = (t: typeof fcTeam): Team => ({
-    _id: t._id,
-    name: t.name,
-    shortName: getTeamDisplayName(t),
-    description: t.description || '',
-    category: t.category,
-    image: t.teamImage?.secure_url || t.logo?.secure_url || '',
-    isActive: t.isActive,
-    order: t.displayOrder || 0,
-    sponsor: { name: '', logo: '', website: '', isActive: false },
-    createdAt: '',
-    updatedAt: '',
-  });
+  const allTeams = withRouteIds(teams);
+  const team = allTeams.find((t) => t._id === teamId) ?? allTeams[0];
 
-  const team = toTeam(fcTeam);
-  const allTeams = fcTeams.map(toTeam);
-
-  const rosterData = await getTeamRosterWithBranding(teamId);
+  const rosterData = shown.futbolcoreId
+    ? await getTeamRosterWithBranding(shown.futbolcoreId)
+    : { players: [], clubLogo: '', defaultPlayerImage: '' };
   const clubLogoFallback = rosterData.clubLogo || '';
   const cardBackground = rosterData.defaultPlayerImage || '';
 
@@ -130,6 +119,16 @@ export default async function TeamRosterPage({ params }: TeamPageProps) {
 
       {forwards.length > 0 && (
         <PlayerSection title="Forwards" players={forwards} fallbackImage={clubLogoFallback} cardBackground={cardBackground} />
+      )}
+
+      {players.length === 0 && (
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bebas text-gray-900 uppercase leading-none mb-4">{team.shortName || team.name}</h2>
+          {team.description && team.description !== team.name && (
+            <p className="text-gray-600 mb-4">{team.description}</p>
+          )}
+          <p className="text-gray-500">The roster for this team will be posted soon.</p>
+        </div>
       )}
     </div>
   );

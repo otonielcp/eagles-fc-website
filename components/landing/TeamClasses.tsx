@@ -40,7 +40,8 @@ interface TeamClassesProps {
 
 // Team image with fallback
 const TeamImage = ({ src, category }: { src: string; category: string }) => {
-  const hasValidSrc = src && src.length > 1 && src.startsWith('http');
+  // Remote images, or photos uploaded in the admin (served from /api/images).
+  const hasValidSrc = src && src.length > 1 && (src.startsWith('http') || src.startsWith('/'));
 
   return (
     <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-200 to-gray-100">
@@ -101,9 +102,11 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
                   {/* Team Name + Coaches Badge */}
                   <div className="flex items-start justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900 leading-tight pr-3">{team.name}</h3>
-                    <span className="flex-shrink-0 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
-                      {team.coaches} Coach{team.coaches !== 1 ? 'es' : ''}
-                    </span>
+                    {team.coaches > 0 && (
+                      <span className="flex-shrink-0 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
+                        {team.coaches} Coach{team.coaches !== 1 ? 'es' : ''}
+                      </span>
+                    )}
                   </div>
 
                   {/* Players Row */}
@@ -112,7 +115,11 @@ const TeamClasses = ({ teams }: TeamClassesProps) => {
                       <Users className="w-4 h-4 text-gray-400" />
                       <span className="text-sm text-gray-500">Players</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">{team.totalPlayers}</span>
+                    {team.totalPlayers > 0 ? (
+                      <span className="text-lg font-bold text-gray-900">{team.totalPlayers}</span>
+                    ) : (
+                      <span className="text-sm text-gray-400">—</span>
+                    )}
                   </div>
 
                   {/* Leagues Row */}

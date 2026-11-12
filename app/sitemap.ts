@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { getClubTeams } from '@/actions/futbolcore';
+import { getVisibleTeams } from '@/lib/publicTeams';
 import { getOpenJobs } from '@/actions/careers';
 import { getPublishedNews } from '@/actions/news';
 import { SITE_URL } from '@/app/(landing)/site-url';
@@ -30,12 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/cookies`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
   ];
 
-  // Dynamic team pages from FutbolCore
+  // Team pages for the teams shown on /teams
   let teamPages: MetadataRoute.Sitemap = [];
   try {
-    const teams = await getClubTeams();
+    const teams = await getVisibleTeams();
     teamPages = teams.map((team) => ({
-      url: `${BASE_URL}/team/${team._id}`,
+      url: `${BASE_URL}/team/${team.routeId}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,

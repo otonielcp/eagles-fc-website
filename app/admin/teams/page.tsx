@@ -7,6 +7,7 @@ import {
   deleteTeams,
   syncTeamsFromFutbolCore,
   countTeamDependencies,
+  setTeamVisibility,
 } from "@/actions/team";
 import { Team } from "@/types/team";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 
 export default function TeamsManagement() {
@@ -44,6 +45,27 @@ export default function TeamsManagement() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [visibilitySaving, setVisibilitySaving] = useState<string | null>(null);
+
+  const handleVisibility = async (team: Team, visible: boolean) => {
+    setVisibilitySaving(team._id);
+    // Flip it right away; put it back if the save fails.
+    setTeams((prev) => prev.map((t) => (t._id === team._id ? { ...t, isActive: visible } : t)));
+    try {
+      const result = await setTeamVisibility(team._id, visible);
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+        setTeams((prev) => prev.map((t) => (t._id === team._id ? { ...t, isActive: !visible } : t)));
+      }
+    } catch {
+      toast.error("Could not update the team. Please try again.");
+      setTeams((prev) => prev.map((t) => (t._id === team._id ? { ...t, isActive: !visible } : t)));
+    } finally {
+      setVisibilitySaving(null);
+    }
+  };
 
   const handleSync = async () => {
     setSyncing(true);
@@ -165,7 +187,8 @@ export default function TeamsManagement() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Teams Management</h1>
           <p className="text-muted-foreground">
-            Manage your club's teams, players, and staff
+            Teams switched on under &quot;On Teams page&quot; are shown on the public Teams page.
+            Teams brought in by &quot;Sync from FutbolCore&quot; start hidden until you switch them on.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -227,7 +250,7 @@ export default function TeamsManagement() {
                 </TableHead>
                 <TableHead>Team</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>On Teams page</TableHead>
                 <TableHead>Order</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -277,13 +300,17 @@ export default function TeamsManagement() {
                   </TableCell>
                   <TableCell>{team.category}</TableCell>
                   <TableCell>
-                    {team.isActive ? (
-                      <Badge className="bg-green-500 hover:bg-green-600">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Inactive</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        aria-label={`Show ${team.name} on the Teams page`}
+                        checked={team.isActive}
+                        disabled={visibilitySaving === team._id}
+                        onCheckedChange={(checked) => handleVisibility(team, checked === true)}
+                      />
+                      <span className={`text-sm ${team.isActive ? "text-green-700" : "text-gray-500"}`}>
+                        {team.isActive ? "Shown" : "Hidden"}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>{team.order}</TableCell>
                   <TableCell>{formatDate(team.createdAt)}</TableCell>

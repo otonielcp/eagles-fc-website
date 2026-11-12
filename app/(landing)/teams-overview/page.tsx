@@ -1,4 +1,4 @@
-import { getEnrichedClubTeams } from '@/actions/futbolcore';
+import { getTeamCards } from '@/lib/publicTeams';
 import { TeamCard } from '@/components/landing/TeamCard';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +9,8 @@ export const metadata = {
 };
 
 export default async function TeamsOverviewPage() {
-  // FutbolCore is the single source of truth; this already carries the
-  // totalPlayers and coaches counts the cards render.
-  const teams = await getEnrichedClubTeams();
+  // Same teams as /teams: the ones switched on in the admin Teams list.
+  const teams = await getTeamCards();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-24">
