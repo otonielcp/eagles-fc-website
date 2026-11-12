@@ -1,5 +1,7 @@
 'use server';
 
+import { getAllClubFixtures, type ClubFixture } from '@/lib/clubGames';
+import { gameFilterOptions, type GameFilterOptions } from '@/lib/gameFilters';
 import {
   getFutbolCoreTeams,
   getFutbolCoreRoster,
@@ -90,41 +92,6 @@ export async function getTeamGames(teamId: string) {
 }
 
 /**
- * Get all games across all Eagles FC teams
- */
-export async function getAllClubGames() {
-  try {
-    const clubTeams = await getClubTeams();
-    const allGamesArrays = await Promise.all(
-      clubTeams.map((team) => getFutbolCoreGames(team._id))
-    );
-
-    // Flatten and deduplicate by _id
-    const seen = new Set<string>();
-    const allGames: FutbolCoreGame[] = [];
-    for (const games of allGamesArrays) {
-      for (const game of games) {
-        if (!seen.has(game._id)) {
-          seen.add(game._id);
-          allGames.push(game);
-        }
-      }
-    }
-
-    // Sort by startDate ascending
-    allGames.sort(
-      (a, b) =>
-        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    );
-
-    return allGames;
-  } catch (error) {
-    console.error('Error fetching all club games:', error);
-    return [];
-  }
-}
-
-/**
  * Get all rosters across all Eagles FC teams
  */
 export async function getAllClubRosters() {
@@ -155,18 +122,17 @@ export async function getAllClubRosters() {
 }
 
 /**
- * Get a single FutbolCore game by ID, transformed to IFixture-compatible format.
+ * Get a single FutbolCore game by ID (past or upcoming), in IFixture-compatible format.
  */
 export async function getFutbolCoreFixtureById(gameId: string) {
   try {
-    const allFixtures = await getClubFixtures();
-    const fixture = allFixtures.find((f) => f._id === gameId);
+    const fixture = (await getAllClubFixtures()).find((f) => f._id === gameId);
     if (!fixture) return null;
 
     // Add missing IFixture fields with defaults
     return {
       ...fixture,
-      seasonYear: '',
+      seasonYear: fixture.season,
       month: '',
       highlights: '',
       timeline: [] as { time: string; type: string; team: string; player?: string; assistedBy?: string; description?: string }[],
@@ -180,62 +146,27 @@ export async function getFutbolCoreFixtureById(gameId: string) {
 }
 
 /**
- * Get all club games transformed into a format compatible with the fixtures page.
+ * All club games, past and upcoming, oldest first (shared five-minute cache, see
+ * lib/clubGames.ts). Callers pick upcoming or finished games themselves.
  */
-export async function getClubFixtures() {
+export async function getClubFixtures(): Promise<ClubFixture[]> {
   try {
-    const [allGames, branding] = await Promise.all([
-      getAllClubGames(),
-      getFutbolCoreBranding(),
-    ]);
-    const clubLogo = branding.logoUrl || '';
-
-    const extractField = (...sources: (string | undefined)[]) => {
-      for (const s of sources) {
-        if (!s) continue;
-        const m = s.match(/Field\s+[\w-]+/i);
-        if (m) return m[0];
-      }
-      return '';
-    };
-
-    return allGames.map((game) => {
-      const eaglesIsHome = game.myTeamRole === 'HOME';
-      const homeTeamLogo = eaglesIsHome
-        ? clubLogo
-        : game.homeTeam.logoUrl || '';
-      const awayTeamLogo = eaglesIsHome
-        ? game.awayTeam.logoUrl || ''
-        : clubLogo;
-
-      return {
-        _id: game._id,
-        date: game.startDate.split('T')[0],
-        time: game.startTime,
-        stadium: game.venue?.name || game.location || 'TBD',
-        field: extractField(game.venue?.address, game.location),
-        competition: game.type || 'League',
-        competitionType: game.type || 'league',
-        homeTeam: game.homeTeam.name,
-        awayTeam: game.awayTeam.name,
-        homeTeamLogo,
-        awayTeamLogo,
-        leagueLogo: game.leagueLogo?.secure_url || '',
-        channelLogo: '',
-        status: game.status === 'scheduled' ? 'SCHEDULED' : game.status.toUpperCase(),
-        homeScore: game.score.home,
-        awayScore: game.score.away,
-        matchReport: '',
-        matchImage: '/gameresultbg.jpeg',
-        title: game.title,
-        location: game.location,
-        venue: game.venue,
-        isHome: game.isHome,
-        myTeamRole: game.myTeamRole,
-      };
-    });
+    return await getAllClubFixtures();
   } catch (error) {
     console.error('Error fetching club fixtures:', error);
     return [];
+  }
+}
+
+/**
+ * League, season and competition options for the Fixtures/Results filter menus,
+ * taken from the club's FutbolCore games.
+ */
+export async function getClubGameFilters(): Promise<GameFilterOptions> {
+  try {
+    return gameFilterOptions(await getAllClubFixtures());
+  } catch (error) {
+    console.error('Error fetching game filter options:', error);
+    return { leagues: [], seasons: [], competitions: [] };
   }
 }

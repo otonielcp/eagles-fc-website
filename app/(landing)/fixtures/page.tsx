@@ -7,6 +7,7 @@ import NextMatchFixture from '@/components/landing/NextMatchFixture';
 import NavbarFix from '@/components/landing/NavbarFix';
 import { getClubFixtures } from "@/actions/futbolcore";
 import useLeagueStore from "@/store/leaguestore";
+import { matchesGameFilters } from "@/lib/gameFilters";
 
 const Fixtures = () => {
   const [fixtures, setFixtures] = useState<any[]>([]);
@@ -90,7 +91,11 @@ const Fixtures = () => {
         startOfToday.setHours(0, 0, 0, 0);
         const upcomingData = data.filter((fixture: any) => {
           const fixtureDate = parseLocalDate(fixture.date);
-          return fixture.status === 'SCHEDULED' && fixtureDate >= startOfToday;
+          return (
+            fixture.status === 'SCHEDULED' &&
+            fixtureDate >= startOfToday &&
+            matchesGameFilters(fixture, { league: selectedLeague, season: selectedSeason, competition: selectedCompetition })
+          );
         });
 
         // Transform the data to match our display format

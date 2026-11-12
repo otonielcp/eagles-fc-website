@@ -1,25 +1,33 @@
-// Updated ResultsData component
+// Finished games from FutbolCore (loaded on the server by app/(landing)/results),
+// filtered by the league / season / competition menus in NavbarFix.
 "use client";
 
-import { useEffect, useState } from "react";
-import { getFilteredFullTimeMatches } from "@/actions/fixture";
+import { useMemo } from "react";
 import { format } from "date-fns";
-import { IFixture } from "@/types/fixtures";
 import Link from "next/link";
 import useLeagueStore from "@/store/leaguestore";
 import { parseLocalDate } from "@/components/landing/landingUtils";
+import { ALL_COMPETITIONS, ALL_LEAGUES, ALL_SEASONS, competitionLabel, matchesGameFilters } from "@/lib/gameFilters";
+import type { ClubFixture } from "@/lib/clubGames";
+
+type IFixture = ClubFixture;
 
 // Missing logos are left blank (no placeholder files exist in /public).
 const hideBrokenImage = (e: React.SyntheticEvent<HTMLImageElement>) => {
   e.currentTarget.style.visibility = "hidden";
 };
 
-const ResultsData = () => {
-  const [results, setResults] = useState<IFixture[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+const ResultsData = ({ results: allResults }: { results: ClubFixture[] }) => {
   // Get filter values from store
   const { selectedLeague, selectedSeason, selectedCompetition } = useLeagueStore();
+
+  const results = useMemo(
+    () =>
+      allResults.filter((match) =>
+        matchesGameFilters(match, { league: selectedLeague, season: selectedSeason, competition: selectedCompetition })
+      ),
+    [allResults, selectedLeague, selectedSeason, selectedCompetition]
+  );
 
   // Helper function to format time by removing leading zeros from hours
   const formatTime = (timeString: string) => {
@@ -52,37 +60,6 @@ const ResultsData = () => {
     return timeString; // Return as-is if format is unrecognized
   };
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      try {
-        // Only pass values if they're meaningful (not empty, default, or "All" options)
-        const effectiveLeague = selectedLeague && selectedLeague !== "" && selectedLeague !== "All leagues" ? selectedLeague : undefined;
-        const effectiveSeason = selectedSeason && selectedSeason !== "" && selectedSeason !== "All seasons" ? selectedSeason : undefined;
-        const effectiveCompetition = selectedCompetition && selectedCompetition !== "All competitions" ? selectedCompetition : undefined;
-
-        // Fetch filtered full-time matches
-        const latestMatches = await getFilteredFullTimeMatches(
-          effectiveLeague,
-          effectiveSeason,
-          effectiveCompetition
-        );
-
-        if (latestMatches) {
-          setResults(latestMatches);
-        } else {
-          setResults([]);
-        }
-      } catch (error) {
-        console.error("Error fetching results:", error);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
-  }, [selectedLeague, selectedSeason, selectedCompetition]); // Re-fetch when filters change
 
   // Group results by month
   const groupedResults = results.reduce((acc: Record<string, IFixture[]>, match: IFixture) => {
@@ -97,19 +74,6 @@ const ResultsData = () => {
     return acc;
   }, {});
 
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-4 md:mx-auto py-8 md:py-12">
-        <h2 className="text-gray-300 text-sm font-medium mb-4 md:mb-6 px-2 md:px-0">
-          RECENT RESULTS
-        </h2>
-        <div className="h-40 flex items-center justify-center">
-          <p>Loading results...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (results.length === 0) {
     return (
       <div className="max-w-5xl mx-4 md:mx-auto py-8 md:py-12">
@@ -119,7 +83,7 @@ const ResultsData = () => {
         <div className="h-40 flex items-center justify-center">
           <div className="text-center">
             <p className="text-gray-500 mb-2">No results found</p>
-            {(selectedLeague && selectedLeague !== "All leagues" || selectedSeason && selectedSeason !== "All seasons" || (selectedCompetition && selectedCompetition !== "All competitions")) && (
+            {(selectedLeague !== ALL_LEAGUES || selectedSeason !== ALL_SEASONS || selectedCompetition !== ALL_COMPETITIONS) && allResults.length > 0 && (
               <p className="text-sm text-gray-400">
                 Try adjusting your filters to see more results
               </p>
@@ -156,7 +120,7 @@ const ResultsData = () => {
 
               return (
                 <Link 
-                  key={idx} 
+                  key={match._id} 
                   href={`/matchreport/${match._id}`}
                   className="group block"
                 >
@@ -173,7 +137,7 @@ const ResultsData = () => {
                         />
                       ) : (
                         <span className="text-xs font-bold uppercase tracking-wider text-gray-500 px-4 text-center">
-                          {match.competition}
+                          {match.league || competitionLabel(match.competitionType)}
                         </span>
                       )}
                     </div>

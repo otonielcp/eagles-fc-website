@@ -1,10 +1,12 @@
-import { getLatestFullTimeMatch } from "@/actions/fixture";
-import { IFixture } from "@/types/fixtures";
+import { getClubResults, type ClubFixture } from "@/lib/clubGames";
+import { competitionLabel } from "@/lib/gameFilters";
 import MatchReviewButton from "./MatchReviewButton";
 import SafeImg from "./SafeImg";
 
 const GameResult = async () => {
-  const result: IFixture | null = await getLatestFullTimeMatch();
+  // Latest finished game from FutbolCore (getClubResults is newest first).
+  const result: ClubFixture | null = (await getClubResults())[0] ?? null;
+  const competition = result ? result.league || competitionLabel(result.competitionType) : '';
   
   // No finished match yet: leave the section out instead of a large empty block.
   if (!result) {
@@ -65,7 +67,7 @@ const GameResult = async () => {
           >
             <span className="w-2 h-2 rounded-full bg-[#BD9B58] animate-pulse"></span>
             <span className="text-sm md:text-base font-bold uppercase tracking-wider text-[#BD9B58]">
-              {result.status || 'Full Time'}
+              Full Time
             </span>
           </div>
         </div>
@@ -132,10 +134,10 @@ const GameResult = async () => {
             </div>
 
             {/* Competition Info */}
-            {result.competition && (
+            {competition && (
               <div className="text-center">
                 <p className="text-xs md:text-sm uppercase tracking-widest text-[#BD9B58] font-semibold">
-                  {result.competition}
+                  {competition}
                 </p>
               </div>
             )}

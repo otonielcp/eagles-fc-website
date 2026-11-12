@@ -5,20 +5,17 @@ import NavbarFix from "@/components/landing/NavbarFix";
 export const metadata: Metadata = {
   title: "Standings",
   description:
-    "League standings and tables for Eagles FC youth soccer teams in Grand Island, Nebraska.",
+    "Season records for every Eagles FC youth soccer team in Grand Island, Nebraska.",
 };
 
+// Team records come from FutbolCore (cached five minutes).
+export const revalidate = 300;
 
-const Teams = () => {
-    return (
-
-
-        <div>
-            <NavbarFix />
-            <Standing />
-        </div>
-    );
-
-};
-
-export default Teams;
+export default function TablesPage() {
+  return (
+    <div>
+      <NavbarFix />
+      <Standing />
+    </div>
+  );
+}

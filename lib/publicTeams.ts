@@ -12,7 +12,8 @@ import TeamModel from '@/models/Team';
 import Player from '@/models/Player';
 import Staff from '@/models/Staff';
 import { getClubTeams } from '@/actions/futbolcore';
-import { getFutbolCoreGames, getFutbolCoreRosterWithMeta } from '@/lib/futbolcore';
+import { getFutbolCoreRosterWithMeta } from '@/lib/futbolcore';
+import { getAllClubFixtures, type ClubFixture } from '@/lib/clubGames';
 import { getTeamDisplayName } from '@/lib/teamName';
 import type { Team } from '@/types/team';
 
@@ -98,8 +99,13 @@ export async function getTeamCards(): Promise<TeamCardData[]> {
   const teams = await getVisibleTeams();
   if (teams.length === 0) return [];
 
-  const fcTeams = teams.some((team) => team.futbolcoreId) ? await getClubTeams() : [];
+  const linked = teams.some((team) => team.futbolcoreId);
+  const [fcTeams, fixtures] = linked
+    ? await Promise.all([getClubTeams(), getAllClubFixtures().catch((): ClubFixture[] => [])])
+    : [[], [] as ClubFixture[]];
   const fcById = new Map(fcTeams.map((team) => [team._id, team]));
+  // Game dates are local calendar days; compare with today's date in Nebraska.
+  const startOfToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
 
   return Promise.all(
     teams.map(async (team): Promise<TeamCardData> => {
@@ -127,24 +133,20 @@ export async function getTeamCards(): Promise<TeamCardData[]> {
           return { ...card, totalPlayers: players, coaches: staff };
         }
 
-        const [roster, games] = await Promise.all([
-          getFutbolCoreRosterWithMeta(fc._id),
-          getFutbolCoreGames(fc._id),
-        ]);
+        const roster = await getFutbolCoreRosterWithMeta(fc._id);
 
-        const now = new Date();
+        // This team's games from the shared, cached club game list.
+        const games = fixtures.filter((g) => g.homeTeamId === fc._id || g.awayTeamId === fc._id);
         const upcoming = games
-          .filter((g) => new Date(g.startDate) >= now && g.status === 'scheduled')
-          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+          .filter((g) => g.status === 'SCHEDULED' && g.date >= startOfToday)
+          .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
         const next = upcoming[0];
-        const nextOpponent = next
-          ? (next.myTeamRole === 'HOME' ? next.awayTeam.name : next.homeTeam.name).trim()
-          : '';
+        const nextOpponent = next ? (next.homeTeamId === fc._id ? next.awayTeam : next.homeTeam).trim() : '';
 
         const seen = new Set<string>();
         const leagueLogos: { url: string }[] = [];
         for (const game of games) {
-          const url = game.leagueLogo?.secure_url;
+          const url = game.leagueLogo;
           if (url && !seen.has(url)) {
             seen.add(url);
             leagueLogos.push({ url });

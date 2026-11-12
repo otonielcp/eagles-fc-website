@@ -1,5 +1,6 @@
 import ResultsData from '@/components/landing/ResultsData';
 import NavbarFix from '@/components/landing/NavbarFix';
+import { getClubResults } from '@/lib/clubGames';
 
 export const metadata = {
   title: 'Results',
@@ -12,12 +13,17 @@ export const metadata = {
   },
 };
 
-export default function ResultsPage() {
+// Finished games from FutbolCore for every club team (cached five minutes).
+export const revalidate = 300;
+
+export default async function ResultsPage() {
+  const results = await getClubResults();
+
   return (
     <div className="max-w-full overflow-hidden">
       {/* Navbar */}
       <NavbarFix />
-      <ResultsData />
+      <ResultsData results={results} />
     </div>
   );
 }

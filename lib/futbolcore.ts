@@ -41,6 +41,8 @@ export interface FutbolCoreTeam {
     firstName: string;
     lastName: string;
   };
+  logoUrl?: string;
+  teamImageUrl?: string;
 }
 
 // NOTE: every club team is a youth team (U7–U15), so every player here is a minor.
@@ -104,6 +106,10 @@ export interface FutbolCoreGame {
     secure_url: string;
     url: string;
   };
+  league?: {
+    _id: string;
+    name: string;
+  } | null;
   source: string;
 }
 
@@ -269,4 +275,22 @@ export async function getFutbolCoreRosterWithMeta(teamId: string): Promise<{ pla
 
 export async function getFutbolCoreGames(teamId: string): Promise<FutbolCoreGame[]> {
   return fetchFutbolCore<FutbolCoreGame[]>(`/teams/${teamId}/games`);
+}
+
+// Without a `from` date the games endpoint returns only upcoming games, so
+// finished results never appear. `from` returns everything since that day
+// (past and upcoming), 50 per page unless `limit` is raised (max 100).
+const GAMES_PAGE_SIZE = 100;
+
+export async function getFutbolCoreGamesSince(teamId: string, from: string): Promise<FutbolCoreGame[]> {
+  const endpoint = (page: number) =>
+    `/teams/${teamId}/games?from=${encodeURIComponent(from)}&limit=${GAMES_PAGE_SIZE}&page=${page}`;
+  const first = await fetchFutbolCoreWithMeta<FutbolCoreGame[]>(endpoint(1));
+  const games = [...(first.data ?? [])];
+  const pageSize = Number(first.meta?.limit) || GAMES_PAGE_SIZE;
+  const total = Number(first.meta?.total) || games.length;
+  for (let page = 2; page <= Math.ceil(total / pageSize); page++) {
+    games.push(...((await fetchFutbolCoreWithMeta<FutbolCoreGame[]>(endpoint(page))).data ?? []));
+  }
+  return games;
 }
