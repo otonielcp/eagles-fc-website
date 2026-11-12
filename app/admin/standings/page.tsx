@@ -80,8 +80,13 @@ const AdminStandings = () => {
 
   // Scraper state
   const [scrapingUrl, setScrapingUrl] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isScraping, setIsScraping] = useState(false);
   const [scrapingError, setScrapingError] = useState<string | null>(null);
+
+  // Dialog saves; kept separate from the importer so saving a team doesn't
+  // relabel the import button, and from deletes so each card's spinner is its own.
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form states for editing
   const [editTeam, setEditTeam] = useState<TeamStanding | null>(null);
@@ -139,7 +144,7 @@ const AdminStandings = () => {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsScraping(true);
       setScrapingError(null);
 
       const response = await axios.post('https://backend.eaglesnebraskafc.com/api/scrape', {
@@ -169,7 +174,7 @@ const AdminStandings = () => {
         setScrapingError(err instanceof Error ? err.message : "Failed to scrape standings");
       }
     } finally {
-      setIsSubmitting(false);
+      setIsScraping(false);
     }
   };
 
@@ -440,7 +445,8 @@ const AdminStandings = () => {
   // Handle delete standing
   const handleDelete = async (standingId: string) => {
     try {
-      setIsSubmitting(true);
+      setDeletingId(standingId);
+      setError(null);
 
       await deleteStanding(standingId);
 
@@ -456,7 +462,7 @@ const AdminStandings = () => {
       setError("Failed to delete standing");
       console.error("Error deleting standing:", err);
     } finally {
-      setIsSubmitting(false);
+      setDeletingId(null);
     }
   };
 
@@ -651,13 +657,25 @@ const AdminStandings = () => {
     return <LoadingSpinner />;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500 p-4">{error}</div>;
-  }
-
   return (
     <div className="container mx-auto py-6">
       <h1 className="text-2xl font-bold mb-6">Manage Standings</h1>
+
+      {/* Error Message: shown inline so one failed save doesn't wipe out the page */}
+      {error && (
+        <Alert variant="destructive" className="mb-6 bg-red-50 border border-red-200">
+          <AlertDescription className="text-red-700 font-medium flex items-center justify-between gap-4">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-xs underline text-red-700 hover:text-red-800"
+            >
+              Dismiss
+            </button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Success Message */}
       {successMessage && (
@@ -686,14 +704,14 @@ const AdminStandings = () => {
                   value={scrapingUrl}
                   onChange={(e) => setScrapingUrl(e.target.value)}
                   className="flex-1"
-                  disabled={isSubmitting}
+                  disabled={isScraping}
                 />
                 <Button
                   type="submit"
                   className="bg-[#C5A464] hover:bg-[#B39355] text-white flex items-center gap-2 whitespace-nowrap"
-                  disabled={isSubmitting}
+                  disabled={isScraping}
                 >
-                  {isSubmitting ? (
+                  {isScraping ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Importing...</span>
@@ -1389,7 +1407,7 @@ const AdminStandings = () => {
                     variant="outline"
                     className="bg-red-500 hover:bg-red-600 text-white border-none"
                   >
-                    {isSubmitting === league._id ? (
+                    {deletingId === league._id ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                     ) : (
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -1409,9 +1427,9 @@ const AdminStandings = () => {
                     <AlertDialogAction
                       onClick={() => handleDelete(league._id)}
                       className="bg-red-500 hover:bg-red-600 text-white"
-                      disabled={isSubmitting === league._id}
+                      disabled={deletingId === league._id}
                     >
-                      {isSubmitting === league._id ? (
+                      {deletingId === league._id ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                       ) : null}
                       Delete

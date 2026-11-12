@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Image from "next/image";
+import { useParams } from 'next/navigation';
 import Link from "next/link";
-import { ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import RelatedProducts from "@/components/landing/RelatedProducts";
 import { Suspense } from "react";
 import CartButton from "@/components/cart/CartButton";
 import { getProductById } from "@/actions/product";
 import { Product } from "@/types/product";
 import { useCart } from "@/app/context/CartContext";
+import ProductNotFound from "./not-found";
 
 // Enhanced AddToCartButton component with cart functionality
 function AddToCartButton({ product }: { product: Product }) {
@@ -44,26 +44,29 @@ function AddToCartButton({ product }: { product: Product }) {
 
 export default function ProductPage() {
   const params = useParams();
-  const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       setIsLoading(true);
+      setIsMissing(false);
       try {
         if (typeof params.id !== 'string') {
-          throw new Error('Invalid product ID');
-        }
-        
-        const productData = await getProductById(params.id);
-        
-        if (!productData) {
-          router.push('/404');
+          setIsMissing(true);
           return;
         }
-        
+
+        const productData = await getProductById(params.id);
+
+        if (!productData) {
+          // There is no /404 route; show this segment's not-found UI in place.
+          setIsMissing(true);
+          return;
+        }
+
         setProduct(productData);
       } catch (err) {
         setError('Failed to load product. Please try again.');
@@ -74,7 +77,7 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [params.id, router]);
+  }, [params.id]);
 
   // Show loading state
   if (isLoading) {
@@ -86,6 +89,10 @@ export default function ProductPage() {
         </div>
       </div>
     );
+  }
+
+  if (isMissing) {
+    return <ProductNotFound />;
   }
 
   // Show error state
@@ -103,9 +110,11 @@ export default function ProductPage() {
     );
   }
 
-  // Calculate discount percentage if discount exists
-  const discountPercentage = product.discount 
-    ? Math.round(((product.discount - product.price) / product.discount) * 100)
+  // `discount` is the original (compare-at) price shown struck through; `price`
+  // is what is charged. Only show a sale when the original is actually higher.
+  const hasDiscount = typeof product.discount === 'number' && product.discount > product.price;
+  const discountPercentage = hasDiscount
+    ? Math.round(((product.discount! - product.price) / product.discount!) * 100)
     : 0;
 
   return (
@@ -161,25 +170,13 @@ export default function ProductPage() {
               </Link>
             </div>
             
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.title}</h1>
-            
-            <div className="flex items-center mb-4">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-4 h-4 ${i < 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} 
-                  />
-                ))}
-              </div>
-              <span className="ml-2 text-sm text-gray-500">4.0 (24 reviews)</span>
-            </div>
-            
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
+
             <div className="flex items-center mb-6">
               <span className="text-2xl font-bold text-[#C5A464]">${product.price.toFixed(2)}</span>
-              {product.discount && (
+              {hasDiscount && (
                 <>
-                  <span className="ml-3 text-lg text-gray-400 line-through">${product.discount.toFixed(2)}</span>
+                  <span className="ml-3 text-lg text-gray-400 line-through">${product.discount!.toFixed(2)}</span>
                   <span className="ml-3 bg-red-100 text-red-700 px-2 py-0.5 rounded text-sm font-medium">
                     {discountPercentage}% OFF
                   </span>
@@ -199,17 +196,6 @@ export default function ProductPage() {
             {/* Add to Cart Section */}
             <div className="mb-8">
               <AddToCartButton product={product} />
-            </div>
-            
-            {/* Product Features */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">Product Features:</h3>
-              <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>Official team merchandise</li>
-                <li>High-quality materials</li>
-                <li>Comfortable fit</li>
-                <li>Machine washable</li>
-              </ul>
             </div>
           </div>
         </div>

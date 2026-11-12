@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Toaster } from "sonner";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { getMemberById } from "@/actions/member";
+import { ageFromDateOnly, formatDateOnly } from "@/app/admin/_lib/dateOnly";
 
 export default function MemberDetails() {
     const params = useParams();
@@ -22,7 +21,6 @@ export default function MemberDetails() {
             setLoading(true);
             try {
                 const response = await getMemberById(id);
-                console.log(11, response);
 
                 if (response) {
                     setMember({
@@ -84,7 +82,6 @@ export default function MemberDetails() {
 
     return (
         <div className="p-6">
-            <Toaster position="top-right" />
             <div className="flex items-center mb-8">
                 <Link href="/admin/members">
                     <Button variant="outline" size="sm">
@@ -112,13 +109,6 @@ export default function MemberDetails() {
                             )}
                             <div className="mt-4 text-center">
                                 <h2 className="text-2xl font-bold">{member.firstName} {member.lastName}</h2>
-                                <div className="mt-2">
-                                    {member.isActive ? (
-                                        <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                                    ) : (
-                                        <Badge variant="outline">Inactive</Badge>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,8 +119,9 @@ export default function MemberDetails() {
                             <div className="border rounded-lg p-4">
                                 <h3 className="font-semibold text-gray-500 mb-2">Personal Information</h3>
                                 <div className="space-y-2">
-                                    <p><span className="font-medium">Date of Birth:</span> {formatDate(member.dateOfBirth)}</p>
-                                    <p><span className="font-medium">Age:</span> {new Date().getFullYear() - new Date(member.dateOfBirth).getFullYear()}</p>
+                                    {/* dateOfBirth is a "YYYY-MM-DD" string; read it by parts so it isn't shifted a day through UTC. */}
+                                    <p><span className="font-medium">Date of Birth:</span> {formatDateOnly(member.dateOfBirth)}</p>
+                                    <p><span className="font-medium">Age:</span> {ageFromDateOnly(member.dateOfBirth) ?? 'N/A'}</p>
                                     <p><span className="font-medium">Gender:</span> {member.gender}</p>
                                     <p><span className="font-medium">Contact Email:</span> {member.email || 'N/A'}</p>
                                     <p><span className="font-medium">Contact Phone:</span> {member.cellPhone || 'N/A'}</p>
@@ -201,13 +192,6 @@ export default function MemberDetails() {
                                 >
                                     View Birth Certificate Document
                                 </a>
-                            </div>
-                        )}
-
-                        {member.notes && (
-                            <div className="mt-6 border rounded-lg p-4">
-                                <h3 className="font-semibold text-gray-500 mb-2">Notes</h3>
-                                <p className="text-gray-700 whitespace-pre-line">{member.notes}</p>
                             </div>
                         )}
                     </div>

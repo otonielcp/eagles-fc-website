@@ -1,5 +1,7 @@
 'use server'
 
+import { isAdmin, requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import News from '@/models/News';
 import { revalidatePath } from 'next/cache';
@@ -15,6 +17,7 @@ cloudinary.config({
 
 // Get all news
 export async function getAllNews(): Promise<NewsType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const news = await News.find({}).sort({ publishDate: -1 });
@@ -45,7 +48,8 @@ export async function getFeaturedNews(): Promise<NewsType[]> {
     return JSON.parse(JSON.stringify(news));
   } catch (error) {
     console.error("Error fetching featured news:", error);
-    throw new Error("Failed to fetch featured news");
+    // The homepage awaits this; an empty list beats a 500.
+    return [];
   }
 }
 
@@ -71,6 +75,11 @@ export async function getNewsById(id: string): Promise<NewsType | null> {
       return null;
     }
 
+    // This also backs the public /news/[id] page: drafts are admin-only.
+    if (!news.isPublished && !(await isAdmin())) {
+      return null;
+    }
+
     return {
       _id: news._id.toString(),
       title: news.title,
@@ -93,6 +102,7 @@ export async function getNewsById(id: string): Promise<NewsType | null> {
 
 // Upload image to Cloudinary
 export async function uploadNewsImage(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 
@@ -126,6 +136,7 @@ export async function uploadNewsImage(formData: FormData): Promise<{ success: bo
 
 // Create a new news article
 export async function createNews(data: NewsFormData): Promise<{ success: boolean; message: string; news?: NewsType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -150,6 +161,7 @@ export async function createNews(data: NewsFormData): Promise<{ success: boolean
 
 // Update a news article
 export async function updateNews(id: string, data: Partial<NewsFormData>): Promise<{ success: boolean; message: string; news?: NewsType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -186,6 +198,7 @@ export async function updateNews(id: string, data: Partial<NewsFormData>): Promi
 
 // Delete a news article
 export async function deleteNews(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 

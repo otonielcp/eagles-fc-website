@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Player from '@/models/Player';
 import { revalidatePath } from 'next/cache';
@@ -15,6 +17,7 @@ cloudinary.config({
 
 // Get all players
 export async function getAllPlayers(): Promise<PlayerType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const players = await Player.find({}).sort({ lastName: 1, firstName: 1 }).populate('teamId');
@@ -44,6 +47,7 @@ export async function getTeamStats(teamId: string): Promise<{
     matchesPlayed: number;
   }
 }> {
+  await requireAdmin();
   try {
     await connectDB();
     const players = await Player.find({ teamId, isActive: true });
@@ -118,6 +122,7 @@ export async function getTeamStats(teamId: string): Promise<{
 
 // Get players by team ID
 export async function getPlayersByTeamId(teamId: string): Promise<PlayerType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const players = await Player.find({ teamId }).sort({ position: 1, jerseyNumber: 1 });
@@ -130,6 +135,7 @@ export async function getPlayersByTeamId(teamId: string): Promise<PlayerType[]> 
 
 // Get player by ID
 export async function getPlayerById(id: string): Promise<PlayerType | null> {
+  await requireAdmin();
   try {
     await connectDB();
     const player = await Player.findById(id).populate('teamId');
@@ -143,6 +149,7 @@ export async function getPlayerById(id: string): Promise<PlayerType | null> {
 
 // Create player
 export async function createPlayer(playerData: PlayerFormData): Promise<{ success: boolean; message: string; player?: PlayerType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -181,6 +188,7 @@ export async function createPlayer(playerData: PlayerFormData): Promise<{ succes
 
 // Update player
 export async function updatePlayer(id: string, playerData: PlayerFormData): Promise<{ success: boolean; message: string; player?: PlayerType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -231,6 +239,7 @@ export async function updatePlayer(id: string, playerData: PlayerFormData): Prom
 
 // Delete player
 export async function deletePlayer(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -273,6 +282,7 @@ export async function deletePlayer(id: string): Promise<{ success: boolean; mess
 
 // Upload player image
 export async function uploadPlayerImage(file: File): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     if (!file) {
       return { success: false, message: "No file provided" };

@@ -148,20 +148,20 @@ export default function AddProductForm({ onCancel, onProductAdded }: AddProductF
                     name="price"
                     type="number"
                     min="0"
-                    
+                    step="0.01"
                     value={formData.price || ""}
                     onChange={handleNumberChange}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="discount">Discount Price</Label>
+                  <Label htmlFor="discount">Original Price (optional, shown crossed out)</Label>
                   <Input
                     id="discount"
                     name="discount"
                     type="number"
                     min="0"
-                    
+                    step="0.01"
                     value={formData.discount || ""}
                     onChange={handleNumberChange}
                   />

@@ -26,7 +26,6 @@ import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
 
 interface EditStaffFormProps {
   staff: Staff;
@@ -40,7 +39,9 @@ export default function EditStaffForm({ staff, teamId }: EditStaffFormProps) {
     lastName: staff.lastName,
     displayName: staff.displayName,
     role: staff.role,
-    dateOfBirth: format(new Date(staff.dateOfBirth), "yyyy-MM-dd"),
+    // Stored as UTC midnight; formatting in local time would show the
+    // previous day in US time zones and shift the date back on every save.
+    dateOfBirth: staff.dateOfBirth ? staff.dateOfBirth.slice(0, 10) : "",
     nationality: staff.nationality,
     biography: staff.biography,
     image: staff.image,
@@ -63,7 +64,8 @@ export default function EditStaffForm({ staff, teamId }: EditStaffFormProps) {
     try {
       const result = await uploadStaffImage(file);
       if (result.success && result.url) {
-        setFormData({ ...formData, image: result.url });
+        const url = result.url;
+        setFormData((prev) => ({ ...prev, image: url }));
         toast.success("Image uploaded successfully");
       } else {
         toast.error(result.message || "Failed to upload image");
@@ -106,6 +108,11 @@ export default function EditStaffForm({ staff, teamId }: EditStaffFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
   };
 
   const handleSocialMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,7 +237,7 @@ export default function EditStaffForm({ staff, teamId }: EditStaffFormProps) {
                 name="order"
                 type="number"
                 value={formData.order}
-                onChange={handleInputChange}
+                onChange={handleNumberChange}
                 placeholder="Enter display order (lower numbers appear first)"
               />
             </div>
@@ -253,6 +260,7 @@ export default function EditStaffForm({ staff, teamId }: EditStaffFormProps) {
                 onImageUpload={handleImageUpload}
                 imageUrl={formData.image}
                 isUploading={isUploading}
+                onRemove={() => setFormData((prev) => ({ ...prev, image: "" }))}
               />
             </div>
 

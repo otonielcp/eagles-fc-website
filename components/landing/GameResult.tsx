@@ -1,19 +1,14 @@
 import { getLatestFullTimeMatch } from "@/actions/fixture";
 import { IFixture } from "@/types/fixtures";
 import MatchReviewButton from "./MatchReviewButton";
+import SafeImg from "./SafeImg";
 
 const GameResult = async () => {
   const result: IFixture | null = await getLatestFullTimeMatch();
   
-  // Return early if no match found
+  // No finished match yet: leave the section out instead of a large empty block.
   if (!result) {
-    return (
-      <div className="relative w-full py-16 md:py-24 min-h-[400px] flex items-center justify-center text-white" style={{ backgroundColor: '#181819' }}>
-        <div className="text-center">
-          <p className="text-xl text-gray-400">No recent match results available</p>
-        </div>
-      </div>
-    );
+    return null;
   }
   
   const gameresultbg = result.matchImage;
@@ -51,10 +46,11 @@ const GameResult = async () => {
       {/* League Logo */}
           {result.leagueLogo && (
             <div className="mb-6 transform hover:scale-105 transition-transform duration-300">
-              <img 
-                src={result.leagueLogo} 
-                alt="League Logo" 
-                className="h-12 md:h-16 lg:h-20 object-contain drop-shadow-2xl" 
+              <SafeImg
+                src={result.leagueLogo}
+                alt="League Logo"
+                fallbackSrc={null}
+                className="h-12 md:h-16 lg:h-20 object-contain drop-shadow-2xl"
               />
             </div>
           )}
@@ -81,8 +77,9 @@ const GameResult = async () => {
           <div className="flex flex-col items-center lg:items-end space-y-4 order-2 lg:order-1">
             {/* Team Logo */}
             <div className="relative group">
-              <img 
-                src={result.homeTeamLogo || '/EAGLES-CREST.png'} 
+              <SafeImg
+                src={result.homeTeamLogo || '/EAGLES-CREST.png'}
+                fallbackSrc={null}
                 alt={`${result.homeTeam} Logo`} 
                 className="relative h-20 w-20 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain drop-shadow-2xl transform group-hover:scale-110 transition-transform duration-300" 
               />
@@ -148,8 +145,9 @@ const GameResult = async () => {
           <div className="flex flex-col items-center lg:items-start space-y-4 order-3">
             {/* Team Logo */}
             <div className="relative group">
-              <img 
-                src={result.awayTeamLogo || '/default.jpg'} 
+              <SafeImg
+                src={result.awayTeamLogo || '/default.jpg'}
+                fallbackSrc={null}
                 alt={`${result.awayTeam} Logo`} 
                 className="relative h-20 w-20 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain drop-shadow-2xl transform group-hover:scale-110 transition-transform duration-300" 
               />

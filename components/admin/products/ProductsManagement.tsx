@@ -127,8 +127,10 @@ export default function ProductsManagement() {
       )}
 
       {editingProduct && (
-        <EditProductForm 
-          product={editingProduct} 
+        <EditProductForm
+          // Remount when switching products so the form state is re-initialised
+          key={editingProduct._id}
+          product={editingProduct}
           onCancel={() => setEditingProduct(null)} 
           onProductUpdated={handleProductUpdated} 
         />

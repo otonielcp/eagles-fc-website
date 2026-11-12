@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Cookies Policy',
+  description: 'How the Eagles Football Club website uses cookies and similar technologies.',
+};
 
 const CookiesPolicyPage = () => {
   return (

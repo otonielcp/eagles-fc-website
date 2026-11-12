@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useTurnstile } from '@/components/forms/Turnstile';
 
 interface InquiryFormProps {
   inquiryType: string;
@@ -9,19 +10,22 @@ interface InquiryFormProps {
 }
 
 const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
-  const contactImage = "/heroimage1.jpeg";
+  const human = useTurnstile();
+  // Club crest (the old /heroimage1.jpeg no longer exists in /public)
+  const contactImage = "/EAGLES-CREST.png";
 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     confirmEmail: '',
-    phone: '+966 5054 3413',
+    phone: '',
     message: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -33,11 +37,18 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!human.ready) {
+      setIsError(true);
+      setSubmitMessage(human.missingMessage);
+      return;
+    }
     setIsSubmitting(true);
     setSubmitMessage('');
+    setIsError(false);
 
     // Validation
     if (formData.email !== formData.confirmEmail) {
+      setIsError(true);
       setSubmitMessage('Email addresses do not match.');
       setIsSubmitting(false);
       return;
@@ -50,10 +61,12 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
         email: formData.email,
         phone: formData.phone,
         subject: title, // Use the title as the subject
-        message: formData.message
+        message: formData.message,
+        turnstileToken: human.token,
       };
 
       const result = await onSubmit(contactData);
+      human.reset(); // each token works once
       
       if (result.success) {
         setSubmitMessage('Your inquiry has been sent successfully!');
@@ -63,13 +76,16 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
           lastName: '',
           email: '',
           confirmEmail: '',
-          phone: '+966 5054 3413',
+          phone: '',
           message: ''
         });
       } else {
+        setIsError(true);
         setSubmitMessage(`Error: ${result.message}`);
       }
     } catch (error) {
+      human.reset();
+      setIsError(true);
       setSubmitMessage('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -179,9 +195,12 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
               ></textarea>
             </div>
 
+            {/* Human check (Cloudflare Turnstile) */}
+            {human.widget}
+
             {/* Submit Message */}
             {submitMessage && (
-              <div className={`p-4 rounded ${submitMessage.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              <div role={isError ? 'alert' : 'status'} className={`p-4 rounded ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                 {submitMessage}
               </div>
             )}
@@ -203,11 +222,11 @@ const InquiryForm = ({ inquiryType, title, onSubmit }: InquiryFormProps) => {
       </div>
 
       {/* Right Side - Image */}
-      <div className="w-full lg:w-1/2 h-64 lg:h-auto">
+      <div className="w-full lg:w-1/2 h-64 lg:h-auto flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
         <img
           src={contactImage}
-          alt="Soccer Team"
-          className="w-full h-full object-cover"
+          alt="Eagles FC crest"
+          className="w-1/2 max-w-xs h-auto object-contain"
         />
       </div>
 

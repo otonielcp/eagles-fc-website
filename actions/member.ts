@@ -1,10 +1,48 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+import { getMembersPassword, hasMembersSession, startMembersSession } from '@/lib/memberSession';
+import { createHash, timingSafeEqual } from 'crypto';
+
 import connectDB from '@/lib/dbConnect';
 import Member from '@/models/Member';
 import { revalidatePath } from 'next/cache';
 import { MemberResponse, MemberFormData } from '@/types/member';
 import { v2 as cloudinary } from 'cloudinary';
+
+const MEMBERS_SESSION_EXPIRED = "Your access has expired. Please enter the members password again.";
+const MEMBER_FILE_MAX_BYTES = 4.5 * 1024 * 1024;
+const MEMBER_FILE_FIELDS = ['profilePhoto', 'birthCertificate'];
+
+function passwordMatches(input: string, expected: string): boolean {
+  // Hash both sides so the comparison is constant-time regardless of length.
+  const a = createHash('sha256').update(input).digest();
+  const b = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(a, b);
+}
+
+// Check the members password on the server and start a signed session cookie.
+export async function verifyMembersPassword(password: string): Promise<{ success: boolean; message?: string }> {
+  const expected = getMembersPassword();
+  if (!expected) {
+    console.error('[members] MEMBERS_PASSWORD is not set; refusing all access');
+    return { success: false, message: "Member registration is unavailable right now" };
+  }
+
+  if (typeof password !== 'string' || !passwordMatches(password, expected)) {
+    return { success: false, message: "Incorrect password" };
+  }
+
+  if (!(await startMembersSession())) {
+    return { success: false, message: "Member registration is unavailable right now" };
+  }
+  return { success: true };
+}
+
+// Lets the page restore access after a reload; the cookie itself is httpOnly.
+export async function checkMembersAccess(): Promise<boolean> {
+  return hasMembersSession();
+}
 
 // Configure Cloudinary
 cloudinary.config({
@@ -15,6 +53,7 @@ cloudinary.config({
 
 // Get all members
 export async function getAllMembers(): Promise<MemberResponse[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const members = await Member.find({}).sort({ createdAt: -1 });
@@ -32,6 +71,7 @@ export async function getAllMembers(): Promise<MemberResponse[]> {
 
 // Get a single member by ID
 export async function getMemberById(id: string): Promise<MemberResponse | null> {
+  await requireAdmin();
   try {
     await connectDB();
     const member = await Member.findById(id);
@@ -53,13 +93,28 @@ export async function getMemberById(id: string): Promise<MemberResponse | null> 
 }
 
 // Upload file to Cloudinary (profile photo or birth certificate)
-export async function uploadMemberFile(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+export async function uploadMemberFile(formData: FormData): Promise<{ success: boolean; url?: string; message?: string; unauthorized?: boolean }> {
+  if (!(await hasMembersSession())) {
+    return { success: false, message: MEMBERS_SESSION_EXPIRED, unauthorized: true };
+  }
   try {
-    const file = formData.get('file') as File;
-    const fileType = formData.get('fileType') as string; // 'profilePhoto' or 'birthCertificate'
+    const file = formData.get('file');
+    const fileType = formData.get('fileType'); // 'profilePhoto' or 'birthCertificate'
 
-    if (!file) {
+    if (!(file instanceof File) || file.size === 0) {
       return { success: false, message: "No file provided" };
+    }
+
+    if (typeof fileType !== 'string' || !MEMBER_FILE_FIELDS.includes(fileType)) {
+      return { success: false, message: "Invalid file field" };
+    }
+
+    if (!(file.type.startsWith('image/') || file.type === 'application/pdf')) {
+      return { success: false, message: "Please upload an image or a PDF" };
+    }
+
+    if (file.size > MEMBER_FILE_MAX_BYTES) {
+      return { success: false, message: "File must be 4.5 MB or smaller" };
     }
 
     // Convert file to base64
@@ -87,7 +142,10 @@ export async function uploadMemberFile(formData: FormData): Promise<{ success: b
 }
 
 // Create a new member
-export async function createMember(data: MemberFormData): Promise<{ success: boolean; message: string; member?: MemberResponse }> {
+export async function createMember(data: MemberFormData): Promise<{ success: boolean; message: string; member?: MemberResponse; unauthorized?: boolean }> {
+  if (!(await hasMembersSession())) {
+    return { success: false, message: MEMBERS_SESSION_EXPIRED, unauthorized: true };
+  }
   try {
     await connectDB();
 
@@ -124,6 +182,7 @@ export async function createMember(data: MemberFormData): Promise<{ success: boo
 
 // Update a member
 export async function updateMember(id: string, data: Partial<MemberFormData>): Promise<{ success: boolean; message: string; member?: MemberResponse }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -172,6 +231,7 @@ export async function updateMember(id: string, data: Partial<MemberFormData>): P
 
 // Delete a member
 export async function deleteMember(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -226,6 +286,7 @@ export async function deleteMember(id: string): Promise<{ success: boolean; mess
 
 // Get recent members
 export async function getRecentMembers(limit: number = 10): Promise<MemberResponse[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const members = await Member.find({})

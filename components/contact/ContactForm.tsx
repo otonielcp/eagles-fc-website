@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { sendContactEmail } from '@/actions/contact';
+import { useTurnstile } from '@/components/forms/Turnstile';
+import { HUMAN_CHECK_FAILED_MESSAGE } from '@/lib/humanCheck';
 
 export default function ContactForm() {
+  const human = useTurnstile();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,7 +16,12 @@ export default function ContactForm() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
+
+  // Never surface the server's raw error text (it can contain SMTP details).
+  const GENERIC_ERROR =
+    'We could not send your message right now. Please try again in a few minutes, or email us at info@eaglesfcgi.org.';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -25,13 +33,24 @@ export default function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!human.ready) {
+      setStatus('error');
+      setSubmitMessage(human.missingMessage);
+      return;
+    }
     setIsSubmitting(true);
+    setStatus('idle');
     setSubmitMessage('');
 
     try {
-      const result = await sendContactEmail(formData);
-      
-      if (result.success) {
+      const result = await sendContactEmail({ ...formData, turnstileToken: human.token });
+      human.reset(); // each token works once
+
+      if (result.message === HUMAN_CHECK_FAILED_MESSAGE) {
+        setStatus('error');
+        setSubmitMessage(result.message);
+      } else if (result.success) {
+        setStatus('success');
         setSubmitMessage('Message sent successfully! We\'ll get back to you soon.');
         // Reset form
         setFormData({
@@ -42,10 +61,13 @@ export default function ContactForm() {
           message: ''
         });
       } else {
-        setSubmitMessage(`Error: ${result.message}`);
+        setStatus('error');
+        setSubmitMessage(GENERIC_ERROR);
       }
-    } catch (error) {
-      setSubmitMessage('An error occurred. Please try again.');
+    } catch {
+      human.reset();
+      setStatus('error');
+      setSubmitMessage(GENERIC_ERROR);
     } finally {
       setIsSubmitting(false);
     }
@@ -163,13 +185,19 @@ export default function ContactForm() {
             ></textarea>
           </div>
 
+          {/* Human check (Cloudflare Turnstile) */}
+          <div className="mb-6">{human.widget}</div>
+
           {/* Submit Message */}
-          {submitMessage && (
-            <div className={`mb-6 p-4 border-l-4 ${
-              submitMessage.includes('Error') 
-                ? 'bg-red-50 border-red-500 text-red-700' 
-                : 'bg-green-50 border-green-500 text-green-700'
-            }`}>
+          {status !== 'idle' && submitMessage && (
+            <div
+              role={status === 'error' ? 'alert' : 'status'}
+              className={`mb-6 p-4 border-l-4 ${
+                status === 'error'
+                  ? 'bg-red-50 border-red-500 text-red-700'
+                  : 'bg-green-50 border-green-500 text-green-700'
+              }`}
+            >
               {submitMessage}
             </div>
           )}

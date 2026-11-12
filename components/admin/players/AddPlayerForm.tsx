@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
@@ -86,7 +85,11 @@ export default function AddPlayerForm({ team }: AddPlayerFormProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await createPlayer(formData);
+      // displayName is required by the model; the field is optional here and
+      // documented as falling back to the full name.
+      const displayName =
+        formData.displayName.trim() || `${formData.firstName} ${formData.lastName}`.trim();
+      const result = await createPlayer({ ...formData, displayName });
 
       if (result.success) {
         toast.success(result.message);
@@ -291,7 +294,7 @@ export default function AddPlayerForm({ team }: AddPlayerFormProps) {
                 value={formData.height}
                 onChange={handleNumberChange}
                 min={0}
-                
+                step="0.1"
                 placeholder="e.g. 6.1"
               />
             </div>
@@ -329,6 +332,7 @@ export default function AddPlayerForm({ team }: AddPlayerFormProps) {
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData((prev) => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">
               Upload a player photo (recommended size: 800x800px)
@@ -568,7 +572,6 @@ export default function AddPlayerForm({ team }: AddPlayerFormProps) {
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 }

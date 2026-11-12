@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
@@ -328,6 +327,7 @@ export default function EditPlayerForm({ player, onCancel, onPlayerUpdated }: Ed
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData((prev) => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">
               Upload a player photo (recommended size: 800x800px)
@@ -566,7 +566,6 @@ export default function EditPlayerForm({ player, onCancel, onPlayerUpdated }: Ed
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 } 

@@ -1,4 +1,5 @@
 import { getPortfolioLogosByCategory } from "@/actions/sponsorsLogo"
+import SafeImg from "./SafeImg"
 
 // Import Partner Logos
 // const partner1 = "/mainpartners/partner1.png"
@@ -21,7 +22,7 @@ const MainPartners = async () => {
       {/* Partners Logos */}
       <div className="flex justify-center items-center gap-10 px-2 flex-wrap">
         {mainPartners.map((partner) => (
-          <img key={partner._id} src={partner.image} alt={partner.name} className="h-16 object-contain" />
+          <SafeImg key={partner._id} src={partner.image} alt={partner.name} fallbackSrc={null} className="h-16 object-contain" />
         ))}
         {/* <img src={partner1} alt="Partner 1" className="h-16 object-contain" />
         <img src={partner2} alt="Partner 2" className="h-12 object-contain" />

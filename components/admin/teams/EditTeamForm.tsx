@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
@@ -289,6 +288,7 @@ export default function EditTeamForm({ team, onCancel, onTeamUpdated }: EditTeam
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData(prev => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">
               Upload a team photo or logo (recommended size: 800x600px)
@@ -449,7 +449,6 @@ export default function EditTeamForm({ team, onCancel, onTeamUpdated }: EditTeam
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 }

@@ -10,13 +10,19 @@ const Tickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>
     ([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchTickets = async () => {
-      const tickets = await getTickets();
-      console.log(tickets);
-      setTickets(tickets);
-      setLoading(false);
+      try {
+        // getTickets throws when the database is unreachable
+        const tickets = await getTickets();
+        setTickets(tickets);
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchTickets();
@@ -24,6 +30,13 @@ const Tickets = () => {
 
   if (loading) {
     return <div className="flex justify-center items-center h-[80vh]">Loading...</div>;
+  }
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-[80vh] text-gray-600">
+        We couldn&apos;t load tickets right now. Please try again later.
+      </div>
+    );
   }
   return (
     <div>

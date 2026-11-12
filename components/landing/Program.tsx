@@ -127,156 +127,96 @@ const Program = () => {
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent"></div>
       
-      {/* Decorative gold elements */}
-      <div className="absolute top-20 right-10 w-32 h-32 border-2 border-[#BD9B58]/20 rounded-full"></div>
-      <div className="absolute bottom-20 left-10 w-24 h-24 border-2 border-[#BD9B58]/20 rounded-full"></div>
-      <div className="absolute top-1/2 left-1/4 w-16 h-16 border border-[#BD9B58]/15 rounded-full"></div>
-
-      <div className="container mx-auto px-6 md:px-12 lg:px-20 max-w-[1600px] relative z-10">
+      <div className="container mx-auto px-6 md:px-12 lg:px-20 max-w-[1500px] relative z-10">
         {/* Main Content Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-20">
           {/* Left - Image */}
           <div className="relative" ref={imageRef}>
-            {/* Decorative border glow */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#BD9B58]/50 via-[#d4b068]/30 to-[#BD9B58]/50 rounded-tr-3xl rounded-bl-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-            
             <div
-              className="relative overflow-hidden rounded-tr-3xl rounded-bl-3xl shadow-2xl group border-2 border-[#BD9B58]/30 w-full h-[300px] sm:h-[400px] md:h-[600px] lg:h-[700px] bg-cover bg-center transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+              className="relative overflow-hidden rounded-tr-3xl rounded-bl-3xl shadow-2xl border-2 border-[#BD9B58]/30 w-full h-[300px] sm:h-[420px] lg:h-[560px] bg-cover bg-center"
               style={{
                 backgroundImage: `url(${programpic})`,
               }}
               role="img"
               aria-label="Eagles FC Team"
             >
-              {/* Enhanced gradient overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-[#BD9B58]/0 via-transparent to-[#BD9B58]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </div>
-
-            {/* Stats Section Over Image - Desktop */}
-            <motion.div 
-              ref={statsRef}
-              className="hidden lg:flex absolute -bottom-6 -right-6 bg-gradient-to-br from-[#BD9B58] via-[#d4b068] to-[#BD9B58] text-white py-8 px-12 rounded-tr-3xl rounded-bl-3xl shadow-2xl backdrop-blur-md border-2 border-white/30 relative group"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              style={{ minWidth: '500px' }}
-            >
-              {/* Animated background shimmer */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-tr-3xl rounded-bl-3xl"></div>
-              
-              <div className="relative z-10 flex items-center gap-8 w-full">
-                <motion.div 
-                  className="border-r border-white/40 pr-8 flex-shrink-0"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <div className="text-5xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">10+</div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/90 whitespace-nowrap">Player Pathways</p>
-                </motion.div>
-                <motion.div 
-                  className="border-r border-white/40 pr-8 flex-shrink-0"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <div className="text-5xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">135+</div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/90 whitespace-nowrap">Active Players</p>
-                </motion.div>
-                <motion.div 
-                  className="flex-shrink-0"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <div className="text-5xl font-bebas font-bold mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 flex-wrap justify-center lg:justify-start"><span>2</span><span className="text-3xl">Teams</span></div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/90 whitespace-nowrap">USYS National League</p>
-                </motion.div>
-            </div>
-            </motion.div>
           </div>
 
           {/* Right - Text Content */}
-          <div className="text-center lg:text-left space-y-8" ref={textRef}>
+          <div className="text-center lg:text-left" ref={textRef}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="relative inline-block"
+              className="inline-flex items-center gap-3 mb-5"
             >
-              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
-              <p className="text-sm font-bold text-[#BD9B58] uppercase tracking-[0.3em] mb-4 relative inline-block">
+              <span className="w-8 h-[2px] bg-[#BD9B58]"></span>
+              <p className="text-xs sm:text-sm font-bold text-[#BD9B58] uppercase tracking-[0.3em]">
                 Why Join Eagles FC?
               </p>
-              <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
+              <span className="w-8 h-[2px] bg-[#BD9B58] lg:hidden"></span>
             </motion.div>
-            
+
             <motion.h2
-              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bebas text-gray-900 leading-[0.9] mb-6 sm:mb-8 relative"
+              className="text-5xl md:text-6xl xl:text-7xl font-bebas text-gray-900 leading-[0.95] mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <span className="bg-gradient-to-r from-[#181819] via-[#181819] to-[#BD9B58] bg-clip-text text-transparent">
-                Elevate Your Game,
-              </span>
+              Elevate Your Game,{' '}
               <br className="hidden md:block" />
-              <span className="bg-gradient-to-r from-[#BD9B58] via-[#181819] to-[#181819] bg-clip-text text-transparent">
-                Expand Your Horizons
-              </span>
+              <span className="text-[#BD9B58]">Expand Your Horizons</span>{' '}
               <br className="hidden md:block" />
-              <span className="text-gray-900">with Us</span>
+              with Us
             </motion.h2>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
               <div className="w-20 h-[2px] bg-gradient-to-r from-[#BD9B58] to-transparent mb-6 mx-auto lg:mx-0"></div>
-              <p className="text-gray-600 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
+              <p className="text-gray-600 text-base md:text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
             At Eagles FC, we are more than just a soccer club—we are a platform for players to develop, compete,
             and succeed at the highest levels. Our teams compete in the USYS National League, the premier youth soccer league in the United States. Whether you aspire to play professionally, compete in college,
             or refine your skills in a top-tier training environment, we provide the resources, coaching,
             and support to help you reach your goals.
           </p>
             </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              ref={statsRef}
+              className="mt-10 grid grid-cols-3 bg-gradient-to-br from-[#BD9B58] to-[#cfae6a] text-white rounded-tr-3xl rounded-bl-3xl shadow-xl max-w-xl mx-auto lg:mx-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              {[
+                { value: '10+', label: 'Player Pathways' },
+                { value: '135+', label: 'Active Players' },
+                { value: '2', label: 'USYS National League Teams' },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className={`px-3 sm:px-6 py-6 text-center ${i > 0 ? 'border-l border-white/35' : ''}`}
+                >
+                  <div className="text-4xl sm:text-5xl font-bebas leading-none mb-2">{stat.value}</div>
+                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest text-white/90 leading-snug">{stat.label}</p>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
-
-        {/* Stats Section - Mobile */}
-        <motion.div
-          className="lg:hidden flex justify-center mb-12 sm:mb-20 px-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className="bg-gradient-to-br from-[#BD9B58] via-[#d4b068] to-[#BD9B58] text-white py-6 sm:py-8 px-4 sm:px-10 rounded-tr-3xl rounded-bl-3xl shadow-2xl w-full max-w-md border-2 border-white/30 relative overflow-hidden group">
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-
-            <div className="flex items-center justify-center gap-3 sm:gap-6 text-center relative z-10">
-              <motion.div className="border-r border-white/40 pr-3 sm:pr-6" whileHover={{ scale: 1.1 }}>
-                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">10+</div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">Pathways</p>
-              </motion.div>
-              <motion.div className="border-r border-white/40 pr-3 sm:pr-6" whileHover={{ scale: 1.1 }}>
-                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">135+</div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">Players</p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <div className="text-2xl sm:text-4xl font-bebas font-bold mb-1 sm:mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent flex items-baseline gap-1 justify-center"><span>2</span><span className="text-lg sm:text-2xl">Teams</span></div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">USYS</p>
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16 px-2 sm:px-0" ref={cardsRef}>
           {/* Card 1 */}
           <motion.div 
             className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
-            whileHover={{ y: -12, scale: 1.03, rotateY: 2 }}
+            whileHover={{ y: -6 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
@@ -314,7 +254,7 @@ const Program = () => {
         {/* Card 2 */}
           <motion.div 
             className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
-            whileHover={{ y: -12, scale: 1.03, rotateY: -2 }}
+            whileHover={{ y: -6 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85 }}
@@ -346,7 +286,7 @@ const Program = () => {
         {/* Card 3 */}
           <motion.div 
             className="feature-card bg-white border-2 border-gray-200 p-6 sm:p-10 rounded-tr-3xl rounded-bl-3xl shadow-lg hover:shadow-2xl hover:shadow-[#BD9B58]/30 transition-all duration-500 group hover:border-[#BD9B58] relative overflow-hidden"
-            whileHover={{ y: -12, scale: 1.03 }}
+            whileHover={{ y: -6 }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
@@ -383,58 +323,15 @@ const Program = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
         >
-          <Link href="/programs">
-            <motion.button 
-              className="group relative px-16 py-5 bg-gradient-to-r from-[#BD9B58] via-[#d4b068] to-[#BD9B58] text-white font-bold text-lg uppercase tracking-widest rounded-tr-3xl rounded-bl-3xl shadow-2xl overflow-hidden border-2 border-white/20"
-              whileHover={{ 
-                scale: 1.08, 
-                boxShadow: "0 20px 60px rgba(189, 155, 88, 0.6)",
-                y: -3
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {/* Animated gradient background */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-[#d4b068] via-[#BD9B58] to-[#d4b068] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                style={{ backgroundSize: "200% 200%" }}
-              />
-              
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                animate={{
-                  x: ["-100%", "200%"]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-[#BD9B58] blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500 -z-10"></div>
-              
-              <span className="relative z-10 flex items-center gap-4 font-bebas text-xl">
-          View Programs
-                <motion.span
-                  animate={{ x: [0, 8, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-2xl"
-                >
-                  →
-                </motion.span>
-              </span>
-            </motion.button>
-        </Link>
+          <Link
+            href="/programs"
+            className="group inline-flex items-center gap-3 bg-[#BD9B58] hover:bg-[#a8884a] text-white font-bold text-sm uppercase tracking-[0.15em] px-9 py-4 rounded-tr-2xl rounded-bl-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            View Programs
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
         </motion.div>
       </div>
     </div>

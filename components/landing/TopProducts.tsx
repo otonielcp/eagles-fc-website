@@ -6,6 +6,7 @@ import { Product } from "@/types/product";
 import { getFeaturedProducts, getProducts } from "@/actions/product";
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
+import SafeImg from "./SafeImg";
 
 const TopProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -61,6 +62,11 @@ const TopProducts: React.FC = () => {
   const totalSlides = products.length;
   const maxIndex = Math.max(0, totalSlides - visibleSlides);
 
+  // Keep the index valid when a resize shows more items per view.
+  useEffect(() => {
+    setCurrentIndex((prev) => Math.min(prev, maxIndex));
+  }, [maxIndex]);
+
   const handlePrev = () => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
@@ -99,6 +105,11 @@ const TopProducts: React.FC = () => {
     );
   }
 
+  // No featured products: leave the section out instead of an empty carousel.
+  if (products.length === 0) {
+    return null;
+  }
+
   return (
     <div className="w-full mx-auto px-8 bg-gray-50 py-12 text-center">
       {/* Section Title */}
@@ -111,7 +122,8 @@ const TopProducts: React.FC = () => {
           <motion.div
             className="flex gap-4"
             animate={{
-              x: -currentIndex * (100 / visibleSlides + 16 * (visibleSlides - 1) / visibleSlides) + '%'
+              // One step = one item + one 16px gap = (track width + 16px) / visibleSlides
+              x: `calc(${-currentIndex} * (100% + 16px) / ${visibleSlides})`
             }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
@@ -121,7 +133,7 @@ const TopProducts: React.FC = () => {
                   <div className="relative bg-white rounded overflow-hidden">
                     {/* Product Image */}
                     <div className="relative">
-                      <img
+                      <SafeImg
                         src={product.image}
                         alt={product.title}
                         className="w-full h-[300px] object-cover rounded-tr-lg rounded-tl-lg"

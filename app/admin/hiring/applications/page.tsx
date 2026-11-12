@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
 import { ChevronDown, ClipboardList, FileText, MapPin, Search, ShieldCheck, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -199,7 +199,7 @@ function ApplicationsList() {
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#C5A464]/15 to-[#C5A464]/5 border border-[#C5A464]/10 flex items-center justify-center text-sm font-bold text-[#8A6D35]">
                       {initials(app)}
                     </div>
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${STAGE_STYLES[app.stage].dot}`} />
+                    <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${STAGE_STYLES[app.stage]?.dot ?? "bg-gray-300"}`} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -248,7 +248,6 @@ function ApplicationsList() {
           })}
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

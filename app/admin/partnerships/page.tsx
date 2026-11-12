@@ -8,7 +8,6 @@ import {
   deletePartnershipInquiry,
 } from "@/actions/partnershipInquiry";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -110,6 +109,9 @@ export default function PartnershipsPage() {
   const [savingNotes, setSavingNotes] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | Inquiry["status"]>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  // Set on the client after loading: formatting new Date() during render made
+  // the server (UTC) and browser (local time) disagree and broke hydration.
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchInquiries();
@@ -119,6 +121,7 @@ export default function PartnershipsPage() {
     try {
       const data = await getAllPartnershipInquiries();
       setInquiries(data);
+      setLastUpdated(new Date());
     } catch (error) {
       toast.error("Failed to load partnership inquiries");
     } finally {
@@ -212,7 +215,7 @@ export default function PartnershipsPage() {
           </div>
           <div className="flex items-center gap-2 text-zinc-400 text-xs bg-white/5 rounded-lg px-3 py-2 border border-white/10">
             <Clock className="w-3.5 h-3.5" />
-            <span>Last updated: {format(new Date(), "MMM dd, h:mm a")}</span>
+            <span>Last updated: {lastUpdated ? format(lastUpdated, "MMM dd, h:mm a") : "—"}</span>
           </div>
         </div>
 
@@ -313,7 +316,9 @@ export default function PartnershipsPage() {
         <div className="space-y-3">
           {filtered.map((inquiry) => {
             const isExpanded = expandedId === inquiry._id;
-            const config = STATUS_CONFIG[inquiry.status];
+            // Fallback: an inquiry saved with an unknown status (e.g. from the
+            // old shared Inbox list) must not crash the whole page.
+            const config = STATUS_CONFIG[inquiry.status] ?? STATUS_CONFIG.new;
             const StatusIcon = config.icon;
 
             return (
@@ -631,7 +636,6 @@ export default function PartnershipsPage() {
           })}
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

@@ -19,7 +19,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 
 export default function AddVideoForm() {
   const router = useRouter();
@@ -151,6 +150,7 @@ export default function AddVideoForm() {
               onImageUpload={handleThumbnailUpload}
               isUploading={thumbnailUploading}
               imageUrl={formData.thumbnailUrl}
+              onRemove={() => setFormData(prev => ({ ...prev, thumbnailUrl: "" }))}
             />
           </div>
 
@@ -189,7 +189,6 @@ export default function AddVideoForm() {
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 } 

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getAllVideos, deleteVideo } from "@/actions/video";
 import { Video } from "@/types/video";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
@@ -208,7 +207,6 @@ export default function VideoManagement() {
           </Table>
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

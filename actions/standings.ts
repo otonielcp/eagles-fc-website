@@ -1,6 +1,8 @@
 // actions/standings.ts
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Standing from '@/models/Standings';
 
@@ -38,6 +40,7 @@ export async function getStandingById(id: string): Promise<any> {
 }
 
 export async function updateStanding(id: string, data: any): Promise<any> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -63,6 +66,7 @@ export async function updateTeamInStanding(
   teamIndex: number,
   teamData: any
 ): Promise<any> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -92,6 +96,7 @@ export async function updateTeamInStanding(
 }
 
 export async function deleteStanding(id: string): Promise<boolean> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -117,6 +122,7 @@ export async function createStanding(data: {
   };
   standings?: any[];
 }): Promise<any> {
+  await requireAdmin();
   try {
     await connectDB();
     

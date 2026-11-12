@@ -2,8 +2,9 @@
 
 import { Player } from '@/types/team';
 import Link from 'next/link';
+import SafeImg from './SafeImg';
 
-const DEFAULT_CLUB_LOGO = 'https://res.cloudinary.com/dofpgztzm/image/upload/v1765895370/club-logo/eagles-fc-logo-2026.png';
+const DEFAULT_CLUB_LOGO = '/EAGLES-CREST.png';
 
 interface PlayerSectionProps {
   title: string;
@@ -14,8 +15,6 @@ interface PlayerSectionProps {
 
 const PlayerSection = ({ title, players, fallbackImage, cardBackground }: PlayerSectionProps) => {
   const fallback = fallbackImage || DEFAULT_CLUB_LOGO;
-  const hasPlayerPhoto = (img: string | undefined | null) =>
-    img && img.length > 0 && img !== '/default.jpg' && img !== fallback && img !== DEFAULT_CLUB_LOGO && img !== cardBackground;
 
   const cardStyle = cardBackground
     ? {
@@ -38,26 +37,14 @@ const PlayerSection = ({ title, players, fallbackImage, cardBackground }: Player
               className="rounded-md overflow-hidden aspect-square relative bg-black"
               style={cardStyle}
             >
-              {hasPlayerPhoto(player.image) ? (
-                <img
-                  src={player.image}
+              {/* Players are minors (U7–U15): never render player.image, only the club logo. */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center">
+                <SafeImg
+                  src={fallback}
                   alt=""
-                  className="relative z-10 object-cover w-full h-full"
-                  onError={(e) => {
-                    e.currentTarget.src = fallback;
-                    e.currentTarget.className = 'relative z-10 object-contain w-3/5 h-3/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
-                    e.currentTarget.onerror = null;
-                  }}
+                  className="w-3/5 h-3/5 object-contain"
                 />
-              ) : (
-                <div className="relative z-10 w-full h-full flex items-center justify-center">
-                  <img
-                    src={fallback}
-                    alt=""
-                    className="w-3/5 h-3/5 object-contain"
-                  />
-                </div>
-              )}
+              </div>
 
               <div className="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black/80 to-transparent z-20">
                 <div className="flex flex-col">

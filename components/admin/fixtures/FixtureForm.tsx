@@ -66,6 +66,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className 
 }) => {
   const editor = useEditor({
+    // Not rendered on the server; avoids TipTap's SSR/hydration warning
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,
@@ -327,8 +329,27 @@ const fixtureFormSchema = z.object({
 
 type FixtureFormValues = z.infer<typeof fixtureFormSchema>;
 
-// Add this helper function before the component definition
-function to12HourFormat(time24: string): string {
+// Fixture times are saved as "hh:mm AM/PM" (the public pages parse that
+// format), but <input type="time"> needs 24-hour "HH:mm". This converts a
+// stored value back to 24-hour, using the first AM/PM token so values already
+// corrupted by earlier saves (e.g. "07:00 PM AM") are recovered. Returns ""
+// when the value can't be parsed.
+function to24HourFormat(time: string): string {
+  if (!time) return "";
+  const match = time.match(/^\s*(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+  if (!match) return "";
+  let hour = parseInt(match[1], 10);
+  const minute = match[2];
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem === "PM" && hour !== 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+  if (hour > 23 || parseInt(minute, 10) > 59) return "";
+  return `${hour.toString().padStart(2, "0")}:${minute}`;
+}
+
+function to12HourFormat(time: string): string {
+  const time24 = to24HourFormat(time);
+  if (!time24) return time;
   const [hourStr, minute] = time24.split(":");
   let hour = parseInt(hourStr, 10);
   const ampm = hour >= 12 ? "PM" : "AM";
@@ -377,7 +398,10 @@ export default function FixtureForm({ fixtureId }: { fixtureId?: string }) {
 
           // Update form values
           Object.keys(fixtureData).forEach((key) => {
-            if (key !== "_id" && key !== "createdAt" && key !== "updatedAt" && key !== "timeline") {
+            if (key === "time") {
+              // Stored as "hh:mm AM/PM"; the time input needs "HH:mm"
+              form.setValue("time", to24HourFormat(fixtureData.time));
+            } else if (key !== "_id" && key !== "createdAt" && key !== "updatedAt" && key !== "timeline") {
               form.setValue(key as any, fixtureData[key]);
             }
           });

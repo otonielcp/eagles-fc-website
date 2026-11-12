@@ -62,7 +62,8 @@ export default function AddStaffForm({ team }: AddStaffFormProps) {
     try {
       const result = await uploadStaffImage(file);
       if (result.success && result.url) {
-        setFormData({ ...formData, image: result.url });
+        const url = result.url;
+        setFormData((prev) => ({ ...prev, image: url }));
         toast.success("Image uploaded successfully");
       } else {
         toast.error(result.message || "Failed to upload image");
@@ -105,6 +106,11 @@ export default function AddStaffForm({ team }: AddStaffFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
   };
 
   const handleSocialMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,7 +235,7 @@ export default function AddStaffForm({ team }: AddStaffFormProps) {
                 name="order"
                 type="number"
                 value={formData.order}
-                onChange={handleInputChange}
+                onChange={handleNumberChange}
                 placeholder="Enter display order (lower numbers appear first)"
               />
             </div>
@@ -252,6 +258,7 @@ export default function AddStaffForm({ team }: AddStaffFormProps) {
                 onImageUpload={handleImageUpload} 
                 imageUrl={formData.image}
                 isUploading={isUploading}
+                onRemove={() => setFormData((prev) => ({ ...prev, image: "" }))}
               />
             </div>
             

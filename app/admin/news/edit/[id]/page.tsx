@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getNewsById } from "@/actions/news";
 import { News } from "@/types/news";
 import EditNewsForm from "@/components/admin/news/EditNewsForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { useParams } from "next/navigation";
 
 export default function EditNewsPage() {
@@ -80,7 +80,6 @@ export default function EditNewsPage() {
         onCancel={handleCancel}
         onNewsUpdated={handleNewsUpdated}
       />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

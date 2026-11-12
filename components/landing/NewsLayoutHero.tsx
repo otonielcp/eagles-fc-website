@@ -1,5 +1,5 @@
 
-const heroImage = "/newshero.png" // Update with actual path
+// No background image: /newshero.png does not exist in /public.
 
 // Title (Will be dynamic in the future)
 const NEWS_TITLE = "AMAD X GARNACHO: EXCLUSIVE INTERVIEW OUT NOW";
@@ -7,8 +7,8 @@ const NEWS_TITLE = "AMAD X GARNACHO: EXCLUSIVE INTERVIEW OUT NOW";
 const NewsLayoutHero = () => {
   return (
     <div
-      className="relative w-full h-[500px] bg-cover bg-center flex items-end"
-      style={{ backgroundImage: `url(${heroImage})` }}
+      className="relative w-full h-[500px] flex items-end"
+      style={{ backgroundColor: '#181819' }}
     >
       {/* Dark Overlay */}
       <div className="absolute inset-0 opacity-0"></div>

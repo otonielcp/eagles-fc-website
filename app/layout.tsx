@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bebas_Neue, Geist, Geist_Mono, Playfair_Display, Poppins } from "next/font/google";
 import Script from "next/script";
+import { SITE_URL } from "@/app/(landing)/site-url";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = "G-0CZS57H4N4";
@@ -13,6 +14,32 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Site fonts are self-hosted through next/font. They used to be CSS @imports
+// in globals.css, but the build silently dropped the Poppins one, so all body
+// text fell back to Arial.
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -53,11 +80,11 @@ export const metadata: Metadata = {
     "competitive soccer Nebraska",
     "recreational soccer Grand Island NE",
   ],
-  metadataBase: new URL("https://eaglesfc.org"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://eaglesfc.org",
+    url: SITE_URL,
     siteName: "Eagles FC",
     title: "Eagles FC | Youth Soccer Club in Grand Island, Nebraska",
     description:
@@ -94,7 +121,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${poppins.variable} ${bebasNeue.variable} ${playfair.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           type="application/ld+json"
@@ -104,8 +135,8 @@ export default function RootLayout({
               "@type": "SportsOrganization",
               name: "Eagles Football Club",
               alternateName: "Eagles FC",
-              url: "https://eaglesfc.org",
-              logo: "https://eaglesfc.org/LOGO%20(2).png",
+              url: SITE_URL,
+              logo: `${SITE_URL}/LOGO%20(2).png`,
               description:
                 "Eagles Football Club is Grand Island, Nebraska's premier youth soccer club offering competitive and recreational soccer programs for boys and girls of all ages.",
               sport: "Soccer",

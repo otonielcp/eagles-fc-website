@@ -32,6 +32,7 @@ import { Loader2, PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-reac
 import { toast } from 'sonner';
 import { getTickets, deleteTicket } from '@/actions/ticket';
 import { Ticket } from '@/types/ticket';
+import { clubToday } from '@/lib/hiring';
 
 export default function AdminTickets() {
   const router = useRouter();
@@ -91,15 +92,17 @@ export default function AdminTickets() {
     return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
 
-  // Group tickets into upcoming and past based on date
-  const currentDate = new Date();
-  const upcomingTickets = sortedTickets.filter((ticket) =>
-    new Date(ticket.date) >= currentDate
-  );
+  // Group tickets into upcoming and past by calendar day in club time.
+  // ticket.date is "YYYY-MM-DD"; new Date() on it is UTC midnight (the evening
+  // before, in Central time), which pushed match-day tickets into "Past".
+  const today = clubToday();
+  const isUpcoming = (ticket: Ticket) => (ticket.date ?? '').slice(0, 10) >= today;
+  const upcomingTickets = sortedTickets.filter(isUpcoming);
+  const pastTickets = sortedTickets.filter((ticket) => !isUpcoming(ticket));
 
-  const pastTickets = sortedTickets.filter((ticket) =>
-    new Date(ticket.date) < currentDate
-  );
+  // A populated teamId is null once its team has been deleted (typeof null === 'object').
+  const teamName = (ticket: Ticket) =>
+    (typeof ticket.teamId === 'object' ? ticket.teamId?.name : undefined) ?? 'Unknown Team';
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -169,7 +172,7 @@ export default function AdminTickets() {
                             <TableCell>{ticket.date} at {ticket.time}</TableCell>
                             <TableCell>{ticket.stadium}</TableCell>
                             <TableCell>
-                              {typeof ticket.teamId === 'object' ? ticket.teamId?.name : 'Unknown Team'}
+                              {teamName(ticket)}
                             </TableCell>
                             <TableCell>
                               <a
@@ -234,7 +237,7 @@ export default function AdminTickets() {
                             <TableCell>{ticket.date} at {ticket.time}</TableCell>
                             <TableCell>{ticket.stadium}</TableCell>
                             <TableCell>
-                              {typeof ticket.teamId === 'object' ? ticket.teamId?.name : 'Unknown Team'}
+                              {teamName(ticket)}
                             </TableCell>
                             <TableCell>
                               <a

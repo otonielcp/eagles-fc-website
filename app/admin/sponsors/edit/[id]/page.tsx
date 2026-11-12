@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getPortfolioLogoById } from "@/actions/sponsorsLogo";
 import { PortfolioLogo } from "@/types/sponsorsLogo";
 import EditLogoForm from "@/components/admin/sponsors/EditLogoForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 export default function EditLogoPage() {
   const router = useRouter();
@@ -81,7 +81,6 @@ export default function EditLogoPage() {
         onCancel={handleCancel}
         onLogoUpdated={handleLogoUpdated}
       />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

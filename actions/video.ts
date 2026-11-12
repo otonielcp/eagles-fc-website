@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Video from '@/models/Videos';
 import { revalidatePath } from 'next/cache';
@@ -15,6 +17,7 @@ cloudinary.config({
 
 // Get all videos
 export async function getAllVideos(): Promise<VideoType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const videos = await Video.find({}).sort({ createdAt: -1 });
@@ -39,6 +42,7 @@ export async function getActiveVideos(): Promise<VideoType[]> {
 
 // Get a single video by ID
 export async function getVideoById(id: string): Promise<VideoType | null> {
+  await requireAdmin();
   try {
     await connectDB();
     const video = await Video.findById(id);
@@ -65,6 +69,7 @@ export async function getVideoById(id: string): Promise<VideoType | null> {
 
 // Upload thumbnail to Cloudinary
 export async function uploadVideoThumbnail(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 
@@ -98,6 +103,7 @@ export async function uploadVideoThumbnail(formData: FormData): Promise<{ succes
 
 // Create a new video
 export async function createVideo(data: VideoFormData): Promise<{ success: boolean; message: string; video?: VideoType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -122,6 +128,7 @@ export async function createVideo(data: VideoFormData): Promise<{ success: boole
 
 // Update a video
 export async function updateVideo(id: string, data: Partial<VideoFormData>): Promise<{ success: boolean; message: string; video?: VideoType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -158,6 +165,7 @@ export async function updateVideo(id: string, data: Partial<VideoFormData>): Pro
 
 // Delete a video
 export async function deleteVideo(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 

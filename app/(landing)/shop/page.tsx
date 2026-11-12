@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Search, ShoppingBag, Filter, ChevronDown, X, Heart, Eye, SlidersHorizontal } from "lucide-react";
+import { Search, ShoppingBag, Filter, ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { getProducts } from '@/actions/product';
 import Link from 'next/link';
 import CartButton from "@/components/cart/CartButton";
 import AddToCartClientButton from "@/components/cart/AddToCartClientButton";
 import { Product } from '@/types/product';
 import { motion } from 'framer-motion';
+
+// `discount` is the original (compare-at) price shown struck through; `price`
+// is what is charged. Only treat it as a sale when the original is higher.
+const hasDiscount = (product: Product): product is Product & { discount: number } =>
+  typeof product.discount === 'number' && product.discount > product.price;
 
 export default function Shop() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -131,6 +136,33 @@ export default function Shop() {
   };
 
   const activeFiltersCount = selectedCategories.length + priceRanges.length + (searchQuery ? 1 : 0);
+
+  // The store has no products at all: a search box, filters and "0 Items" just
+  // look broken, so show a simple "coming soon" page instead.
+  if (!loading && allProducts.length === 0) {
+    return (
+      <div className="bg-[#181819] min-h-[70vh] flex items-center justify-center px-6 py-24">
+        <div className="text-center max-w-xl">
+          <div className="inline-flex items-center gap-4 mb-5">
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+            <h1 className="text-6xl sm:text-7xl font-bebas text-white leading-none">Club Shop</h1>
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
+          </div>
+          <ShoppingBag className="w-12 h-12 text-[#BD9B58] mx-auto mb-5" />
+          <p className="text-white text-lg font-semibold mb-2">New Eagles FC gear is coming soon.</p>
+          <p className="text-gray-400 mb-8">
+            Need a uniform or training kit now? Get in touch and we&apos;ll help you out.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-3 bg-[#BD9B58] hover:bg-[#a8884a] text-white font-bold text-sm uppercase tracking-[0.15em] px-9 py-4 rounded-tr-2xl rounded-bl-2xl shadow-lg transition-colors duration-300"
+          >
+            Contact Us
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -335,30 +367,12 @@ export default function Shop() {
                                 New
                               </span>
                             )}
-                            {product.discount && (
+                            {hasDiscount(product) && (
                               <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.15em] shadow-xl border border-white/30">
                                 Sale
                               </span>
                             )}
                           </div>
-
-                          {/* Premium Quick Actions */}
-                          {hoveredProduct === product._id && (
-                            <div className="absolute top-3 right-3 flex gap-2 z-10">
-                              <button 
-                                className="bg-white/95 backdrop-blur-sm rounded-full p-2.5 hover:bg-white transition-all shadow-lg border border-white/50"
-                                onClick={(e) => { e.preventDefault(); }}
-                              >
-                                <Heart className="w-4 h-4 text-gray-800" />
-                              </button>
-                              <button 
-                                className="bg-white/95 backdrop-blur-sm rounded-full p-2.5 hover:bg-white transition-all shadow-lg border border-white/50"
-                                onClick={(e) => { e.preventDefault(); }}
-                              >
-                                <Eye className="w-4 h-4 text-gray-800" />
-                              </button>
-                            </div>
-                          )}
                         </div>
 
                         {/* Premium Product Info */}
@@ -382,7 +396,7 @@ export default function Shop() {
                               <span className="text-2xl font-bebas font-black text-[#BD9B58]">
                                 ${product.price.toFixed(2)}
                               </span>
-                              {product.discount && (
+                              {hasDiscount(product) && (
                                 <>
                                   <span className="text-sm text-gray-400 line-through font-medium">
                                     ${product.discount.toFixed(2)}
@@ -406,49 +420,6 @@ export default function Shop() {
                 ))}
               </div>
             )}
-
-            {/* Pagination */}
-            {filteredProducts.length > 0 && (
-              <div className="flex justify-center mt-12">
-                <div className="flex items-center gap-2">
-                  <button className="px-5 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-colors font-medium">
-                    Previous
-                  </button>
-                  <button className="px-5 py-2.5 border border-[#BD9B58] rounded-lg bg-[#BD9B58] text-white font-medium">
-                    1
-                  </button>
-                  <button className="px-5 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-colors font-medium">
-                    2
-                  </button>
-                  <button className="px-5 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-colors font-medium">
-                    3
-                  </button>
-                  <button className="px-5 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-colors font-medium">
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="bg-[#181819] py-16 mt-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h3 className="text-3xl font-bebas font-bold text-white mb-4">Join Our Newsletter</h3>
-          <p className="text-gray-300 mb-8 text-lg">
-            Subscribe to get exclusive offers, early access to new releases, and special member discounts
-          </p>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 max-w-xl mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 px-6 py-4 rounded-lg bg-white/10 backdrop-blur-sm border-2 border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BD9B58] focus:border-[#BD9B58]"
-            />
-            <button className="bg-[#BD9B58] text-white py-4 px-10 rounded-lg hover:bg-[#D4AF37] transition-colors font-bold uppercase tracking-wide">
-              Subscribe
-            </button>
           </div>
         </div>
       </div>

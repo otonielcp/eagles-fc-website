@@ -16,9 +16,16 @@ export default function FixtureTimelinePage() {
 
   useEffect(() => {
     const fetchFixture = async () => {
-      const fixtureData = await getFixtureById(params.id);
-      setFixtureData(fixtureData);
-      setLoading(false);
+      try {
+        // Returns null for a deleted or invalid id.
+        const fixtureData = await getFixtureById(params.id);
+        setFixtureData(fixtureData);
+      } catch (error) {
+        console.error("Failed to load fixture:", error);
+        setFixtureData(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchFixture();
@@ -26,6 +33,17 @@ export default function FixtureTimelinePage() {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!fixtureData) {
+    return (
+      <div className="text-center py-10">
+        <h3 className="text-lg font-medium">Fixture not found</h3>
+        <Link href="/admin/fixtures" className="mt-4 inline-block">
+          <Button className="bg-[#C5A464] hover:bg-[#B39355]">Back to Fixtures</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (

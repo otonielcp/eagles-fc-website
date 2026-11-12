@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { sendPlayerRegistrationEmail } from '@/actions/contact';
+import { useTurnstile } from '@/components/forms/Turnstile';
 
 const RegistrationForm = () => {
+  const human = useTurnstile();
   const [formData, setFormData] = useState({
     // Player Information
     playerFirstName: '',
@@ -33,6 +35,7 @@ const RegistrationForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -44,12 +47,19 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!human.ready) {
+      setIsError(true);
+      setSubmitMessage(human.missingMessage);
+      return;
+    }
     setIsSubmitting(true);
     setSubmitMessage('');
+    setIsError(false);
 
     try {
-      const result = await sendPlayerRegistrationEmail(formData);
-      
+      const result = await sendPlayerRegistrationEmail({ ...formData, turnstileToken: human.token });
+      human.reset(); // each token works once
+
       if (result.success) {
         setSubmitMessage('Inquiry submitted successfully!');
         // Reset form
@@ -75,9 +85,12 @@ const RegistrationForm = () => {
           zipcode: ''
         });
       } else {
+        setIsError(true);
         setSubmitMessage(`Error: ${result.message}`);
       }
     } catch (error) {
+      human.reset();
+      setIsError(true);
       setSubmitMessage('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -417,10 +430,13 @@ const RegistrationForm = () => {
             </div>
           </div>
 
+          {/* Human check (Cloudflare Turnstile) */}
+          <div className="mb-6">{human.widget}</div>
+
           {/* Submit Message */}
           {submitMessage && (
-            <div className={`mb-6 p-4 border-l-4 ${
-              submitMessage.includes('Error') 
+            <div role={isError ? 'alert' : 'status'} className={`mb-6 p-4 border-l-4 ${
+              isError
                 ? 'bg-red-50 border-red-500 text-red-700' 
                 : 'bg-green-50 border-green-500 text-green-700'
             }`}>

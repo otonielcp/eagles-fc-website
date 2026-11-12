@@ -1,10 +1,16 @@
 "use server";
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from "@/lib/dbConnect";
 import PartnershipInquiry from "@/models/PartnershipInquiry";
 import { revalidatePath } from "next/cache";
 
+// Must match the `status` enum in models/PartnershipInquiry.ts.
+const INQUIRY_STATUSES: string[] = ["new", "contacted", "in_progress", "closed"];
+
 export async function getAllPartnershipInquiries() {
+  await requireAdmin();
   try {
     await connectDB();
     const inquiries = await PartnershipInquiry.find({})
@@ -18,6 +24,7 @@ export async function getAllPartnershipInquiries() {
 }
 
 export async function getPartnershipInquiryById(id: string) {
+  await requireAdmin();
   try {
     await connectDB();
     const inquiry = await PartnershipInquiry.findById(id).lean();
@@ -29,35 +36,18 @@ export async function getPartnershipInquiryById(id: string) {
   }
 }
 
-export async function createPartnershipInquiry(data: {
-  firstName: string;
-  lastName?: string;
-  title?: string;
-  businessName: string;
-  businessWebsite?: string;
-  email: string;
-  phone: string;
-  description?: string;
-}) {
-  try {
-    console.log("[PartnershipInquiry] Attempting to save:", data.email);
-    await connectDB();
-    console.log("[PartnershipInquiry] DB connected, creating document...");
-    const inquiry = await PartnershipInquiry.create(data);
-    console.log("[PartnershipInquiry] Saved successfully, id:", inquiry._id);
-    revalidatePath("/admin/partnerships");
-    return { success: true, id: inquiry._id.toString() };
-  } catch (error: any) {
-    console.error("[PartnershipInquiry] ERROR:", error?.message || error);
-    console.error("[PartnershipInquiry] Full error:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    return { success: false, message: "Failed to save inquiry" };
-  }
-}
+// Public inquiries are saved by lib/inboxStore.ts (savePartnershipInquiry), which
+// is not a server action, so bots cannot write to the inbox directly.
 
 export async function updatePartnershipInquiryStatus(
   id: string,
   status: "new" | "contacted" | "in_progress" | "closed"
 ) {
+  await requireAdmin();
+  // findByIdAndUpdate skips enum validation by default, so check it here.
+  if (!INQUIRY_STATUSES.includes(status)) {
+    return { success: false, message: "Invalid status" };
+  }
   try {
     await connectDB();
     await PartnershipInquiry.findByIdAndUpdate(id, { status });
@@ -70,6 +60,7 @@ export async function updatePartnershipInquiryStatus(
 }
 
 export async function updatePartnershipInquiryNotes(id: string, notes: string) {
+  await requireAdmin();
   try {
     await connectDB();
     await PartnershipInquiry.findByIdAndUpdate(id, { notes });
@@ -82,6 +73,7 @@ export async function updatePartnershipInquiryNotes(id: string, notes: string) {
 }
 
 export async function deletePartnershipInquiry(id: string) {
+  await requireAdmin();
   try {
     await connectDB();
     await PartnershipInquiry.findByIdAndDelete(id);

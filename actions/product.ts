@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Product from '@/models/Product';
 import { revalidatePath } from 'next/cache';
@@ -80,6 +82,7 @@ export async function getProductById(id: string): Promise<ProductType | null> {
 
 // Upload image to Cloudinary
 export async function uploadProductImage(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 
@@ -113,6 +116,7 @@ export async function uploadProductImage(formData: FormData): Promise<{ success:
 
 // Create a new product
 export async function createProduct(productData: ProductFormData): Promise<{ success: boolean; message: string; product?: ProductType }> {
+  await requireAdmin();
   try {
     await connectDB();
     const product = await Product.create(productData);
@@ -134,6 +138,7 @@ export async function createProduct(productData: ProductFormData): Promise<{ suc
 
 // Update an existing product
 export async function updateProduct(id: string, productData: Partial<ProductFormData>): Promise<{ success: boolean; message: string; product?: ProductType }> {
+  await requireAdmin();
   try {
     await connectDB();
     const product = await Product.findByIdAndUpdate(
@@ -166,6 +171,7 @@ export async function updateProduct(id: string, productData: Partial<ProductForm
 
 // Delete a product
 export async function deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -226,7 +232,10 @@ export async function getRelatedProducts(productId: string, category: string) {
       description: product.description,
       image: product.image,
       category: product.category,
-      isNew: product.isNew,
+      // `product.isNew` is Mongoose's own "unsaved document" flag (always false
+      // here). The schema field is isNewProduct; RelatedProducts reads `isNew`.
+      isNew: product.isNewProduct,
+      isNewProduct: product.isNewProduct,
       isFeatured: product.isFeatured,
       discount: product.discount,
       createdAt: product.createdAt.toISOString(),

@@ -55,7 +55,7 @@ const CoreValues = () => {
       <div className="relative z-20 w-full mx-auto px-2 md:px-4 lg:px-8">
         <motion.h2
           ref={titleRef}
-          className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bebas font-bold mb-6 sm:mb-10 md:mb-14 uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
+          className="text-5xl md:text-6xl lg:text-7xl font-bebas mb-8 sm:mb-10 md:mb-14 uppercase tracking-[0.08em] sm:tracking-[0.12em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] text-center relative z-30"
           style={{ wordSpacing: '0.35em' }}
           initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,7 +66,7 @@ const CoreValues = () => {
         
         <div
           ref={valuesRef}
-          className="flex flex-wrap md:flex-nowrap items-center justify-center relative z-30 w-full gap-y-2 sm:gap-y-3"
+          className="flex flex-wrap md:flex-nowrap items-center justify-center relative z-30 w-full gap-y-3 max-w-md md:max-w-none mx-auto"
           style={{
             overflow: 'visible',
             width: '100%'
@@ -84,7 +84,7 @@ const CoreValues = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <span className="text-[10px] sm:text-xs md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-bold tracking-wide uppercase relative z-10 inline-block text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-[#BD9B58] transition-colors duration-300 whitespace-nowrap px-0.5 sm:px-1 md:px-2 lg:px-3 cursor-pointer">
+              <span className="text-sm sm:text-base md:text-lg lg:text-xl 2xl:text-2xl font-bold tracking-wide uppercase relative z-10 inline-block text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-[#BD9B58] transition-colors duration-300 whitespace-nowrap px-0.5 sm:px-1 md:px-2 lg:px-3 cursor-pointer">
                 {value.name}
               </span>
               
@@ -108,7 +108,7 @@ const CoreValues = () => {
               
               {/* Separator (except for last item) */}
               {index < values.length - 1 && (
-                <span className="text-[#BD9B58] text-[10px] sm:text-xs md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-light inline-block drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mx-0.5 md:mx-1 lg:mx-2" style={{ flexShrink: 0 }}>
+                <span className="text-[#BD9B58] text-sm sm:text-base md:text-lg lg:text-xl 2xl:text-2xl font-light inline-block drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mx-0.5 md:mx-1 lg:mx-2" style={{ flexShrink: 0 }}>
                   |
                 </span>
               )}

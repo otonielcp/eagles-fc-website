@@ -194,6 +194,7 @@ const InternalNavbar = () => {
                 <ul className="space-y-4">
                   {[
                     { href: '/club', label: 'Club' },
+                    { href: '/coaches', label: 'Coaches' },
                     { href: '/teams', label: 'Teams' },
                     { href: '/programs', label: 'Programs' },
                     { href: '/fixtures', label: 'Fixtures' },

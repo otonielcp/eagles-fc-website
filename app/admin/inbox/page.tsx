@@ -14,7 +14,6 @@ import {
   deletePartnershipInquiry,
 } from "@/actions/partnershipInquiry";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -77,14 +76,23 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> =
   partnership: { label: "Partnership", color: "bg-amber-500", icon: Building2 },
 };
 
-const STATUS_OPTIONS = [
-  { value: "new", label: "New" },
-  { value: "read", label: "Read" },
-  { value: "contacted", label: "Contacted" },
-  { value: "replied", label: "Replied" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "closed", label: "Closed" },
-];
+// Each source has its own status enum (models/FormSubmission.ts and
+// models/PartnershipInquiry.ts). Updates don't run validators, so offering a
+// status from the other list would save a value the other pages can't render.
+const STATUS_OPTIONS: Record<Submission["source"], { value: string; label: string }[]> = {
+  form: [
+    { value: "new", label: "New" },
+    { value: "read", label: "Read" },
+    { value: "replied", label: "Replied" },
+    { value: "closed", label: "Closed" },
+  ],
+  partnership: [
+    { value: "new", label: "New" },
+    { value: "contacted", label: "Contacted" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "closed", label: "Closed" },
+  ],
+};
 
 export default function InboxPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -431,7 +439,11 @@ export default function InboxPage() {
                           onClick={(e) => e.stopPropagation()}
                           className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#C5A464]"
                         >
-                          {STATUS_OPTIONS.map((opt) => (
+                          {/* A record saved with the other source's status before this fix: show it so it can be corrected. */}
+                          {!STATUS_OPTIONS[sub.source].some((opt) => opt.value === sub.status) && (
+                            <option value={sub.status} disabled>{sub.status}</option>
+                          )}
+                          {STATUS_OPTIONS[sub.source].map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                           ))}
                         </select>
@@ -471,7 +483,6 @@ export default function InboxPage() {
           })}
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

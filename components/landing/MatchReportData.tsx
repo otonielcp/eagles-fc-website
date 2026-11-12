@@ -3,6 +3,7 @@ import { Facebook, Twitter, Mail, Phone, Linkedin, Send } from 'lucide-react';
 import { IFixture } from '@/types/fixtures';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { GOAL_EVENT_TYPES, hasRealScore, parseLocalDate, timelineEventLabel } from './landingUtils';
 
 const MatchReportData = ({
   fixture
@@ -36,31 +37,31 @@ const MatchReportData = ({
 
   const reportParagraphs = processMatchReportContent();
 
-  // Create timeline summary from the fixture's timeline events
-  const timelineEvents = fixture.timeline?.map(event => {
-    let eventText = '';
+  // Create timeline summary from the fixture's timeline events. Types are the
+  // upper-case values the admin TimelineManager saves (GOAL, YELLOW_CARD, …);
+  // player/team/assist are optional, so only print the parts that exist.
+  const timelineEvents = (fixture.timeline || []).map(event => {
+    const type = (event.type || '').toUpperCase();
+    const label = timelineEventLabel(type);
+    const team = event.team && event.team !== 'MATCH_OFFICIAL' ? `(${event.team})` : '';
+    const who = [event.player, team].filter(Boolean).join(' ');
 
-    switch (event.type) {
-      case 'goal':
-        eventText = `${event.time}' GOAL! ${event.player} (${event.team})`;
-        if (event.assistedBy) eventText += ` assisted by ${event.assistedBy}`;
-        break;
-      case 'yellowcard':
-        eventText = `${event.time}' Yellow card: ${event.player} (${event.team})`;
-        break;
-      case 'redcard':
-        eventText = `${event.time}' Red card: ${event.player} (${event.team})`;
-        break;
-      default:
-        eventText = `${event.time}' ${event.description || event.type}: ${event.player} (${event.team})`;
-    }
+    let eventText = `${event.time}' ${GOAL_EVENT_TYPES.has(type) ? `${label.toUpperCase()}!` : label}`;
+    if (who) eventText += ` ${who}`;
+    if (event.assistedBy && GOAL_EVENT_TYPES.has(type)) eventText += `, assisted by ${event.assistedBy}`;
+    if (event.description) eventText += ` – ${event.description}`;
 
     return eventText;
-  }) || [];
+  });
+
+  // Unplayed fixtures carry 0-0 defaults, which are not a result.
+  const showScore = hasRealScore(fixture.status);
+  const scoreline = (home: string, away: string) =>
+    showScore ? `${home} ${fixture.homeScore}-${fixture.awayScore} ${away}` : `${home} vs ${away}`;
 
   const reportData = {
-    title: `${fixture.homeTeam} ${fixture.homeScore}-${fixture.awayScore} ${fixture.awayTeam} in ${fixture.competition}`,
-    publishDate: new Date(fixture.date).toLocaleDateString('en-US', {
+    title: `${scoreline(fixture.homeTeam, fixture.awayTeam)} in ${fixture.competition}`,
+    publishDate: parseLocalDate(fixture.date).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
@@ -79,10 +80,10 @@ const MatchReportData = ({
   
   // Sharing functions
   const shareData = {
-    title: `${cleanTeamName(fixture.homeTeam)} ${fixture.homeScore}-${fixture.awayScore} ${cleanTeamName(fixture.awayTeam)}`,
+    title: scoreline(cleanTeamName(fixture.homeTeam), cleanTeamName(fixture.awayTeam)),
     competition: fixture.competition,
     stadium: fixture.stadium,
-    date: new Date(fixture.date).toLocaleDateString('en-US', { 
+    date: parseLocalDate(fixture.date).toLocaleDateString('en-US', {
       month: 'short', 
       day: 'numeric', 
       year: 'numeric' 
@@ -234,20 +235,16 @@ const MatchReportData = ({
           <h2 className="text-lg font-bold mb-4">Match Summary</h2>
           <div className="space-y-1 text-sm">
             <p>
-              <span className="font-semibold">{fixture.homeTeam}</span> {fixture.homeScore} - {fixture.awayScore} <span className="font-semibold">{fixture.awayTeam}</span>
+              <span className="font-semibold">{fixture.homeTeam}</span> {showScore ? `${fixture.homeScore} - ${fixture.awayScore}` : 'vs'} <span className="font-semibold">{fixture.awayTeam}</span>
             </p>
             <p className="text-gray-600">
-              {fixture.competition} | {fixture.stadium} | {new Date(fixture.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+              {fixture.competition} | {fixture.stadium} | {parseLocalDate(fixture.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
         </div>
 
         {/* Match Report Content */}
         <div className="prose prose-sm max-w-none mb-8">
-          <p className="text-sm text-gray-600 mb-6">
-            Match report for {fixture.homeTeam} vs {fixture.awayTeam} at {fixture.stadium}.
-          </p>
-
           <div className="space-y-4">
             {reportData.content.map((content, index) => renderContent(content, index))}
           </div>

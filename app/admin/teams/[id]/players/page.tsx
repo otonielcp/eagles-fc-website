@@ -5,7 +5,6 @@ import { getTeamById } from "@/actions/team";
 import { getPlayersByTeamId, deletePlayer } from "@/actions/player";
 import { Team, Player } from "@/types/team";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -33,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParams } from "next/navigation";
+import { ageFromDateOnly } from "@/app/admin/_lib/dateOnly";
 
 export default function TeamPlayersPage() {
   const params: { id: string } = useParams();
@@ -85,16 +85,8 @@ export default function TeamPlayersPage() {
     return format(new Date(dateString), "MMM d, yyyy");
   };
 
-  const getAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
+  // Reads the stored UTC date part, so the age doesn't tick over a day early.
+  const getAge = (dateOfBirth: string) => ageFromDateOnly(dateOfBirth) ?? "N/A";
 
   // Group players by position
   const goalkeepers = players.filter(player => player.position === "Goalkeeper");
@@ -367,7 +359,6 @@ export default function TeamPlayersPage() {
         </TabsContent>
       </Tabs>
       
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

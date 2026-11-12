@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Toaster } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import JobForm from "@/components/admin/hiring/JobForm";
 
@@ -16,7 +15,6 @@ export default function NewJobPage() {
         <p className="text-sm text-gray-500 mt-1">Saved as a draft until you set the status to Open.</p>
       </div>
       <JobForm />
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

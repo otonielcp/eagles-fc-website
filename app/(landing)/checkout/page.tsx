@@ -7,9 +7,13 @@ import { ArrowLeft, CreditCard, Truck, Check, ChevronRight, ShoppingBag, Loader2
 import Image from "next/image";
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { getOrderTotals } from "@/components/checkout/orderTotals";
 
 // Load Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+// Without a publishable key loadStripe throws ("reading 'match'") and the
+// payment step dead-ends, so only load Stripe when it is configured.
+const STRIPE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 // Define the checkout steps
 type CheckoutStep = "shipping" | "payment" | "confirmation";
@@ -220,9 +224,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("shipping");
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
-  
-  // Calculate subtotal (same as total from context)
-  const subtotal = total;
+  // Snapshot of what was paid for. The cart is cleared as soon as payment
+  // succeeds, so the confirmation step and summary render from this instead.
+  const [completedOrder, setCompletedOrder] = useState<{ items: typeof items; subtotal: number } | null>(null);
+
+  const summaryItems = completedOrder ? completedOrder.items : items;
+  const subtotal = completedOrder ? completedOrder.subtotal : total;
   
   // Form state
   const [shippingData, setShippingData] = useState<ShippingFormData>({
@@ -241,8 +248,8 @@ export default function CheckoutPage() {
     cardName: "",
   });
 
-  // If cart is empty, redirect to cart page
-  if (items.length === 0) {
+  // If cart is empty (and no order was just completed), show the empty state
+  if (items.length === 0 && !completedOrder) {
     return (
       <div className="bg-gray-50 min-h-screen py-12 px-4">
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8 text-center">
@@ -263,10 +270,8 @@ export default function CheckoutPage() {
     );
   }
 
-  // Calculate order totals
-  const shipping = 5.99;
-  const tax = subtotal * 0.07;
-  const orderTotal = subtotal + shipping + tax;
+  // Calculate order totals (shared with the cart page)
+  const { shipping, tax, total: orderTotal } = getOrderTotals(subtotal);
 
   // Stripe Elements options
   const elementsOptions: StripeElementsOptions = {
@@ -288,6 +293,9 @@ export default function CheckoutPage() {
   // Handle payment success
   const handlePaymentSuccess = (paymentIntentResult: any) => {
     setPaymentIntent(paymentIntentResult);
+    // Empty the cart right away so leaving this page can't lead to paying twice
+    setCompletedOrder({ items, subtotal: total });
+    clearCart();
     setCurrentStep("confirmation");
     window.scrollTo(0, 0);
   };
@@ -523,7 +531,26 @@ export default function CheckoutPage() {
               )}
               
               {/* Payment Information Step */}
-              {currentStep === "payment" && (
+              {currentStep === "payment" && !stripePromise && (
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-6 text-center">
+                  <p className="font-medium text-gray-900">Online payment is unavailable right now.</p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Please contact us at{" "}
+                    <a href="mailto:info@eaglesfcgi.org" className="text-[#C5A464] underline">
+                      info@eaglesfcgi.org
+                    </a>{" "}
+                    to place your order.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep("shipping")}
+                    className="mt-4 text-sm text-gray-600 underline"
+                  >
+                    Back
+                  </button>
+                </div>
+              )}
+              {currentStep === "payment" && stripePromise && (
                 <Elements stripe={stripePromise} options={elementsOptions}>
                   <PaymentForm
                     shippingData={shippingData}
@@ -597,7 +624,7 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
               
               <div className="max-h-80 overflow-y-auto mb-6">
-                {items.map((item) => (
+                {summaryItems.map((item) => (
                   <div key={item._id} className="flex items-start py-3 border-b">
                     <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden relative mr-4">
                       <img 

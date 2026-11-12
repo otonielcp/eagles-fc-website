@@ -180,9 +180,10 @@ export default function TimelineManager({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Event Type</FormLabel>
+                      {/* Controlled so form.reset() after "Add Event" also clears the select */}
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -217,7 +218,7 @@ export default function TimelineManager({
                       <FormLabel>Team</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -299,8 +300,9 @@ export default function TimelineManager({
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Match Timeline</CardTitle>
           <Button 
-            onClick={saveTimeline} 
-            disabled={isSubmitting || timeline.length === 0}
+            onClick={saveTimeline}
+            // An empty timeline must be savable so the last event can be deleted
+            disabled={isSubmitting}
             className="bg-[#C5A464] hover:bg-[#B39355]"
           >
             {isSubmitting ? (

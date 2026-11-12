@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -41,7 +42,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   showCharCount = false,
   label
 }) => {
+  // Text length after the last accepted change, so the limit only blocks growth
+  const lastLengthRef = useRef(value.replace(/<[^>]*>/g, '').length);
+
   const editor = useEditor({
+    // Not rendered on the server; avoids TipTap's SSR/hydration warning
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,
@@ -59,13 +65,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const htmlContent = editor.getHTML();
       const textContent = htmlContent.replace(/<[^>]*>/g, '');
       
-      // Check character limit if specified
-      if (maxLength && textContent.length > maxLength) {
+      // Check character limit if specified. Only changes that make the text
+      // longer are rejected, so content already over the limit (e.g. older
+      // articles) can still be shortened.
+      if (maxLength && textContent.length > maxLength && textContent.length > lastLengthRef.current) {
         // Prevent the update if it exceeds limit
         editor.commands.undo();
         return;
       }
-      
+
+      lastLengthRef.current = textContent.length;
       onChange(htmlContent);
     },
     editorProps: {

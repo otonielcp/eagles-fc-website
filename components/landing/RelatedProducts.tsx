@@ -6,6 +6,7 @@ import { Product } from "@/types/product";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import SafeImg from "./SafeImg";
 
 interface RelatedProductsProps {
   currentProductId: string;
@@ -53,7 +54,7 @@ export default function RelatedProducts({ currentProductId, category }: RelatedP
         <Link href={`/shop/${product._id}`} key={product._id}>
           <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-transform hover:shadow-md hover:-translate-y-1">
             <div className="relative aspect-square">
-              <img
+              <SafeImg
                 src={product.image}
                 alt={product.title}
                 className="object-contain"
@@ -77,7 +78,8 @@ export default function RelatedProducts({ currentProductId, category }: RelatedP
               <h3 className="text-sm font-medium text-gray-900 mb-1">{product.title}</h3>
               <div className="flex items-center">
                 <span className="text-[#C5A464] font-semibold">${product.price.toFixed(2)}</span>
-                {product.discount && (
+                {/* `discount` is the original (struck-through) price; only show it when it's higher than the charged price */}
+                {product.discount != null && product.discount > product.price && (
                   <span className="ml-2 text-gray-400 text-sm line-through">${product.discount.toFixed(2)}</span>
                 )}
               </div>

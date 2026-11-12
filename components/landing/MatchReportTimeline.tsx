@@ -2,20 +2,31 @@
 
 import { motion } from 'framer-motion';
 import { IFixture, ITimelineEvent } from '@/types/fixtures';
+import { GOAL_EVENT_TYPES, isMatchFinished } from './landingUtils';
 
 interface MatchReportTimelineProps {
   fixture: IFixture;
 }
 
+// Short tag shown under the minute for goals that aren't plain goals.
+const GOAL_TAGS: Record<string, string> = {
+  PENALTY_SCORED: 'Penalty',
+  OWN_GOAL: 'Own goal',
+};
+
 export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
   const timelineEvents = fixture.timeline || [];
+  const finished = isMatchFinished(fixture.status);
 
-  // Filter only goal events for the vertical timeline
-  const goalEvents: Array<ITimelineEvent & { team: 'home' | 'away' }> = timelineEvents
-    .filter(event => event.type.toLowerCase() === 'goal')
+  // Goal events (GOAL, PENALTY_SCORED, OWN_GOAL as saved by the admin
+  // TimelineManager) for the vertical timeline. Events sit on the side of the
+  // team recorded on the event.
+  const goalEvents: Array<ITimelineEvent & { side: 'home' | 'away'; tag?: string }> = timelineEvents
+    .filter(event => GOAL_EVENT_TYPES.has((event.type || '').toUpperCase()))
     .map(event => ({
       ...event,
-      team: event.team === fixture.homeTeam ? 'home' as const : 'away' as const
+      side: event.team === fixture.homeTeam ? 'home' as const : 'away' as const,
+      tag: GOAL_TAGS[(event.type || '').toUpperCase()],
     }));
 
   if (goalEvents.length === 0) {
@@ -27,10 +38,12 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
               <div className="inline-block px-4 py-1.5 bg-zinc-100 rounded-full mb-4">
                 <span className="text-xs font-bold text-zinc-600 uppercase tracking-widest">Timeline</span>
               </div>
-              <h2 className="text-5xl font-black text-zinc-900 tracking-tight">Match Events</h2>
+              <h2 className="text-5xl font-bebas text-zinc-900">Match Events</h2>
             </div>
             <div className="py-8 text-center">
-              <p className="text-gray-500">No timeline events available for this match yet.</p>
+              <p className="text-gray-500">
+                {finished ? 'No goals were recorded for this match.' : 'Match events will appear here once the match is played.'}
+              </p>
             </div>
           </div>
         </div>
@@ -47,7 +60,7 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
             <div className="inline-block px-4 py-1.5 bg-zinc-100 rounded-full mb-4">
               <span className="text-xs font-bold text-zinc-600 uppercase tracking-widest">Timeline</span>
             </div>
-            <h2 className="text-5xl font-black text-zinc-900 tracking-tight">Match Events</h2>
+            <h2 className="text-5xl font-bebas text-zinc-900">Match Events</h2>
           </div>
 
           {/* Vertical Timeline */}
@@ -58,7 +71,7 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
             {/* Timeline Events */}
             <div className="space-y-16">
               {goalEvents.map((event, index) => {
-                const isHome = event.team === 'home';
+                const isHome = event.side === 'home';
 
                 return (
                   <motion.div
@@ -85,7 +98,12 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
                             </div>
                             <div className="text-3xl font-black text-zinc-900">{event.time}&apos;</div>
                           </div>
-                          <p className="text-lg font-bold text-zinc-900 mb-1">{event.player}</p>
+                          {event.tag && (
+                            <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">{event.tag}</p>
+                          )}
+                          {event.player && (
+                            <p className="text-lg font-bold text-zinc-900 mb-1">{event.player}</p>
+                          )}
                           {event.assistedBy && (
                             <p className="text-sm text-zinc-600 mb-2">Assist: {event.assistedBy}</p>
                           )}
@@ -130,7 +148,12 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
                             </div>
                             <div className="text-3xl font-black text-zinc-900">{event.time}&apos;</div>
                           </div>
-                          <p className="text-lg font-bold text-zinc-900 mb-1">{event.player}</p>
+                          {event.tag && (
+                            <p className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">{event.tag}</p>
+                          )}
+                          {event.player && (
+                            <p className="text-lg font-bold text-zinc-900 mb-1">{event.player}</p>
+                          )}
                           {event.assistedBy && (
                             <p className="text-sm text-zinc-600 mb-2">Assist: {event.assistedBy}</p>
                           )}
@@ -145,20 +168,22 @@ export function MatchReportTimeline({ fixture }: MatchReportTimelineProps) {
               })}
             </div>
 
-            {/* Full Time Marker */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: goalEvents.length * 0.12 + 0.4, type: 'spring', stiffness: 200 }}
-              className="relative mt-16 pt-12"
-            >
-              <div className="absolute left-1/2 -translate-x-1/2">
-                <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg ring-4 ring-white">
-                  <span className="text-base font-black text-white">FT</span>
+            {/* Full Time Marker (only once the match is actually over) */}
+            {finished && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: goalEvents.length * 0.12 + 0.4, type: 'spring', stiffness: 200 }}
+                className="relative mt-16 pt-12"
+              >
+                <div className="absolute left-1/2 -translate-x-1/2">
+                  <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg ring-4 ring-white">
+                    <span className="text-base font-black text-white">FT</span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

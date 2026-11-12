@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getAllSliders, deleteSlider } from "@/actions/slider";
 import { Slider } from "@/types/slider";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import Link from "next/link";
@@ -203,7 +202,6 @@ export default function SlidersManagement() {
           </Table>
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

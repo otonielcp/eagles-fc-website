@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getTeamById } from "@/actions/team";
 import { Team } from "@/types/team";
 import AddPlayerForm from "@/components/admin/players/AddPlayerForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -77,7 +77,6 @@ export default function AddPlayerPage() {
         </p>
       </div>
       <AddPlayerForm team={team} />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

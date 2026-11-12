@@ -1,4 +1,5 @@
 import { getActiveTeams } from '@/actions/team';
+import SafeImg from './SafeImg';
 
 const defaultLogo = "/clublogos/image4.png";
 
@@ -31,8 +32,9 @@ const MainSponsorBanner = async () => {
             <div className="absolute bottom-6 right-6 w-16 h-16 border-b-2 border-r-2 border-[#BD9B58]/30"></div>
             
             {/* Sponsor Image */}
-            <img
-              src={sponsorImage}
+            <SafeImg
+              src={sponsorImage || defaultLogo}
+              fallbackSrc={defaultLogo}
               alt="Main Sponsor"
               className="max-h-[180px] md:max-h-[220px] lg:max-h-[280px] w-auto object-contain transform group-hover:scale-105 transition-transform duration-500"
               style={{

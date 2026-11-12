@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast, Toaster } from "sonner";
-import { createMember, uploadMemberFile } from "@/actions/member";
+import { checkMembersAccess, createMember, uploadMemberFile, verifyMembersPassword } from "@/actions/member";
 import { MemberFormData } from "@/types/member";
 
 type FormStep = "player-info" | "parent-info" | "emergency-contact" | "player-detail" | "association-info";
@@ -28,46 +28,49 @@ export default function AddMemberPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttempted, setHasAttempted] = useState(false);
 
-  // Check for stored authentication
+  // Access is proven by an httpOnly session cookie the server sets after
+  // checking the password, so ask the server instead of trusting the browser.
   useEffect(() => {
-    const storedAuth = localStorage.getItem("members_auth");
-    if (storedAuth) {
-      try {
-        const authData = JSON.parse(storedAuth);
-        // Only trust auth data that's less than 24 hours old
-        if (authData.timestamp && (Date.now() - authData.timestamp < 24 * 60 * 60 * 1000)) {
-          setIsAuthenticated(true);
-        } else {
-          localStorage.removeItem("members_auth");
-        }
-      } catch (e) {
-        localStorage.removeItem("members_auth");
-      }
-    }
+    // Old builds kept a forgeable flag here; it is no longer used.
+    try {
+      localStorage.removeItem("members_auth");
+    } catch {}
+
+    checkMembersAccess()
+      .then((ok) => {
+        if (ok) setIsAuthenticated(true);
+      })
+      .catch(() => {});
   }, []);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setHasAttempted(true);
 
-    // Small delay to simulate verification
-    setTimeout(() => {
-      const correctPassword = process.env.NEXT_PUBLIC_MEMBERS_PASSWORD;
+    try {
+      const result = await verifyMembersPassword(password);
+      setHasAttempted(true);
 
-      if (password === correctPassword) {
+      if (result.success) {
         setIsAuthenticated(true);
-        // Store authentication in localStorage
-        localStorage.setItem("members_auth", JSON.stringify({
-          authenticated: true,
-          timestamp: Date.now()
-        }));
+        setPassword("");
         toast.success("Access granted");
       } else {
-        toast.error("Incorrect password");
+        toast.error(result.message || "Incorrect password");
       }
+    } catch (error) {
+      console.error("Error verifying members password:", error);
+      toast.error("Could not verify the password. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
+  };
+
+  // The server refused because the session cookie is missing or expired.
+  const handleAccessExpired = (message?: string) => {
+    setIsAuthenticated(false);
+    setHasAttempted(false);
+    toast.error(message || "Your access has expired. Please enter the members password again.");
   };
 
   const [formData, setFormData] = useState({
@@ -76,8 +79,8 @@ export default function AddMemberPage() {
     suffix: "",
     dateOfBirth: "",
     gender: "",
-    parentFirstName: "Jorge",
-    parentLastName: "Gonzalez",
+    parentFirstName: "",
+    parentLastName: "",
     parentSuffix: "",
     relationship: "",
     parentGender: "",
@@ -92,8 +95,8 @@ export default function AddMemberPage() {
     email: "",
     profilePhoto: null,
     birthCertificate: null,
-    emergencyContact: "Tania Zelaya",
-    emergencyPhone: "7738150338",
+    emergencyContact: "",
+    emergencyPhone: "",
     doctorContact: "",
     doctorPhone: "",
     birthCountry: "",
@@ -130,8 +133,8 @@ export default function AddMemberPage() {
     suffix: "",
     dateOfBirth: "",
     gender: "",
-    parentFirstName: "Jorge",
-    parentLastName: "Gonzalez",
+    parentFirstName: "",
+    parentLastName: "",
     parentSuffix: "",
     relationship: "",
     parentGender: "",
@@ -146,8 +149,8 @@ export default function AddMemberPage() {
     email: "",
     profilePhoto: null,
     birthCertificate: null,
-    emergencyContact: "Tania Zelaya",
-    emergencyPhone: "7738150338",
+    emergencyContact: "",
+    emergencyPhone: "",
     doctorContact: "",
     doctorPhone: "",
     birthCountry: "",
@@ -272,6 +275,8 @@ export default function AddMemberPage() {
           // Update form data with the URL
           setFormData(prev => ({ ...prev, [field]: response.url }));
           toast.success(`${field === 'profilePhoto' ? 'Profile photo' : 'Birth certificate'} uploaded successfully`);
+        } else if (response.unauthorized) {
+          handleAccessExpired(response.message);
         } else {
           toast.error(response.message || `Failed to upload ${field}`);
         }
@@ -307,6 +312,9 @@ export default function AddMemberPage() {
         setTimeout(() => {
           router.push("/members");
         }, 1500);
+      } else if (response.unauthorized) {
+        // Form data stays in state, so the family can re-enter the password and resubmit.
+        handleAccessExpired(response.message);
       } else {
         toast.error(response.message || "Failed to create member");
       }

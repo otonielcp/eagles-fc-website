@@ -25,6 +25,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Toaster } from "sonner";
 import { logout } from "@/actions/auth";
 
 export default function AdminLayout({
@@ -39,8 +40,17 @@ export default function AdminLayout({
     setIsSidebarOpen(false);
   }, [pathname]);
 
+  // The only <Toaster/> for /admin: pages and admin forms call toast() and
+  // rely on this one, so feedback shows on every route and never doubles.
+  const toaster = <Toaster position="top-center" richColors />;
+
   if (pathname === "/admin/login") {
-    return children;
+    return (
+      <>
+        {children}
+        {toaster}
+      </>
+    );
   }
 
   const sections = [
@@ -212,6 +222,7 @@ export default function AdminLayout({
       <main className="md:ml-72 min-h-screen">
         <div className="p-5 md:p-8 lg:p-10 max-w-[1600px] mx-auto">{children}</div>
       </main>
+      {toaster}
     </div>
   );
 }

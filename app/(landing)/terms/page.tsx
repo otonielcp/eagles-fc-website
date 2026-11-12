@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Terms & Conditions',
+  description: 'Legal terms and conditions for using the Eagles Football Club website.',
+};
 
 const LegalTermsPage = () => {
   return (

@@ -50,7 +50,9 @@ const Navbar = () => {
       setIsScrolled(window.scrollY > 50);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    // Reloads / back-navigation can land mid-page before any scroll event fires
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -342,8 +344,15 @@ const Navbar = () => {
                 >
                   The Club
                 </Link>
-                <Link 
-                  href="/programs" 
+                <Link
+                  href="/coaches"
+                  className="block px-6 py-4 text-2xl font-black uppercase tracking-wide hover:bg-white/5 hover:text-[#BD9B58] transition-all duration-300 border-l-4 border-transparent hover:border-[#BD9B58]"
+                  onClick={closeMenu}
+                >
+                  Coaches
+                </Link>
+                <Link
+                  href="/programs"
                   className="block px-6 py-4 text-2xl font-black uppercase tracking-wide hover:bg-white/5 hover:text-[#BD9B58] transition-all duration-300 border-l-4 border-transparent hover:border-[#BD9B58]" 
                   onClick={closeMenu}
                 >

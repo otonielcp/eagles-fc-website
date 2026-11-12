@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getActiveCoaches } from "@/actions/staff";
 import { motion } from "framer-motion";
+import SafeImg from "./SafeImg";
 
 const CoachCard = ({
   name,
@@ -27,8 +28,9 @@ const CoachCard = ({
     >
       {/* Image Container */}
       <div className="relative h-[380px] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-        <img
+        <SafeImg
           src={image ? image : '/default.jpg'}
+          fallbackSrc="/default.jpg"
           alt={name}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
         />
@@ -96,11 +98,15 @@ const CoachesList = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl sm:text-5xl font-playfair italic text-gray-800 mb-6">Coaching Staff</h2>
+          <div className="inline-flex items-center gap-4 mb-4">
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
+            <h2 className="text-5xl sm:text-6xl font-bebas text-white leading-none">Coaching Staff</h2>
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
+          </div>
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C5A464]"></div>
           </div>
-          <p className="text-gray-600 mt-4">Loading coaching staff information...</p>
+          <p className="text-gray-400 mt-4">Loading coaching staff information...</p>
         </motion.div>
       </div>
     );
@@ -109,14 +115,21 @@ const CoachesList = () => {
   // If no coaches found, display a message
   if (coaches.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-7xl mx-auto px-4 py-24 sm:py-32 text-center min-h-[50vh] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl sm:text-5xl font-playfair italic text-gray-800 mb-6">Coaching Staff</h2>
-          <p className="text-gray-600 text-lg">No coaching staff information available at this time.</p>
+          <div className="inline-flex items-center gap-4 mb-4">
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
+            <h2 className="text-5xl sm:text-6xl font-bebas text-white leading-none">Coaching Staff</h2>
+            <div className="w-10 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
+          </div>
+          <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">Our coaching staff will be listed here soon. In the meantime, reach out and we'll connect you with the right coach.</p>
+          <a href="/contact" className="mt-8 inline-flex items-center gap-3 bg-[#BD9B58] hover:bg-[#a8884a] text-white font-bold text-sm uppercase tracking-[0.15em] px-9 py-4 rounded-tr-2xl rounded-bl-2xl shadow-lg transition-colors duration-300">
+            Contact Us
+          </a>
         </motion.div>
       </div>
     );
@@ -159,7 +172,7 @@ const CoachesList = () => {
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             className="mb-16"
           >
-            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
+            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-bebas leading-[0.85]">
               <span className="block text-white mb-4">COACHING</span>
               <span className="block bg-gradient-to-r from-[#C5A464] via-[#D4AF37] to-[#C5A464] bg-clip-text text-transparent">
                 STAFF

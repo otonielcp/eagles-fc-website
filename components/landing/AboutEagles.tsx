@@ -29,7 +29,7 @@ const AboutEagles = () => {
               </div>
 
               {/* Main heading */}
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 sm:mb-10 leading-[0.9]">
+              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bebas mb-8 sm:mb-10 leading-[0.9]">
                 <span className="text-gray-900">EAGLES</span><br/>
                 <span className="text-gray-900">FOOTBALL</span><br/>
                 <span className="text-[#C5A464]">CLUB</span>

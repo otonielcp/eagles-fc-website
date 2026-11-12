@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
+import { validateImageFile } from "@/components/admin/shared/validateImageFile";
 
 interface ImageUploadProps {
   currentImage: string;
@@ -22,9 +23,12 @@ export default function ImageUpload({
   const [dragActive, setDragActive] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onUpload(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file && validateImageFile(file)) {
+      onUpload(file);
     }
+    // Reset so choosing the same file again still fires onChange
+    e.target.value = "";
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -42,9 +46,10 @@ export default function ImageUpload({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onUpload(e.dataTransfer.files[0]);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && validateImageFile(file)) {
+      onUpload(file);
     }
   };
 

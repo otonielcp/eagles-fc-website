@@ -1,8 +1,28 @@
 "use server";
 
 import nodemailer from 'nodemailer';
-import { createPartnershipInquiry } from './partnershipInquiry';
-import { createFormSubmission } from './formSubmission';
+import { saveFormSubmission, savePartnershipInquiry } from '@/lib/inboxStore';
+import { verifyTurnstile, HUMAN_CHECK_FAILED_MESSAGE } from '@/lib/turnstile';
+import { escapeHtml } from '@/lib/hiringEmails';
+
+// Everything a visitor typed is escaped before it goes into email HTML, so a
+// form submission cannot inject markup or links into the club inbox.
+function multilineHtml(value: unknown): string {
+  return escapeHtml(value).replace(/\r?\n/g, '<br>');
+}
+
+function websiteHtml(value: string): string {
+  const raw = String(value).trim();
+  try {
+    const url = new URL(raw);
+    if (url.protocol === 'http:' || url.protocol === 'https:') {
+      return `<a href="${escapeHtml(url.href)}" style="color: #C6A76D;">${escapeHtml(raw)}</a>`;
+    }
+  } catch {
+    // Not an absolute URL; show it as plain text below.
+  }
+  return escapeHtml(raw);
+}
 
 interface ContactFormData {
   name: string;
@@ -10,6 +30,8 @@ interface ContactFormData {
   phone?: string;
   subject: string;
   message: string;
+  /** Cloudflare Turnstile token from the form's human check. */
+  turnstileToken?: string;
 }
 
 interface PlayerRegistrationData {
@@ -37,6 +59,9 @@ interface PlayerRegistrationData {
   city: string;
   state: string;
   zipcode: string;
+
+  /** Cloudflare Turnstile token from the form's human check. */
+  turnstileToken?: string;
 }
 
 interface PartnershipFormData {
@@ -48,11 +73,20 @@ interface PartnershipFormData {
   email: string;
   phone: string;
   description?: string;
+  /** Cloudflare Turnstile token from the form's human check. */
+  turnstileToken?: string;
 }
 
 interface ContactResponse {
   success: boolean;
   message: string;
+}
+
+// Runs before anything is saved or emailed. Returns the error response for a
+// failed human check, or null when the submission may go ahead.
+async function rejectIfBot(payload: { turnstileToken?: string } | null | undefined): Promise<ContactResponse | null> {
+  if (await verifyTurnstile(payload?.turnstileToken)) return null;
+  return { success: false, message: HUMAN_CHECK_FAILED_MESSAGE };
 }
 
 // Create transporter function to avoid repetition
@@ -76,12 +110,15 @@ async function createTransporter() {
 }
 
 export async function sendContactEmail(formData: ContactFormData): Promise<ContactResponse> {
+  const rejected = await rejectIfBot(formData);
+  if (rejected) return rejected;
+
   try {
     const { name, email, phone, subject, message } = formData;
 
     // Save to database (don't let DB failure prevent email from sending)
     try {
-      const dbResult = await createFormSubmission({
+      const dbResult = await saveFormSubmission({
         type: 'contact',
         name,
         email,
@@ -108,16 +145,16 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
           </h2>
           
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+            ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
+            <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
           </div>
-          
+
           <div style="margin: 20px 0;">
             <h3 style="color: #333;">Message:</h3>
             <div style="background: white; padding: 15px; border-left: 4px solid #BD9B58; border-radius: 0 5px 5px 0;">
-              ${message.replace(/\n/g, '<br>')}
+              ${multilineHtml(message)}
             </div>
           </div>
           
@@ -161,11 +198,17 @@ export async function sendContactEmail(formData: ContactFormData): Promise<Conta
   }
 }
 
-export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationData): Promise<ContactResponse> {
+export async function sendPlayerRegistrationEmail(submission: PlayerRegistrationData): Promise<ContactResponse> {
+  const rejected = await rejectIfBot(submission);
+  if (rejected) return rejected;
+
+  // The token is only for the check above; don't store it with the registration.
+  const { turnstileToken: _token, ...formData } = submission;
+
   try {
     // Save to database (don't let DB failure prevent email from sending)
     try {
-      const dbResult = await createFormSubmission({
+      const dbResult = await saveFormSubmission({
         type: 'registration',
         name: `${formData.playerFirstName} ${formData.playerLastName}`,
         email: formData.parentEmail,
@@ -196,34 +239,34 @@ export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationDa
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #C6A76D; margin-top: 0;">Player Information</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <p><strong>Name:</strong> ${formData.playerFirstName} ${formData.playerLastName} ${formData.playerSuffix || ''}</p>
-              <p><strong>Gender:</strong> ${formData.playerGender}</p>
-              <p><strong>Birthday:</strong> ${formData.playerBirthday}</p>
-              <p><strong>Position:</strong> ${formData.position}</p>
-              ${formData.currentClub ? `<p><strong>Current Club:</strong> ${formData.currentClub}</p>` : ''}
-              ${formData.teamName ? `<p><strong>Team Name:</strong> ${formData.teamName}</p>` : ''}
-              ${formData.yearsPlaying ? `<p><strong>Years Playing:</strong> ${formData.yearsPlaying}</p>` : ''}
+              <p><strong>Name:</strong> ${escapeHtml(formData.playerFirstName)} ${escapeHtml(formData.playerLastName)} ${escapeHtml(formData.playerSuffix || '')}</p>
+              <p><strong>Gender:</strong> ${escapeHtml(formData.playerGender)}</p>
+              <p><strong>Birthday:</strong> ${escapeHtml(formData.playerBirthday)}</p>
+              <p><strong>Position:</strong> ${escapeHtml(formData.position)}</p>
+              ${formData.currentClub ? `<p><strong>Current Club:</strong> ${escapeHtml(formData.currentClub)}</p>` : ''}
+              ${formData.teamName ? `<p><strong>Team Name:</strong> ${escapeHtml(formData.teamName)}</p>` : ''}
+              ${formData.yearsPlaying ? `<p><strong>Years Playing:</strong> ${escapeHtml(formData.yearsPlaying)}</p>` : ''}
             </div>
-            ${formData.soccerExperience ? `<p><strong>Soccer Experience:</strong> ${formData.soccerExperience}</p>` : ''}
+            ${formData.soccerExperience ? `<p><strong>Soccer Experience:</strong> ${multilineHtml(formData.soccerExperience)}</p>` : ''}
           </div>
           
           <!-- Parent/Guardian Information -->
           <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #C6A76D; margin-top: 0;">Parent/Guardian Information</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <p><strong>Name:</strong> ${formData.parentFirstName} ${formData.parentLastName} ${formData.parentSuffix || ''}</p>
-              <p><strong>Email:</strong> ${formData.parentEmail}</p>
-              <p><strong>Phone:</strong> ${formData.parentPhone}</p>
+              <p><strong>Name:</strong> ${escapeHtml(formData.parentFirstName)} ${escapeHtml(formData.parentLastName)} ${escapeHtml(formData.parentSuffix || '')}</p>
+              <p><strong>Email:</strong> ${escapeHtml(formData.parentEmail)}</p>
+              <p><strong>Phone:</strong> ${escapeHtml(formData.parentPhone)}</p>
             </div>
           </div>
-          
+
           <!-- Address Information -->
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #C6A76D; margin-top: 0;">Address</h3>
-            <p><strong>Street:</strong> ${formData.street}</p>
-            <p><strong>City:</strong> ${formData.city}</p>
-            <p><strong>State:</strong> ${formData.state}</p>
-            <p><strong>Zipcode:</strong> ${formData.zipcode}</p>
+            <p><strong>Street:</strong> ${escapeHtml(formData.street)}</p>
+            <p><strong>City:</strong> ${escapeHtml(formData.city)}</p>
+            <p><strong>State:</strong> ${escapeHtml(formData.state)}</p>
+            <p><strong>Zipcode:</strong> ${escapeHtml(formData.zipcode)}</p>
           </div>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -282,12 +325,15 @@ export async function sendPlayerRegistrationEmail(formData: PlayerRegistrationDa
 
 // Generic function for different inquiry types
 async function sendInquiryEmail(formData: ContactFormData, inquiryType: string): Promise<ContactResponse> {
+  const rejected = await rejectIfBot(formData);
+  if (rejected) return rejected;
+
   try {
     const { name, email, phone, message } = formData;
 
     // Save to database (don't let DB failure prevent email from sending)
     try {
-      const dbResult = await createFormSubmission({
+      const dbResult = await saveFormSubmission({
         type: inquiryType.toLowerCase() as 'operations' | 'marketing' | 'media',
         name,
         email,
@@ -314,15 +360,15 @@ async function sendInquiryEmail(formData: ContactFormData, inquiryType: string):
           </h2>
           
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+            <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(phone || 'Not provided')}</p>
           </div>
-          
+
           <div style="margin: 20px 0;">
             <h3 style="color: #333;">Message:</h3>
             <div style="background: white; padding: 15px; border-left: 4px solid #C6A76D; border-radius: 0 5px 5px 0;">
-              ${message.replace(/\n/g, '<br>')}
+              ${multilineHtml(message)}
             </div>
           </div>
           
@@ -379,10 +425,13 @@ export async function sendMediaInquiry(formData: ContactFormData): Promise<Conta
 }
 
 export async function sendPartnershipInquiry(formData: PartnershipFormData): Promise<ContactResponse> {
+  const rejected = await rejectIfBot(formData);
+  if (rejected) return rejected;
+
   try {
     // Save to database (don't let DB failure prevent email from sending)
     try {
-      const dbResult = await createPartnershipInquiry(formData);
+      const dbResult = await savePartnershipInquiry(formData);
       console.log("[Partnership] DB save result:", dbResult);
     } catch (dbError) {
       console.error("[Partnership] DB save failed:", dbError);
@@ -404,25 +453,25 @@ export async function sendPartnershipInquiry(formData: PartnershipFormData): Pro
           <!-- Contact Information -->
           <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #C6A76D; margin-top: 0;">Contact Information</h3>
-            <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
-            ${formData.title ? `<p><strong>Title:</strong> ${formData.title}</p>` : ''}
-            <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Phone:</strong> ${formData.phone}</p>
+            <p><strong>Name:</strong> ${escapeHtml(formData.firstName)} ${escapeHtml(formData.lastName)}</p>
+            ${formData.title ? `<p><strong>Title:</strong> ${escapeHtml(formData.title)}</p>` : ''}
+            <p><strong>Email:</strong> ${escapeHtml(formData.email)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(formData.phone)}</p>
           </div>
-          
+
           <!-- Business Information -->
           <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #C6A76D; margin-top: 0;">Business Information</h3>
-            <p><strong>Business Name:</strong> ${formData.businessName}</p>
-            ${formData.businessWebsite ? `<p><strong>Website:</strong> <a href="${formData.businessWebsite}" style="color: #C6A76D;">${formData.businessWebsite}</a></p>` : ''}
+            <p><strong>Business Name:</strong> ${escapeHtml(formData.businessName)}</p>
+            ${formData.businessWebsite ? `<p><strong>Website:</strong> ${websiteHtml(formData.businessWebsite)}</p>` : ''}
           </div>
-          
+
           ${formData.description ? `
           <!-- Business Description -->
           <div style="margin: 20px 0;">
             <h3 style="color: #333;">Business Description:</h3>
             <div style="background: white; padding: 15px; border-left: 4px solid #C6A76D; border-radius: 0 5px 5px 0;">
-              ${formData.description.replace(/\n/g, '<br>')}
+              ${multilineHtml(formData.description)}
             </div>
           </div>
           ` : ''}

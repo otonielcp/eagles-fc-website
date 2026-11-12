@@ -27,13 +27,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Pencil, PlusCircle, Trash2, ListChecks } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import Link from "next/link";
 import img from "next/image";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllFixtures, deleteFixture, deleteFixtures } from "@/actions/fixture";
+import { getAllFixtures, deleteFixture, deleteFixtures, getDistinctCompetitionTypes } from "@/actions/fixture";
 
 // This would be replaced with actual API functions
 const fetchFixtures = async () => {
@@ -49,7 +49,16 @@ export default function FixturesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("upcoming");
+  const [competitionTypes, setCompetitionTypes] = useState<string[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Bulk delete acts on every selected id, so a selection must never outlive
+  // the rows it was made on — otherwise hidden fixtures get deleted too.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab, filterCompetition, filterStatus, searchQuery]);
 
   const toggleOne = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
@@ -74,14 +83,28 @@ export default function FixturesManagement() {
       try {
         const data = await fetchFixtures();
         setFixtures(data);
+        setLoadError(null);
       } catch (error) {
         console.error("Failed to fetch fixtures:", error);
+        setLoadError("Fixtures could not be loaded. Refresh the page to try again.");
+        toast.error("Failed to load fixtures");
       } finally {
         setLoading(false);
       }
     };
 
+    // Competition type is free text on the fixture form, so the filter
+    // options have to come from the values actually stored.
+    const loadCompetitionTypes = async () => {
+      try {
+        setCompetitionTypes(await getDistinctCompetitionTypes());
+      } catch (error) {
+        console.error("Failed to fetch competition types:", error);
+      }
+    };
+
     loadFixtures();
+    loadCompetitionTypes();
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -151,8 +174,9 @@ export default function FixturesManagement() {
     return true;
   });
 
+  // LIVE belongs here too: a match in progress still needs its score entered.
   const upcomingFixtures = filteredFixtures.filter((fixture: any) =>
-    fixture.status === "SCHEDULED"
+    fixture.status === "SCHEDULED" || fixture.status === "LIVE"
   );
 
   const pastFixtures = filteredFixtures.filter((fixture: any) =>
@@ -195,12 +219,9 @@ export default function FixturesManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Competitions</SelectItem>
-                  <SelectItem value="PREMIER LEAGUE">Premier League</SelectItem>
-                  <SelectItem value="FA CUP">FA Cup</SelectItem>
-                  <SelectItem value="CARABAO CUP">Carabao Cup</SelectItem>
-                  <SelectItem value="CHAMPIONS LEAGUE">Champions League</SelectItem>
-                  <SelectItem value="EUROPA LEAGUE">Europa League</SelectItem>
-                  <SelectItem value="FRIENDLY">Friendly</SelectItem>
+                  {competitionTypes.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -221,7 +242,7 @@ export default function FixturesManagement() {
             </div>
           </div>
 
-          <Tabs defaultValue="upcoming">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center justify-between mb-4">
               <TabsList>
                 <TabsTrigger value="upcoming">Upcoming Fixtures</TabsTrigger>
@@ -245,6 +266,10 @@ export default function FixturesManagement() {
             <TabsContent value="upcoming">
               {loading ? (
                 <div className="text-center py-10">Loading fixtures...</div>
+              ) : loadError ? (
+                <div className="text-center py-10">
+                  <p className="text-red-600">{loadError}</p>
+                </div>
               ) : upcomingFixtures.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-gray-500">No upcoming fixtures found. Add a new fixture to get started.</p>
@@ -338,7 +363,13 @@ export default function FixturesManagement() {
                           </TableCell>
                           <TableCell>{fixture.stadium}</TableCell>
                           <TableCell>
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#BD9B58]/20 text-[#BD9B58]">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                fixture.status === "LIVE"
+                                  ? "bg-red-100 text-red-600"
+                                  : "bg-[#BD9B58]/20 text-[#BD9B58]"
+                              }`}
+                            >
                               {fixture.status}
                             </span>
                           </TableCell>
@@ -379,6 +410,10 @@ export default function FixturesManagement() {
             <TabsContent value="past">
               {loading ? (
                 <div className="text-center py-10">Loading fixtures...</div>
+              ) : loadError ? (
+                <div className="text-center py-10">
+                  <p className="text-red-600">{loadError}</p>
+                </div>
               ) : pastFixtures.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-gray-500">No past fixtures found.</p>
@@ -512,7 +547,6 @@ export default function FixturesManagement() {
           </Tabs>
         </CardContent>
       </Card>
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

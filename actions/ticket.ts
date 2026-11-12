@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import { revalidatePath } from 'next/cache';
 import Ticket, { ITicket } from '@/models/Ticket';
 import connectDB from '@/lib/dbConnect';
@@ -18,6 +20,7 @@ cloudinary.config({
  * Create a new ticket
  */
 export async function createTicket(ticketData: TicketFormData): Promise<TicketResponse> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -106,6 +109,7 @@ export async function getTicket(ticketId: string): Promise<TicketType> {
  * Update a ticket
  */
 export async function updateTicket(ticketId: string, ticketData: TicketFormData): Promise<TicketResponse> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -140,6 +144,7 @@ export async function updateTicket(ticketId: string, ticketData: TicketFormData)
  * Delete a ticket
  */
 export async function deleteTicket(ticketId: string): Promise<TicketResponse> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -170,6 +175,7 @@ export async function deleteTicket(ticketId: string): Promise<TicketResponse> {
  * Upload opponent image to Cloudinary
  */
 export async function uploadOpponentImage(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 

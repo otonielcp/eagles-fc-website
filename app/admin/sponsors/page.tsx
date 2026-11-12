@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getAllPortfolioLogos, deletePortfolioLogo } from "@/actions/sponsorsLogo";
 import { PortfolioLogo } from "@/types/sponsorsLogo";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Eye, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
@@ -204,7 +203,6 @@ export default function PortfolioManagement() {
           </Table>
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

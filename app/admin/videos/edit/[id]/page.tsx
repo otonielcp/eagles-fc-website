@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getVideoById } from "@/actions/video";
 import { Video } from "@/types/video";
 import EditVideoForm from "@/components/admin/videos/EditVideoForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { useParams } from "next/navigation";
 
 export default function EditVideoPage() {
@@ -80,7 +80,6 @@ export default function EditVideoPage() {
         onCancel={handleCancel}
         onVideoUpdated={handleVideoUpdated}
       />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

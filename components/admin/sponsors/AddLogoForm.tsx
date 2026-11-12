@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 
 export default function AddLogoForm() {
   const router = useRouter();
@@ -173,6 +172,7 @@ export default function AddLogoForm() {
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData(prev => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">
               For best results, upload a transparent PNG with a 1:1 aspect ratio
@@ -214,7 +214,6 @@ export default function AddLogoForm() {
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 } 

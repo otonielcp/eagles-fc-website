@@ -19,7 +19,8 @@ export default function NewsPage() {
   return (
     <div className="bg-white">
       <NewsHero />
-      <DynamicLatestNews />
+      {/* NewsHero already shows the 5 newest articles */}
+      <DynamicLatestNews skip={5} />
       <LatestVideos />
       <Suspense fallback={
         <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-12 py-16">

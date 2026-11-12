@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import PortfolioLogo from '@/models/SponsorsLogo';
 import { revalidatePath } from 'next/cache';
@@ -15,6 +17,7 @@ cloudinary.config({
 
 // Get all portfolio logos
 export async function getAllPortfolioLogos(): Promise<PortfolioLogoType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const logos = await PortfolioLogo.find({}).sort({ order: 1, createdAt: -1 });
@@ -51,6 +54,7 @@ export async function getPortfolioLogosByCategory(category: string): Promise<Por
 
 // Get portfolio logo by ID
 export async function getPortfolioLogoById(id: string): Promise<PortfolioLogoType | null> {
+  await requireAdmin();
   try {
     await connectDB();
     const logo = await PortfolioLogo.findById(id);
@@ -68,6 +72,7 @@ export async function getPortfolioLogoById(id: string): Promise<PortfolioLogoTyp
 
 // Create portfolio logo
 export async function createPortfolioLogo(data: PortfolioLogoFormData): Promise<{ success: boolean; message: string; logo?: PortfolioLogoType }> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -92,6 +97,7 @@ export async function createPortfolioLogo(data: PortfolioLogoFormData): Promise<
 
 // Update portfolio logo
 export async function updatePortfolioLogo(id: string, data: PortfolioLogoFormData): Promise<{ success: boolean; message: string; logo?: PortfolioLogoType }> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -127,6 +133,7 @@ export async function updatePortfolioLogo(id: string, data: PortfolioLogoFormDat
 
 // Delete portfolio logo
 export async function deletePortfolioLogo(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -172,6 +179,7 @@ export async function deletePortfolioLogo(id: string): Promise<{ success: boolea
 
 // Upload logo image to Cloudinary
 export async function uploadLogoImage(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 

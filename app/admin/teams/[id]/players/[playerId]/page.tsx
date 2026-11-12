@@ -4,15 +4,14 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getPlayerById } from "@/actions/player";
 import { Player } from "@/types/team";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, Instagram, Twitter, Facebook, Trophy } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { calculateAge } from "@/lib/utils";
+import { ageFromDateOnly, formatDateOnly } from "@/app/admin/_lib/dateOnly";
 
 export default function PlayerDetailsPage() {
   const params: { id: string; playerId: string } = useParams();
@@ -64,7 +63,9 @@ export default function PlayerDetailsPage() {
     );
   }
 
-  const playerAge = calculateAge(new Date(player.dateOfBirth));
+  // dateOfBirth is UTC midnight of the birthday; read its date part so the
+  // birthday isn't shown a day early in US timezones.
+  const playerAge = ageFromDateOnly(player.dateOfBirth);
 
   return (
     <div className="space-y-6">
@@ -175,7 +176,7 @@ export default function PlayerDetailsPage() {
                 <div>
                   <p className="text-sm text-gray-500">Date of Birth</p>
                   <p className="font-medium">
-                    {format(new Date(player.dateOfBirth), "MMMM d, yyyy")} ({playerAge} years)
+                    {formatDateOnly(player.dateOfBirth, "MMMM d, yyyy")} ({playerAge ?? "N/A"} years)
                   </p>
                 </div>
                 <div>
@@ -268,7 +269,6 @@ export default function PlayerDetailsPage() {
         </div>
       </div>
       
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

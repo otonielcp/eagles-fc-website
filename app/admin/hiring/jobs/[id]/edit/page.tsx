@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Toaster } from "sonner";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import JobForm from "@/components/admin/hiring/JobForm";
@@ -69,7 +68,6 @@ export default function EditJobPage() {
         </div>
       </div>
       <JobForm job={job} />
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

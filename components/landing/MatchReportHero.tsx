@@ -3,22 +3,30 @@
 import { motion } from 'framer-motion';
 import { Calendar, MapPin } from 'lucide-react';
 import { IFixture } from '@/types/fixtures';
+import { hasRealScore, isMatchFinished, parseLocalDate } from './landingUtils';
+import SafeImg from './SafeImg';
 
 interface MatchReportHeroProps {
   fixture: IFixture;
 }
 
 export function MatchReportHero({ fixture }: MatchReportHeroProps) {
-  // Determine winner
-  const homeWins = fixture.homeScore > fixture.awayScore;
-  const awayWins = fixture.awayScore > fixture.homeScore;
+  // Only show a score for matches that have actually kicked off; an unplayed
+  // fixture's 0-0 defaults are not a result.
+  const showScore = hasRealScore(fixture.status);
+  const finished = isMatchFinished(fixture.status);
+
+  // Determine winner (only meaningful once the match is over)
+  const homeWins = finished && fixture.homeScore > fixture.awayScore;
+  const awayWins = finished && fixture.awayScore > fixture.homeScore;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={fixture.matchImage || "https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg"}
+        <SafeImg
+          src={fixture.matchImage || "/gameresultbg.jpeg"}
+          fallbackSrc="/gameresultbg.jpeg"
           alt="Stadium background"
           className="w-full h-full object-cover"
         />
@@ -36,7 +44,7 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
             className="flex justify-center mb-12"
           >
             {fixture.leagueLogo ? (
-              <img src={fixture.leagueLogo} alt={fixture.competition} className="h-28 w-auto object-contain drop-shadow-lg" />
+              <SafeImg src={fixture.leagueLogo} alt={fixture.competition} fallbackSrc={null} className="h-28 w-auto object-contain drop-shadow-lg" />
             ) : (
               <p className="text-white/70 text-sm uppercase tracking-wider font-medium">{fixture.competition}</p>
             )}
@@ -57,9 +65,10 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
               className="flex flex-col items-center text-center lg:flex-row lg:gap-6"
             >
               <div className="w-32 h-32 lg:w-40 lg:h-40 mb-4 lg:mb-0 flex items-center justify-center">
-                <img
+                <SafeImg
                   src={fixture.homeTeamLogo}
                   alt={fixture.homeTeam}
+                  fallbackSrc={null}
                   className="w-32 h-32 lg:w-40 lg:h-40 object-contain drop-shadow-2xl"
                 />
               </div>
@@ -80,13 +89,19 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
               transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
               className="flex items-center justify-center gap-8 lg:gap-12 px-8"
             >
-              <div className={`text-7xl lg:text-9xl font-black ${homeWins ? 'text-amber-500' : 'text-white'}`}>
-                {fixture.homeScore}
-              </div>
-              <div className="text-5xl lg:text-7xl font-light text-white/30">-</div>
-              <div className={`text-7xl lg:text-9xl font-black ${awayWins ? 'text-amber-500' : 'text-white'}`}>
-                {fixture.awayScore}
-              </div>
+              {showScore ? (
+                <>
+                  <div className={`text-7xl lg:text-9xl font-black ${homeWins ? 'text-amber-500' : 'text-white'}`}>
+                    {fixture.homeScore}
+                  </div>
+                  <div className="text-5xl lg:text-7xl font-light text-white/30">-</div>
+                  <div className={`text-7xl lg:text-9xl font-black ${awayWins ? 'text-amber-500' : 'text-white'}`}>
+                    {fixture.awayScore}
+                  </div>
+                </>
+              ) : (
+                <div className="text-5xl lg:text-7xl font-black text-white/70">VS</div>
+              )}
             </motion.div>
 
             {/* Away Team - RIGHT SIDE */}
@@ -97,9 +112,10 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
               className="flex flex-col items-center text-center lg:flex-row lg:gap-6"
             >
               <div className="lg:order-2 w-32 h-32 lg:w-40 lg:h-40 mb-4 lg:mb-0 flex items-center justify-center">
-                <img
+                <SafeImg
                   src={fixture.awayTeamLogo}
                   alt={fixture.awayTeam}
+                  fallbackSrc={null}
                   className="w-32 h-32 lg:w-40 lg:h-40 object-contain drop-shadow-2xl"
                 />
               </div>
@@ -122,11 +138,12 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
               <Calendar size={20} className="text-amber-500" />
               <span className="text-white text-sm font-medium">
-                {new Date(fixture.date).toLocaleDateString('en-US', {
+                {parseLocalDate(fixture.date).toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
                   year: 'numeric'
                 })}
+                {!finished && fixture.time ? ` · ${fixture.time}` : ''}
               </span>
             </div>
             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
@@ -143,7 +160,7 @@ export function MatchReportHero({ fixture }: MatchReportHeroProps) {
             className="flex justify-center mt-12"
           >
             <span className="inline-flex items-center px-8 py-3 rounded-full bg-amber-500 text-black text-sm font-black tracking-widest uppercase">
-              {fixture.status || 'FULL TIME'}
+              {finished ? 'FULL TIME' : (fixture.status || 'SCHEDULED')}
             </span>
           </motion.div>
         </div>

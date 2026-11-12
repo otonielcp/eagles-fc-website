@@ -4,14 +4,33 @@ import PlayerSection from "@/components/landing/PlayerSection";
 import { notFound } from "next/navigation";
 import { getTeamDisplayName } from "@/lib/teamName";
 import { Team, Player } from "@/types/team";
+import type { Metadata } from "next";
+import { cache } from "react";
 
-export default async function TeamRosterPage({ params }: any) {
+type TeamPageProps = { params: Promise<{ teamId: string }> };
+
+// generateMetadata and the page both need the team list; fetch it once per request.
+const getTeams = cache(() => getClubTeams());
+
+export async function generateMetadata({ params }: TeamPageProps): Promise<Metadata> {
+  const { teamId } = await params;
+  const fcTeam = (await getTeams()).find((t) => t._id === teamId);
+  if (!fcTeam) return { title: "Team Not Found" };
+
+  const teamName = getTeamDisplayName(fcTeam);
+  return {
+    title: `${teamName} Roster`,
+    description: `Roster and season stats for the Eagles FC ${teamName} youth soccer team in Grand Island, Nebraska.`,
+  };
+}
+
+export default async function TeamRosterPage({ params }: TeamPageProps) {
   const { teamId } = await params;
 
   // FutbolCore is the single source of truth for teams and rosters. The old
   // MongoDB path was removed: it served stale local records and passed whole
   // player documents — birthdates included — into client components.
-  const fcTeams = await getClubTeams();
+  const fcTeams = await getTeams();
   const fcTeam = fcTeams.find((t) => t._id === teamId);
 
   if (!fcTeam) {

@@ -51,7 +51,7 @@ const ProgramsPathway = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 tracking-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bebas text-white mb-3">
             Player <span className="text-[#CEB27D]">Development</span> Pathway
           </h2>
           <p className="text-gray-400 text-base md:text-lg">

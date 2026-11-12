@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Staff from '@/models/Staff';
 import Team from '@/models/Team'; // Import Team model
@@ -16,6 +18,7 @@ cloudinary.config({
 
 // Get all staff members
 export async function getAllStaff(): Promise<StaffType[]> {
+  await requireAdmin();
     try {
         await connectDB();
         const staff = await Staff.find({}).sort({ order: 1, lastName: 1, firstName: 1 }).populate('teamId');
@@ -26,14 +29,27 @@ export async function getAllStaff(): Promise<StaffType[]> {
     }
 }
 
+// Public shape for the /coaches page: only what CoachesList renders (no birthdate).
+export type PublicCoach = {
+    _id: string;
+    displayName: string;
+    role: string;
+    image: string;
+    teamId: { _id: string; name: string } | null;
+};
+
 // Get active coaching staff
-export async function getActiveCoaches(): Promise<StaffType[]> {
+export async function getActiveCoaches(): Promise<PublicCoach[]> {
     try {
         await connectDB();
         const coaches = await Staff.find({
             isActive: true,
             role: { $in: ['Head Coach', 'Assistant Coach', 'Goalkeeper Coach', 'Fitness Coach'] }
-        }).sort({ order: 1, lastName: 1, firstName: 1 }).populate('teamId');
+        })
+            .select('displayName role image teamId')
+            .sort({ order: 1, lastName: 1, firstName: 1 })
+            .populate('teamId', 'name')
+            .lean();
         return JSON.parse(JSON.stringify(coaches));
     } catch (error) {
         console.error("Error fetching coaches:", error);
@@ -43,6 +59,7 @@ export async function getActiveCoaches(): Promise<StaffType[]> {
 
 // Get staff by team ID
 export async function getStaffByTeamId(teamId: string): Promise<StaffType[]> {
+  await requireAdmin();
     try {
         await connectDB();
         const staff = await Staff.find({ teamId }).sort({ order: 1, lastName: 1, firstName: 1 });
@@ -55,6 +72,7 @@ export async function getStaffByTeamId(teamId: string): Promise<StaffType[]> {
 
 // Get staff member by ID
 export async function getStaffById(id: string): Promise<StaffType | null> {
+  await requireAdmin();
     try {
         await connectDB();
         const staffMember = await Staff.findById(id).populate('teamId');
@@ -68,6 +86,7 @@ export async function getStaffById(id: string): Promise<StaffType | null> {
 
 // Upload staff image to Cloudinary
 export async function uploadStaffImage(image: File): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
     try {
         // Read the file as an ArrayBuffer
         const bytes = await image.arrayBuffer();
@@ -99,6 +118,7 @@ export async function uploadStaffImage(image: File): Promise<{ success: boolean;
 
 // Create a new staff member
 export async function createStaff(formData: StaffFormData): Promise<{ success: boolean; message: string; data?: StaffType }> {
+  await requireAdmin();
     try {
         await connectDB();
         const { firstName, lastName, displayName, role, dateOfBirth, nationality, biography, image, teamId, isActive, order, socialMedia } = formData;
@@ -136,13 +156,14 @@ export async function createStaff(formData: StaffFormData): Promise<{ success: b
 
 // Add the missing updateStaff function
 export async function updateStaff(id: string, formData: StaffFormData): Promise<{ success: boolean; message: string; data?: StaffType }> {
+  await requireAdmin();
     try {
         await connectDB();
         
         const staff = await Staff.findByIdAndUpdate(
             id,
             { ...formData },
-            { new: true }
+            { new: true, runValidators: true }
         );
         
         if (!staff) {
@@ -169,6 +190,7 @@ export async function updateStaff(id: string, formData: StaffFormData): Promise<
 
 // Delete staff member
 export async function deleteStaff(id: string): Promise<void> {
+  await requireAdmin();
     try {
         await connectDB();
 

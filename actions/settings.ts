@@ -1,11 +1,14 @@
 "use server";
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import { revalidatePath } from "next/cache";
 import Settings from "@/models/Settings";
 import connectDB from "@/lib/dbConnect";
 
 // Get a setting by key
 export async function getSetting(key: string) {
+  await requireAdmin();
   try {
     await connectDB();
     const setting = await Settings.findOne({ key });
@@ -18,6 +21,7 @@ export async function getSetting(key: string) {
 
 // Set a setting value
 export async function setSetting(key: string, value: any) {
+  await requireAdmin();
   try {
     await connectDB();
     const setting = await Settings.findOneAndUpdate(
@@ -47,6 +51,7 @@ export async function getActiveSeasons(): Promise<string[]> {
 
 // Set active seasons
 export async function setActiveSeasons(seasons: string[]) {
+  await requireAdmin();
   try {
     await connectDB();
     await Settings.findOneAndUpdate(
@@ -67,6 +72,7 @@ export async function setActiveSeasons(seasons: string[]) {
 
 // Get all settings
 export async function getAllSettings() {
+  await requireAdmin();
   try {
     await connectDB();
     const settings = await Settings.find({});

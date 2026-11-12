@@ -7,10 +7,12 @@ import { format } from "date-fns";
 import { IFixture } from "@/types/fixtures";
 import Link from "next/link";
 import useLeagueStore from "@/store/leaguestore";
+import { parseLocalDate } from "@/components/landing/landingUtils";
 
-// Import Placeholder Logos
-const teamLogo = "/teams/ventura.png"
-const leagueLogo = "/leagues/usys-national-league.png"
+// Missing logos are left blank (no placeholder files exist in /public).
+const hideBrokenImage = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.style.visibility = "hidden";
+};
 
 const ResultsData = () => {
   const [results, setResults] = useState<IFixture[]>([]);
@@ -65,14 +67,6 @@ const ResultsData = () => {
           effectiveSeason,
           effectiveCompetition
         );
-        
-        console.log("Filtered results data:", latestMatches);
-        console.log("Applied results filters:", { 
-          effectiveLeague, 
-          effectiveSeason, 
-          effectiveCompetition,
-          original: { selectedLeague, selectedSeason, selectedCompetition }
-        });
 
         if (latestMatches) {
           setResults(latestMatches);
@@ -93,7 +87,7 @@ const ResultsData = () => {
   // Group results by month
   const groupedResults = results.reduce((acc: Record<string, IFixture[]>, match: IFixture) => {
     // Format the month from the date
-    const matchDate = new Date(match.date);
+    const matchDate = parseLocalDate(match.date);
     const month = format(matchDate, "MMMM yyyy").toUpperCase();
 
     if (!acc[month]) {
@@ -152,7 +146,7 @@ const ResultsData = () => {
           {/* Match Cards - Clean Premium Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {matches.map((match: IFixture, idx: number) => {
-              const matchDate = new Date(match.date);
+              const matchDate = parseLocalDate(match.date);
               const formattedDate = format(matchDate, "EEE d MMMM").toUpperCase();
               const formattedTime = formatTime(match.time);
               
@@ -170,11 +164,18 @@ const ResultsData = () => {
                     
                     {/* League Logo - Top */}
                     <div className="h-20 flex items-center justify-center bg-white border-b border-gray-100">
-                      <img
-                        src={match.leagueLogo || leagueLogo}
-                        alt="League"
-                        className="w-12 h-12 object-contain"
-                      />
+                      {match.leagueLogo ? (
+                        <img
+                          src={match.leagueLogo}
+                          alt="League"
+                          className="w-12 h-12 object-contain"
+                          onError={hideBrokenImage}
+                        />
+                      ) : (
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-500 px-4 text-center">
+                          {match.competition}
+                        </span>
+                      )}
                     </div>
 
                     {/* Card Body */}
@@ -194,11 +195,16 @@ const ResultsData = () => {
                       <div className="flex items-center justify-center gap-4 mb-6">
                         {/* Team 1 Logo & Score */}
                         <div className="flex flex-col items-center">
-                          <img
-                            src={match.homeTeamLogo || teamLogo}
-                            alt={match.homeTeam}
-                            className="w-16 h-16 object-contain mb-2"
-                          />
+                          {match.homeTeamLogo ? (
+                            <img
+                              src={match.homeTeamLogo}
+                              alt={match.homeTeam}
+                              className="w-16 h-16 object-contain mb-2"
+                              onError={hideBrokenImage}
+                            />
+                          ) : (
+                            <div className="w-16 h-16 mb-2" />
+                          )}
                           <span className={`text-3xl font-black ${homeWinner ? 'text-green-600' : 'text-gray-400'}`}>
                             {match.homeScore || 0}
                           </span>
@@ -209,11 +215,16 @@ const ResultsData = () => {
 
                         {/* Team 2 Logo & Score */}
                         <div className="flex flex-col items-center">
-                          <img
-                            src={match.awayTeamLogo || teamLogo}
-                            alt={match.awayTeam}
-                            className="w-16 h-16 object-contain mb-2"
-                          />
+                          {match.awayTeamLogo ? (
+                            <img
+                              src={match.awayTeamLogo}
+                              alt={match.awayTeam}
+                              className="w-16 h-16 object-contain mb-2"
+                              onError={hideBrokenImage}
+                            />
+                          ) : (
+                            <div className="w-16 h-16 mb-2" />
+                          )}
                           <span className={`text-3xl font-black ${awayWinner ? 'text-green-600' : 'text-gray-400'}`}>
                             {match.awayScore || 0}
                           </span>

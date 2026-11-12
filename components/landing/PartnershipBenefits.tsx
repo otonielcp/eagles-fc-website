@@ -69,7 +69,7 @@ const PartnershipBenefits = () => {
   return (
     <>
       {/* Benefits Section - Elite Pro Club Style */}
-      <div ref={sectionRef} className="w-full py-32 px-6 relative overflow-hidden bg-white">
+      <div ref={sectionRef} id="partnership-benefits" className="w-full py-32 px-6 relative overflow-hidden bg-white">
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: `linear-gradient(#BD9B58 1px, transparent 1px), linear-gradient(90deg, #BD9B58 1px, transparent 1px)`,
@@ -168,7 +168,7 @@ const PartnershipBenefits = () => {
               <span className="text-[#BD9B58] text-sm font-bold uppercase tracking-[0.3em]">Our Reach</span>
               <div className="w-12 h-[2px] bg-[#BD9B58]"></div>
             </div>
-            <h3 className="text-5xl md:text-6xl font-bebas font-black text-white uppercase tracking-tight mb-6">
+            <h3 className="text-5xl md:text-6xl font-bebas text-white uppercase tracking-wide mb-6">
               IMPACT IN <span className="text-[#BD9B58]">NUMBERS</span>
             </h3>
             <p className="text-gray-400 text-xl">Connecting with thousands across Nebraska and beyond</p>

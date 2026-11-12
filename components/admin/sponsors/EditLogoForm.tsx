@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 
 interface EditLogoFormProps {
   logo: PortfolioLogo;
@@ -148,6 +147,7 @@ export default function EditLogoForm({ logo, onCancel, onLogoUpdated }: EditLogo
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Sponsor">Sponsor</SelectItem>
+                <SelectItem value="Primary">Primary Sponsor</SelectItem>
                 <SelectItem value="Partner">Partner</SelectItem>
                 <SelectItem value="Affiliate">Affiliate</SelectItem>
                 <SelectItem value="Media">Media</SelectItem>
@@ -178,6 +178,7 @@ export default function EditLogoForm({ logo, onCancel, onLogoUpdated }: EditLogo
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData(prev => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">
               For best results, upload a transparent PNG with a 1:1 aspect ratio
@@ -219,7 +220,6 @@ export default function EditLogoForm({ logo, onCancel, onLogoUpdated }: EditLogo
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 } 

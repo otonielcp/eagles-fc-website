@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { getLatestVideos } from '@/actions/video';
 import { Video } from '@/types/video';
 import Link from 'next/link';
+import SafeImg from './SafeImg';
 
-// Fallback image for videos without thumbnails
+// Fallback image for videos without thumbnails (or whose thumbnail URL 404s)
 const fallbackImage = "/footerimage.jpeg";
 
 const LatestVideos = () => {
@@ -76,8 +77,9 @@ const LatestVideos = () => {
                 className="group relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer bg-black"
               >
                 {/* Background Image */}
-                <img
+                <SafeImg
                   src={video.thumbnailUrl || fallbackImage}
+                  fallbackSrc={fallbackImage}
                   alt={video.title}
                   className="w-full h-[350px] md:h-[450px] object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -125,8 +127,9 @@ const LatestVideos = () => {
                 <div className="h-1 bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] w-0 group-hover:w-full transition-all duration-500"></div>
 
                 {/* Background Image */}
-                <img
+                <SafeImg
                   src={video.thumbnailUrl || fallbackImage}
+                  fallbackSrc={fallbackImage}
                   alt={video.title}
                   className="w-full h-[280px] object-cover transition-transform duration-700 group-hover:scale-110"
                 />

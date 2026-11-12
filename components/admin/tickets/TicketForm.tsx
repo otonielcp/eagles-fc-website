@@ -65,14 +65,22 @@ export default function TicketForm({ ticketId }: TicketFormProps) {
 
         // If editing, load the ticket data
         if (isEditing && ticketId) {
-          const ticket = await getTicket(ticketId);
+          // getTicket throws (rather than returning null) when the ticket does not exist
+          let ticket: Ticket | null = null;
+          try {
+            ticket = await getTicket(ticketId);
+          } catch (error) {
+            console.error('Error loading ticket:', error);
+          }
           if (ticket) {
+            // teamId is populated; it is null when the team has since been deleted
+            const ticketTeam = ticket.teamId as Ticket['teamId'] | null;
             setFormData({
               matchName: ticket.matchName || '',
               date: ticket.date || '',
               time: ticket.time || '',
               stadium: ticket.stadium || '',
-              teamId: typeof ticket.teamId === 'object' ? ticket.teamId._id : ticket.teamId || '',
+              teamId: ticketTeam && typeof ticketTeam === 'object' ? ticketTeam._id ?? '' : ticketTeam || '',
               opponentName: ticket.opponentName || '',
               externalTicketLink: ticket.externalTicketLink || '',
               description: ticket.description || '',
@@ -80,7 +88,7 @@ export default function TicketForm({ ticketId }: TicketFormProps) {
               opponentImage: ticket.opponentImage || '',
             });
           } else {
-            toast.error('Ticket not found');
+            toast.error('Ticket not found or could not be loaded');
             router.push('/admin/tickets');
           }
         }
@@ -345,7 +353,7 @@ export default function TicketForm({ ticketId }: TicketFormProps) {
             <Button
               type="submit"
               className="bg-[#C5A464] hover:bg-[#B39355]"
-              disabled={isSubmitting}
+              disabled={isSubmitting || imageUploading}
             >
               {isSubmitting ? (
                 <>

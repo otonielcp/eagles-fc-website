@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe-server';
-import { Product } from '@/types/product';
-
-interface CartItem extends Product {
-  quantity: number;
-}
+import { OrderValidationError, fitStripeMetadata, priceCartItems } from '@/lib/orderPricing';
 
 interface ShippingInfo {
   firstName: string;
@@ -18,31 +14,68 @@ interface ShippingInfo {
   country: string;
 }
 
-export async function POST(request: NextRequest) {
+/** Stripe only accepts absolute image URLs; a /public path would fail the whole session. */
+function stripeImages(image: string): string[] | undefined {
   try {
-    const { items, shippingInfo }: { items: CartItem[]; shippingInfo?: ShippingInfo } = await request.json();
+    return new URL(image).protocol === 'https:' ? [image] : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
-    }
+export async function POST(request: NextRequest) {
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
+
+  const { items, shippingInfo }: { items: unknown; shippingInfo?: ShippingInfo } = body ?? {};
+
+  if (shippingInfo !== undefined && (typeof shippingInfo !== 'object' || shippingInfo === null)) {
+    return NextResponse.json({ error: 'Invalid shipping information' }, { status: 400 });
+  }
+
+  try {
+    // Only ids and quantities come from the browser; prices come from the database.
+    const lines = await priceCartItems(items);
 
     // Create line items for Stripe
-    const lineItems = items.map((item) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.title,
-          images: [item.image],
-          description: item.description || '',
-          metadata: {
-            productId: item._id,
-            category: item.category,
+    const lineItems = lines.map((line) => {
+      const images = stripeImages(line.image);
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: line.title,
+            ...(images ? { images } : {}),
+            ...(line.description ? { description: line.description } : {}),
+            metadata: {
+              productId: line.productId,
+              category: line.category,
+            },
           },
+          unit_amount: Math.round(line.unitPrice * 100), // Stripe expects cents
         },
-        unit_amount: Math.round(item.price * 100), // Stripe expects cents
-      },
-      quantity: item.quantity,
-    }));
+        quantity: line.quantity,
+      };
+    });
+
+    const metadata: Record<string, string> = {
+      itemCount: lines.reduce((sum, line) => sum + line.quantity, 0).toString(),
+    };
+    const orderItems = fitStripeMetadata(
+      JSON.stringify(
+        lines.map((line) => ({
+          productId: line.productId,
+          title: line.title,
+          quantity: line.quantity,
+          price: line.unitPrice,
+        }))
+      )
+    );
+    if (orderItems) metadata.orderItems = orderItems;
 
     // Prepare session configuration
     const sessionConfig: any = {
@@ -51,33 +84,22 @@ export async function POST(request: NextRequest) {
       mode: 'payment',
       success_url: `${request.nextUrl.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.nextUrl.origin}/checkout/cancel`,
-      metadata: {
-        orderItems: JSON.stringify(items.map(item => ({
-          productId: item._id,
-          title: item.title,
-          quantity: item.quantity,
-          price: item.price,
-        }))),
-        itemCount: items.reduce((sum, item) => sum + item.quantity, 0).toString(),
-      },
+      metadata,
       customer_creation: 'always',
       billing_address_collection: 'required',
+      // Collect the shipping address at Stripe whether or not the client sent one.
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP'],
+      },
     };
 
     // Add shipping information if provided
     if (shippingInfo) {
-      sessionConfig.customer_email = shippingInfo.email;
-      sessionConfig.metadata.customerInfo = JSON.stringify(shippingInfo);
-      
-      // Pre-fill shipping address if shipping is required
-      sessionConfig.shipping_address_collection = {
-        allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP'],
-      };
-    } else {
-      // If no shipping info provided (direct from cart), collect shipping at Stripe
-      sessionConfig.shipping_address_collection = {
-        allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP'],
-      };
+      if (typeof shippingInfo.email === 'string' && shippingInfo.email.trim()) {
+        sessionConfig.customer_email = shippingInfo.email.trim();
+      }
+      const customerInfo = fitStripeMetadata(JSON.stringify(shippingInfo));
+      if (customerInfo) sessionConfig.metadata.customerInfo = customerInfo;
     }
 
     // Create Stripe checkout session
@@ -86,6 +108,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
+    if (error instanceof OrderValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error('Error creating checkout session:', error);
     return NextResponse.json(
       { error: 'Error creating checkout session' },

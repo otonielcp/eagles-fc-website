@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getAllNews, deleteNews } from "@/actions/news";
 import { News } from "@/types/news";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
@@ -212,7 +211,6 @@ export default function NewsManagement() {
           </Table>
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

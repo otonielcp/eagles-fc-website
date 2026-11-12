@@ -30,8 +30,7 @@ interface FormattedTeam {
   ga: number;
   gd: string;
   pts: number;
-  form: string[];
-  logo: string; // Added logo field to store the logo URL
+  logo?: string; // Team logo URL (may point at a purged Cloudinary asset)
   clubInfo?: string;
 }
 
@@ -52,6 +51,30 @@ interface LeagueStandings {
   leagueInfo: string;
   standings: FormattedTeam[];
 }
+
+// Team logo that falls back to the club's initial if the URL is missing or 404s
+const TeamLogo = ({ src, club }: { src?: string; club: string }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div className="h-full w-full bg-gray-100 rounded flex items-center justify-center">
+        <span className="text-xs text-gray-400 font-bold">
+          {(club || "?").charAt(0)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={`${club} logo`}
+      className="h-full w-full object-contain p-1"
+      onError={() => setFailed(true)}
+    />
+  );
+};
 
 // Loading Spinner Component
 const LoadingSpinner = () => (
@@ -78,28 +101,9 @@ const Standing = ({ isHomePage = false }) => {
           // Process all standing documents - works with any number of leagues
           const formattedLeagues = data.map((standingDoc: StandingDocument) => {
             // Format standings data for each league
+            // (No "form" column: standings only carry season totals, not
+            // dated results, so recent form can't be derived.)
             const formattedStandings = standingDoc.standings.map((team, index) => {
-              // Generate form based on team's actual record
-              const form = [];
-
-              // Get total matches played
-              const totalMatches = team.gamesPlayed;
-
-              // Add wins
-              for (let i = 0; i < team.wins; i++) {
-                form.push("W");
-              }
-
-              // Add losses
-              for (let i = 0; i < team.losses; i++) {
-                form.push("L");
-              }
-
-              // Add draws
-              for (let i = 0; i < team.ties; i++) {
-                form.push("D");
-              }
-
               return {
                 position: team.rank || index + 1,
                 club: team.teamName,
@@ -111,7 +115,6 @@ const Standing = ({ isHomePage = false }) => {
                 ga: team.goalsAgainst,
                 gd: team.goalDifference > 0 ? `+${team.goalDifference}` : `${team.goalDifference}`,
                 pts: team.totalPoints,
-                form: form, // Show all form results without limiting to 5
                 logo: team.teamLogo,
                 clubInfo: team.clubInfo
               };
@@ -119,7 +122,7 @@ const Standing = ({ isHomePage = false }) => {
 
             // Create league info string from metadata
             const { league, group, season } = standingDoc.metadata;
-            const leagueInfo = `${league || "LEAGUE"} - ${group || "CONFERENCE"} ${season || "2025"}`;
+            const leagueInfo = `${league || "LEAGUE"} - ${group || "CONFERENCE"}${season ? ` ${season}` : ""}`;
 
             return {
               leagueInfo,
@@ -149,9 +152,14 @@ const Standing = ({ isHomePage = false }) => {
   }, [isHomePage]);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
-  if (!leaguesData || leaguesData.length === 0) {
-    return <div className="text-center p-4">No standings data available</div>;
+  if (error || !leaguesData || leaguesData.length === 0) {
+    // On the homepage just leave the section out; /tables gets a neutral note.
+    if (isHomePage) return null;
+    return (
+      <div className="text-center text-gray-500 py-16 px-4">
+        Standings are not available right now. Please check back later.
+      </div>
+    );
   }
 
   // Render a standings table for each league dynamically
@@ -204,9 +212,6 @@ const Standing = ({ isHomePage = false }) => {
                   <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider text-[#C5A464]">
                     PTS
                   </th>
-                  <th className="px-3 md:px-4 py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider hidden lg:table-cell">
-                    FORM
-                  </th>
                 </tr>
               </thead>
 
@@ -227,23 +232,7 @@ const Standing = ({ isHomePage = false }) => {
                     {/* Team Logo */}
                     <td className="px-2 md:px-3 py-3 whitespace-nowrap">
                       <div className="h-10 w-10 flex items-center justify-center overflow-hidden rounded bg-white border border-gray-200">
-                        {team.logo ? (
-                          <img
-                            src={team.logo}
-                            alt={`${team.club} logo`}
-                            className="h-full w-full object-contain p-1"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gray-100 rounded flex items-center justify-center">
-                            <span className="text-xs text-gray-400 font-bold">
-                              {team.club.charAt(0)}
-                            </span>
-                          </div>
-                        )}
+                        <TeamLogo key={team.logo} src={team.logo} club={team.club} />
                       </div>
                     </td>
 
@@ -282,30 +271,6 @@ const Standing = ({ isHomePage = false }) => {
                       <span className="text-sm font-black text-gray-900">
                         {team.pts}
                       </span>
-                    </td>
-
-                    {/* Form Indicators */}
-                    <td className="px-3 md:px-4 py-3 whitespace-nowrap hidden lg:table-cell">
-                      <div className="flex items-center justify-center gap-1">
-                        {team.form.length > 0 ? (
-                          team.form.slice(0, 5).map((result, i) => (
-                            <span
-                              key={i}
-                              className={`w-5 h-5 flex items-center justify-center rounded-sm text-[10px] font-bold ${
-                                result === "W" 
-                                  ? "bg-green-500 text-white" 
-                                  : result === "L" 
-                                    ? "bg-red-500 text-white"
-                                    : "bg-gray-400 text-white"
-                              }`}
-                            >
-                              {result}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,5 +1,6 @@
 
-const contactImage = "/heroimage1.jpeg"
+// NOTE: not rendered anywhere. /heroimage1.jpeg no longer exists; use the crest.
+const contactImage = "/EAGLES-CREST.png"
 
 const SponsorshipContactForm = () => {
   return (
@@ -66,7 +67,6 @@ const SponsorshipContactForm = () => {
                 <input
                   type="tel"
                   className="w-full p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  defaultValue="+966 5054 3413"
                 />
               </div>
             </div>

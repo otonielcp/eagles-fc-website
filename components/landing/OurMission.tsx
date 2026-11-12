@@ -47,7 +47,7 @@ const OurMission = () => {
               </div>
 
               {/* Title */}
-              <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-gray-900 mb-10 leading-[1.05]">
+              <h2 className="text-5xl lg:text-6xl font-bebas text-gray-900 mb-10 leading-[1.05]">
                 Our<br/>
                 <span className="text-[#C5A464]">Mission</span>
               </h2>
@@ -83,7 +83,7 @@ const OurMission = () => {
               </div>
 
               {/* Title */}
-              <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-gray-900 mb-10 leading-[1.05]">
+              <h2 className="text-5xl lg:text-6xl font-bebas text-gray-900 mb-10 leading-[1.05]">
                 Our<br/>
                 <span className="text-[#C5A464]">Vision</span>
               </h2>

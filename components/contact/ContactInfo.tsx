@@ -1,7 +1,9 @@
 'use client';
 
+type ContactDetail = string | { label: string; href: string };
+
 export default function ContactInfo() {
-  const contactMethods = [
+  const contactMethods: { icon: React.ReactNode; title: string; details: ContactDetail[]; description: string }[] = [
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9,7 +11,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: "Email Us",
-      details: ["info@eaglesfc.com", "admin@eaglesfc.com"],
+      details: [{ label: "info@eaglesfcgi.org", href: "mailto:info@eaglesfcgi.org" }],
       description: "Send us an email anytime"
     },
     {
@@ -21,17 +23,6 @@ export default function ContactInfo() {
       title: "Call Us",
       details: ["(308) 850-3206"],
       description: "Mon-Fri from 9am to 6pm"
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      title: "Visit Us",
-      details: [],
-      description: "Come see us in person"
     },
     {
       icon: (
@@ -61,7 +52,7 @@ export default function ContactInfo() {
         </div>
 
         {/* Contact Methods Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {contactMethods.map((method, index) => (
             <div 
               key={index}
@@ -86,7 +77,13 @@ export default function ContactInfo() {
               <div className="space-y-2 mb-4">
                 {method.details.map((detail, idx) => (
                   <p key={idx} className="text-gray-700 font-medium">
-                    {detail}
+                    {typeof detail === "string" ? (
+                      detail
+                    ) : (
+                      <a href={detail.href} className="hover:text-[#BD9B58] underline-offset-4 hover:underline transition-colors">
+                        {detail.label}
+                      </a>
+                    )}
                   </p>
                 ))}
               </div>

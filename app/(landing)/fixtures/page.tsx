@@ -82,11 +82,15 @@ const Fixtures = () => {
           return timeString; // Return as-is if format is unrecognized
         };
 
-        // Filter to only upcoming scheduled games
-        const now = new Date();
+        // Filter to only upcoming scheduled games. fixture.date is a date-only
+        // "YYYY-MM-DD" string; new Date() on it means UTC midnight, which is the
+        // previous evening in Nebraska. Compare local calendar days instead so
+        // a game stays listed for the whole of game day.
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
         const upcomingData = data.filter((fixture: any) => {
-          const fixtureDate = new Date(fixture.date);
-          return fixture.status === 'SCHEDULED' && fixtureDate >= now;
+          const fixtureDate = parseLocalDate(fixture.date);
+          return fixture.status === 'SCHEDULED' && fixtureDate >= startOfToday;
         });
 
         // Transform the data to match our display format
@@ -98,15 +102,15 @@ const Fixtures = () => {
           competition: (fixture.competition || 'LEAGUE').toUpperCase(),
           homeTeam: fixture.homeTeam,
           awayTeam: fixture.awayTeam,
-          homeTeamLogo: fixture.homeTeamLogo || "/teams/ventura.png",
-          awayTeamLogo: fixture.awayTeamLogo || "/teams/ventura.png",
+          homeTeamLogo: fixture.homeTeamLogo || "",
+          awayTeamLogo: fixture.awayTeamLogo || "",
           month: formatMonthYearAsIs(fixture.date),
-          leagueLogo: fixture.leagueLogo || "/leagues/usys-national-league.png",
-          channelLogo: fixture.channelLogo || "/teams/ventura.png",
+          leagueLogo: fixture.leagueLogo || "",
+          channelLogo: fixture.channelLogo || "",
           team1: fixture.homeTeam,
           team2: fixture.awayTeam,
-          team1Logo: fixture.homeTeamLogo || "/teams/ventura.png",
-          team2Logo: fixture.awayTeamLogo || "/teams/ventura.png",
+          team1Logo: fixture.homeTeamLogo || "",
+          team2Logo: fixture.awayTeamLogo || "",
           _id: fixture._id,
           // Add the raw date for sorting and countdown (keep as string to avoid timezone issues)
           rawDate: fixture.date,

@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { calculateAge } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import SafeImg from "./SafeImg";
 
 interface PlayerProfileProps {
   player: Player;
@@ -18,7 +19,6 @@ interface PlayerProfileProps {
 }
 
 import { Goal, Trophy, Timer, RotateCcw, FileText, ShieldAlert } from "lucide-react"; // Importing icons
-const britishFlag = "/britishflag.png"; // Ensure this image exists
 const goal = "/icons/goal.png"; // Ensure this image exists
 const assist = "/icons/assist.png"; // Ensure this image exists
 const yellowCard = "/icons/yellowcard.png"; // Ensure this image exists
@@ -33,6 +33,7 @@ const substitutions = "/icons/substitutions.png"; // Ensure this image exists
 const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProps) => {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>(player._id);
   const router = useRouter();
+  const hasTeamAvg = !!teamAvg && Object.keys(teamAvg).length > 0;
 
   useEffect(() => {
     if (selectedPlayerId && selectedPlayerId !== player._id) {
@@ -51,14 +52,20 @@ const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProp
             <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold text-gray-500">{player.jerseyNumber}</h1>
             <div className="w-full">
               <h2 className="text-xl md:text-lg font-bold text-gray-600">{player.firstName}</h2>
-              <div className="w-[1700px] h-[1.5px] bg-gray-300 my-1"></div>
+              <div className="w-full h-[1.5px] bg-gray-300 my-1"></div>
               <h2 className="text-3xl sm:text-4xl text-gray-500">{player.lastName}</h2>
             </div>
           </div>
 
 
-          {/* Player Image */}
-          <img src={player.image} alt="Isaiah Cortez" className="h-[450px] mx-auto" />
+          {/* Player Image (club placeholder — players are minors, never their photo) */}
+          {player.image && (
+            <SafeImg
+              src={player.image}
+              alt={player.jerseyNumber ? `Player #${player.jerseyNumber}` : "Player"}
+              className="h-[450px] mx-auto"
+            />
+          )}
 
           {/* Player Bio */}
           <p className="text-gray-500 text-xs sm:text-sm mt-6 leading-6 text-center md:text-left">
@@ -97,12 +104,9 @@ const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProp
           {/* Player Attributes */}
           <div className="mt-6 space-y-4">
             {[
-              { title: "NATIONALITY", value: player.nationality, flag: britishFlag },
               { title: "POSITION", value: player.position },
-              { title: "HEIGHT", value: player.height },
-              { title: "WEIGHT", value: player.weight },
               { title: "CURRENT TEAM", value: team.name, className: "text-[#BD9B58]" },
-            ].map((item, index) => (
+            ].filter((item) => item.value).map((item, index) => (
               <div key={index} className="pb-3 border-b border-gray-300">
                 <h3 className="text-base sm:text-lg text-gray-500 uppercase font-bebas">{item.title}</h3>
                 <div className={`text-gray-500 text-xs sm:text-sm mt-1 ${item.className ? `${item.className}` : ""} flex items-center`}>
@@ -117,7 +121,7 @@ const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProp
           <div className="mt-8">
             <div className="flex justify-between text-[#C9A35D] items-center border-b pb-2">
               <h3 className="text-lg sm:text-xl font-bold">STATS</h3>
-              {teamAvg && (
+              {hasTeamAvg && (
                 <span className="text-xs text-gray-500">Showing team averages for {teamPlayers.filter(p => p.isActive).length} active players</span>
               )}
             </div>
@@ -139,10 +143,11 @@ const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProp
                 { icon: <img src={doubleYellow} alt="Double Yellow" className="w-[18px] h-[18px] object-contain" />, label: "DOUBLE YELLOW", value: player.stats.doubleYellowCards, key: "doubleYellowCards" },
               ].map((stat, index) => {
                 // Get team average for this stat
-                const teamAverage = teamAvg ? teamAvg[stat.key as keyof typeof teamAvg] : null;
-                
+                const rawAverage = hasTeamAvg ? teamAvg?.[stat.key] : undefined;
+                const teamAverage = typeof rawAverage === 'number' ? rawAverage : null;
+
                 // Calculate comparison to team average
-                const comparedToAvg = teamAverage !== null && teamAverage > 0 
+                const comparedToAvg = teamAverage !== null && teamAverage > 0
                   ? Math.round((stat.value / teamAverage) * 100 - 100) 
                   : 0;
                 
@@ -160,9 +165,9 @@ const PlayerProfile = ({ player, team, teamPlayers, teamAvg }: PlayerProfileProp
                       <span className="flex-shrink-0">{stat.icon}</span>
                     </div>
                     <div className="text-2xl font-bold">{stat.value}</div>
-                    {teamAvg && (
+                    {teamAverage !== null && (
                       <div className="flex items-center space-x-1">
-                        <span className="text-xs text-gray-600">Team avg: {teamAverage?.toFixed(1)}</span>
+                        <span className="text-xs text-gray-600">Team avg: {teamAverage.toFixed(1)}</span>
                         {comparedToAvg !== 0 && (
                           <span className={`text-xs ${comparisonColor}`}>
                             {comparedToAvg > 0 ? '+' : ''}{comparedToAvg}%

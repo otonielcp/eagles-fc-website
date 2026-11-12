@@ -22,7 +22,6 @@ import LogoUploader from "@/components/admin/shared/LogoUploader";
 import TeamLogoInput from "@/components/admin/sliders/TeamLogoInput";
 import FixturePicker, { PickedFixture } from "@/components/admin/sliders/FixturePicker";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 
 interface EditSliderFormProps {
   sliderId: string;
@@ -94,6 +93,8 @@ export default function EditSliderForm({ sliderId }: EditSliderFormProps) {
   }, [sliderId, router]);
 
   const handleTypeChange = (type: SliderType) => {
+    // Re-clicking the active type would otherwise reset link and button text
+    if (type === sliderType) return;
     setSliderType(type);
     setFormData(prev => ({
       ...prev,
@@ -125,7 +126,13 @@ export default function EditSliderForm({ sliderId }: EditSliderFormProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await updateSlider(sliderId, formData);
+      // Player photos are no longer allowed on slides; clear any old values on save
+      const result = await updateSlider(sliderId, {
+        ...formData,
+        gameData: formData.gameData
+          ? { ...formData.gameData, leftPlayerImage: "", rightPlayerImage: "" }
+          : formData.gameData,
+      });
 
       if (result.success) {
         toast.success(result.message);
@@ -281,6 +288,7 @@ export default function EditSliderForm({ sliderId }: EditSliderFormProps) {
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData(prev => ({ ...prev, image: "" }))}
             />
             <p className="text-xs text-gray-500">Recommended size: 1920x1080px for best results</p>
           </div>
@@ -440,30 +448,7 @@ export default function EditSliderForm({ sliderId }: EditSliderFormProps) {
                 </div>
               </div>
 
-              {/* Player Images */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-semibold text-lg mb-4">Left Player Image (Optional)</h3>
-                  <p className="text-xs text-gray-500 mb-4">Player image displayed on the left side of the slider</p>
-                  <LogoUploader
-                    currentLogo={formData.gameData?.leftPlayerImage || ""}
-                    onLogoChange={(url) => handleLogoChange("leftPlayerImage", url)}
-                    label="Left Player"
-                    uploadAction={uploadSliderLogo}
-                  />
-                </div>
-
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-semibold text-lg mb-4">Right Player Image (Optional)</h3>
-                  <p className="text-xs text-gray-500 mb-4">Player image displayed on the right side of the slider</p>
-                  <LogoUploader
-                    currentLogo={formData.gameData?.rightPlayerImage || ""}
-                    onLogoChange={(url) => handleLogoChange("rightPlayerImage", url)}
-                    label="Right Player"
-                    uploadAction={uploadSliderLogo}
-                  />
-                </div>
-              </div>
+              {/* No player images: rosters are minors and player photos are never published */}
 
               <div className="space-y-2">
                 <Label htmlFor="content">Additional Info (Optional)</Label>
@@ -553,7 +538,6 @@ export default function EditSliderForm({ sliderId }: EditSliderFormProps) {
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 }

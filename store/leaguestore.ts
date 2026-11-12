@@ -12,9 +12,12 @@ type LeagueStore = {
 };
 
 const useLeagueStore = create<LeagueStore>((set) => ({
-  selectedLeague: "All", // Default league
-  selectedSeason: "SP2025", // Default season
-  selectedCompetition: "All competitions", // Default competition
+  // Defaults are the "all" sentinels NavbarFix renders as options and
+  // ResultsData treats as "no filter" — never a hard-coded season, or /results
+  // silently hides every newer season.
+  selectedLeague: "All leagues",
+  selectedSeason: "All seasons",
+  selectedCompetition: "All competitions",
 
   setSelectedLeague: (league: string) => set({ selectedLeague: league }),
   setSelectedSeason: (season: string) => set({ selectedSeason: season }),

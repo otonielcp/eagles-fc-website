@@ -1,7 +1,10 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Slider from '@/models/Slider';
+import Fixture from '@/models/Fixture';
 import { revalidatePath } from 'next/cache';
 import { Slider as SliderType, SliderFormData } from '@/types/slider';
 import { v2 as cloudinary } from 'cloudinary';
@@ -38,6 +41,7 @@ function formatMatchDate(matchDate: Date | string | null | undefined): string {
 
 // Get all sliders
 export async function getAllSliders(): Promise<SliderType[]> {
+  await requireAdmin();
   try {
     await connectDB();
     const sliders = await Slider.find({}).sort({ order: 1 });
@@ -52,7 +56,8 @@ export async function getAllSliders(): Promise<SliderType[]> {
 export async function getActiveSliders(): Promise<SliderType[]> {
   try {
     await connectDB();
-    const allSliders = await Slider.find({}).sort({ order: 1 });
+    // $ne:false rather than true so older docs without the field still show.
+    const allSliders = await Slider.find({ isActive: { $ne: false } }).sort({ order: 1 });
     const serialized = JSON.parse(JSON.stringify(allSliders)) as any[];
 
     const formatted: SliderType[] = [];
@@ -76,6 +81,7 @@ export async function getActiveSliders(): Promise<SliderType[]> {
 
 // Get a single slider by ID
 export async function getSliderById(id: string): Promise<SliderType | null> {
+  await requireAdmin();
   try {
     await connectDB();
     const slider = await Slider.findById(id);
@@ -118,6 +124,7 @@ export async function getSliderById(id: string): Promise<SliderType | null> {
 
 // Upload background image to Cloudinary
 export async function uploadSliderImage(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 
@@ -151,6 +158,7 @@ export async function uploadSliderImage(formData: FormData): Promise<{ success: 
 
 // Upload logo (team/league) to Cloudinary
 export async function uploadSliderLogo(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
 
@@ -184,6 +192,7 @@ export async function uploadSliderLogo(formData: FormData): Promise<{ success: b
 
 // Create a new slider
 export async function createSlider(data: SliderFormData): Promise<{ success: boolean; message: string; slider?: SliderType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -208,6 +217,7 @@ export async function createSlider(data: SliderFormData): Promise<{ success: boo
 
 // Update a slider
 export async function updateSlider(id: string, data: Partial<SliderFormData>): Promise<{ success: boolean; message: string; slider?: SliderType }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -271,6 +281,7 @@ export async function updateSlider(id: string, data: Partial<SliderFormData>): P
 
 // Delete a slider
 export async function deleteSlider(id: string): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -299,6 +310,17 @@ export async function deleteSlider(id: string): Promise<{ success: boolean; mess
     // Delete the slider
     await Slider.findByIdAndDelete(id);
 
+    // A slider created from a featured fixture is recreated by syncFixtureToSlider
+    // on the next fixture save while the fixture stays featured, so un-feature it.
+    if (slider.fixtureId) {
+      try {
+        await Fixture.updateOne({ _id: slider.fixtureId, isFeatured: true }, { $set: { isFeatured: false } });
+        revalidatePath('/admin/fixtures');
+      } catch (fixtureError) {
+        console.error("Error un-featuring fixture for deleted slider:", fixtureError);
+      }
+    }
+
     revalidatePath('/admin/sliders');
     revalidatePath('/');
 
@@ -314,6 +336,7 @@ export async function deleteSlider(id: string): Promise<{ success: boolean; mess
 
 // Update slider order
 export async function updateSliderOrder(id: string, order: number): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 

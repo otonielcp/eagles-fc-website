@@ -1,11 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import useLeagueStore from "@/store/leaguestore";
-
-// Import Placeholder Logos
-const leagueLogo = "/leagues/usys-national-league.png";
-const channelLogo = "/teams/ventura.png";
+import { parseLocalDate } from "./landingUtils";
+import SafeImg from "./SafeImg";
 
 // Define countdown type
 interface CountdownType {
@@ -27,20 +24,6 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
     minutes: 0,
     seconds: 0
   });
-
-  // Get filter values from Zustand store
-  const {
-    selectedLeague,
-    selectedSeason,
-    selectedCompetition,
-  } = useLeagueStore();
-
-  // Function to parse date string as-is without timezone conversion
-  const parseLocalDate = (dateString: string): Date => {
-    // Parse the date string directly without timezone interpretation
-    const date = new Date(dateString + 'T00:00:00');
-    return date;
-  };
 
   // Function to create countdown target date
   const createCountdownDate = (rawDate: string, timeString: string): Date => {
@@ -74,8 +57,7 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
 
   useEffect(() => {
     if (!nextMatch) return;
-    console.log(31, nextMatch);
-    
+
     const calculateTimeLeft = (): CountdownType => {
       // Create the correct match date by combining rawDate and time
       const matchDate: Date = createCountdownDate(nextMatch.rawDate, nextMatch.time);
@@ -128,7 +110,8 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
         <h2 className="text-gray-300 text-sm font-medium mb-0">NEXT MATCH</h2>
         <div className="border-t border-gray-200 mb-4 w-full md:w-[900px]"></div>
         <div className="h-40 flex items-center justify-center">
-          <p>No upcoming matches scheduled for {selectedLeague} {selectedCompetition !== "All competitions" ? `- ${selectedCompetition}` : ""} {selectedSeason !== "All" ? `(${selectedSeason})` : ""}</p>
+          {/* The fixtures list isn't filtered by the league/season dropdowns, so don't echo them here. */}
+          <p>No upcoming matches scheduled.</p>
         </div>
       </div>
     );
@@ -176,10 +159,11 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
           <div className="flex flex-col gap-4 w-full">
             {/* Team 1 */}
             <div className="flex items-center gap-4">
-              <img
+              <SafeImg
                 src={nextMatch.team1Logo}
                 alt={nextMatch.team1}
-                className="w-12 h-12"
+                fallbackSrc={null}
+                className="w-12 h-12 object-contain"
               />
               <span className="text-md font-medium">{nextMatch.team1}</span>
             </div>
@@ -189,10 +173,11 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
 
             {/* Team 2 */}
             <div className="flex items-center gap-4">
-              <img
+              <SafeImg
                 src={nextMatch.team2Logo}
                 alt={nextMatch.team2}
-                className="w-12 h-12"
+                fallbackSrc={null}
+                className="w-12 h-12 object-contain"
               />
               <span className="text-md font-medium">{nextMatch.team2}</span>
             </div>
@@ -202,10 +187,9 @@ const NextMatchFixture: React.FC<NextMatchFixtureProps> = ({ nextMatch, loading 
         {/* Logos and Countdown Section */}
         <div className="static mt-8 sm:mt-0 sm:absolute sm:top-0 sm:right-0 flex flex-col items-end">
           {/* Logos */}
+          {/* No channel logo: fixtures never carry one (it was always a missing placeholder). */}
           <div className="flex items-center gap-2">
-            <img src={nextMatch.channelLogo} alt="Channel logo" className="w-8 h-8 object-contain" />
-            <div className="w-px h-4 bg-gray-300 mx-2"></div>
-            <img src={nextMatch.leagueLogo} alt="Competition logo" className="w-8 h-8 object-contain" />
+            <SafeImg src={nextMatch.leagueLogo} alt="Competition logo" fallbackSrc={null} className="w-8 h-8 object-contain" />
           </div>
 
           {/* Countdown */}

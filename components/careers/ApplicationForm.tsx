@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileText, Plus, Trash2, Upload } from "lucide-react";
 import { submitApplication, type ApplicationPayload } from "@/actions/careers";
+import { useTurnstile } from "@/components/forms/Turnstile";
 import {
   ADMIN_SKILLS,
   AGE_GROUPS,
@@ -157,6 +158,7 @@ function formatBytes(bytes: number) {
 }
 
 const ApplicationForm = ({ job, defaultDepartment = "coaching" }: Props) => {
+  const human = useTurnstile({ className: "flex justify-center mb-6" });
   const [department, setDepartment] = useState<Department>(job?.department ?? defaultDepartment);
   const [form, setForm] = useState({
     firstName: "",
@@ -261,13 +263,17 @@ const ApplicationForm = ({ job, defaultDepartment = "coaching" }: Props) => {
       references: filledReferences,
     };
 
+    if (!human.ready) return showError(human.missingMessage);
+
     const data = new FormData();
     data.append("payload", JSON.stringify(payload));
+    data.append("turnstileToken", human.token);
     if (resume) data.append("resume", resume);
 
     setIsSubmitting(true);
     try {
       const result = await submitApplication(data);
+      human.reset(); // each token works once
       if (result.success) {
         setReferenceCode(result.referenceCode);
         requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -275,6 +281,7 @@ const ApplicationForm = ({ job, defaultDepartment = "coaching" }: Props) => {
         showError(result.message);
       }
     } catch {
+      human.reset();
       showError("We could not reach the server. Check your connection and try again.");
     } finally {
       setIsSubmitting(false);
@@ -577,6 +584,9 @@ const ApplicationForm = ({ job, defaultDepartment = "coaching" }: Props) => {
             </span>
           </label>
         </Section>
+
+        {/* Human check (Cloudflare Turnstile) */}
+        {human.widget}
 
         <div ref={errorRef} aria-live="assertive">
           {error && (

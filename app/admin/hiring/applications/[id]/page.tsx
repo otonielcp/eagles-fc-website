@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   AlertTriangle,
@@ -245,6 +245,12 @@ export default function ApplicationDetailPage() {
   const submitNote = async () => {
     const ok = await run(() => addApplicationNote(app._id, note));
     if (ok) setNote("");
+  };
+
+  const removeNote = (noteId: string) => {
+    // Notes are removed permanently, so ask first.
+    if (!window.confirm("Delete this note? This cannot be undone.")) return;
+    run(() => deleteApplicationNote(app._id, noteId));
   };
 
   const handleDelete = async () => {
@@ -526,7 +532,8 @@ export default function ApplicationDetailPage() {
                           Note · {format(new Date(entry.at), "MMM d, yyyy h:mm a")}
                         </span>
                         <button
-                          onClick={() => run(() => deleteApplicationNote(app._id, entry._id))}
+                          onClick={() => removeNote(entry._id)}
+                          disabled={busy}
                           className="text-[11px] text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                         >
                           Delete
@@ -592,7 +599,7 @@ export default function ApplicationDetailPage() {
             {app.safeSportStatus !== "current" && !app.compliance.safeSportVerified && (
               <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-4 flex gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                Applicant reported SafeSport as {SAFESPORT_STATUSES[app.safeSportStatus].toLowerCase()}.
+                Applicant reported SafeSport as {(SAFESPORT_STATUSES[app.safeSportStatus] ?? app.safeSportStatus).toLowerCase()}.
               </p>
             )}
           </Panel>
@@ -749,7 +756,6 @@ export default function ApplicationDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

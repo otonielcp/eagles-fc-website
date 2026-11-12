@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import FooterLogo from './FooterLogo';
+import SafeImg from './SafeImg';
 const logo = "/footerlogo2.png"
 const footerimage = "/IMG_3040.JPG"
 import { FaInstagram, FaTwitter, FaYoutube, FaFacebook } from 'react-icons/fa6';
@@ -73,13 +74,14 @@ const Footer = async () => {
                     key={index}
                     className="flex items-center justify-center h-16 md:h-20 px-6 py-4 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-[#BD9B58]/50 transition-all duration-500 group-hover:scale-110 hover:bg-white/10 hover:shadow-lg hover:shadow-[#BD9B58]/20"
                   >
-                    <Image
+                    {/* DB-sourced logo: hide it if the URL 404s (purged Cloudinary assets) */}
+                    <SafeImg
                       src={logo.image}
                       alt={`Partner ${index + 1}`}
                       width={140}
                       height={80}
+                      fallbackSrc={null}
                       className="h-full w-auto object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
-                      unoptimized
                     />
                   </div>
                 ))}
@@ -244,7 +246,7 @@ const Footer = async () => {
             <div className="flex items-center gap-3">
               <div className="w-8 h-[2px] bg-gradient-to-r from-[#BD9B58] to-transparent"></div>
               <p className="text-sm text-white/80 text-center md:text-left font-semibold">
-                2025 © Copyright <span className="text-[#BD9B58] font-bold">EAGLES FC</span>
+                {new Date().getFullYear()} © Copyright <span className="text-[#BD9B58] font-bold">EAGLES FC</span>
               </p>
               <div className="w-8 h-[2px] bg-gradient-to-l from-[#BD9B58] to-transparent"></div>
             </div>
@@ -253,21 +255,21 @@ const Footer = async () => {
             <div className="flex flex-wrap justify-center md:justify-end items-center gap-1 sm:gap-2 md:gap-4 text-xs">
               <Link
                 href="/terms"
-                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-semibold uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[11px] sm:text-xs"
               >
                 Legal Terms
               </Link>
               <span className="text-white/20 hidden sm:inline">•</span>
               <Link
                 href="/privacy-policy"
-                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-semibold uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[11px] sm:text-xs"
               >
                 Privacy Policy
               </Link>
               <span className="text-white/20 hidden sm:inline">•</span>
               <Link
                 href="/cookies"
-                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-bebas uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[10px] sm:text-xs"
+                className="px-2 sm:px-4 py-2 text-white/70 hover:text-[#BD9B58] transition-all duration-300 font-semibold uppercase tracking-wider hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 text-[11px] sm:text-xs"
               >
                 Cookies
               </Link>

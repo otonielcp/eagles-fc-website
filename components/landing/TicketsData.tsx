@@ -2,30 +2,33 @@
 
 import { Ticket } from "@/types/ticket";
 import { useMemo } from "react";
+import { parseLocalDate } from "./landingUtils";
+import SafeImg from "./SafeImg";
 
-// Helper function to format date into month
+// Helper function to format date into month (with year, so January 2026 and
+// January 2027 are separate groups). Ticket dates are "YYYY-MM-DD" calendar days.
 const getMonthFromDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString("default", { month: "long" });
+  return parseLocalDate(dateString).toLocaleString("default", { month: "long", year: "numeric" });
 };
 
 // Helper function to get day name
 const getDayFromDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString("default", { weekday: "short" });
+  return parseLocalDate(dateString).toLocaleString("default", { weekday: "short" });
 };
 
 // Helper function to format date for display
 const formatDateForDisplay = (dateString: string): string => {
-  return new Date(dateString).getDate().toString();
+  return parseLocalDate(dateString).getDate().toString();
 };
 
 // Helper function to get full day name
 const getFullDayFromDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString("default", { weekday: "long" });
+  return parseLocalDate(dateString).toLocaleString("default", { weekday: "long" });
 };
 
 // Helper function to format full date (e.g., February 22, 2025)
 const formatFullDate = (dateString: string): string => {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   const month = date.toLocaleString("default", { month: "long" });
   const day = date.getDate();
   const year = date.getFullYear();
@@ -101,9 +104,10 @@ const TicketsData = ({ tickets }: { tickets: Ticket[] }) => {
 
                         {/* Team & Match Details */}
                         <div className="text-center">
-                          <img
+                          <SafeImg
                             src={teamImage}
                             alt={teamName}
+                            fallbackSrc={null}
                             className="h-16 mt-5 mb-1 mx-auto"
                           />
                           <h3 className="text-md font-semibold text-[#C4A464] mb-1">

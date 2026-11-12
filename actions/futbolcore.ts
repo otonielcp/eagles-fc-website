@@ -320,7 +320,7 @@ export async function getClubFixtures() {
         homeScore: game.score.home,
         awayScore: game.score.away,
         matchReport: '',
-        matchImage: 'https://res.cloudinary.com/dofpgztzm/image/upload/v1769524901/IMG_3214-2_idguhu.jpg',
+        matchImage: '/gameresultbg.jpeg',
         title: game.title,
         location: game.location,
         venue: game.venue,

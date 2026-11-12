@@ -4,13 +4,14 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { getOrderTotals } from "@/components/checkout/orderTotals";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, clearCart, total, itemCount } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  
-  // Calculate subtotal (same as total from context)
-  const subtotal = total;
+
+  // Same shipping/tax math as the checkout page
+  const { subtotal, shipping, tax, total: orderTotal } = getOrderTotals(total);
   
   if (items.length === 0) {
     return (
@@ -134,16 +135,16 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">$0.00</span>
+                  <span className="font-medium">${shipping.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium">${(subtotal * 0.07).toFixed(2)}</span>
+                  <span className="font-medium">${tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-4 flex justify-between">
                   <span className="text-lg font-semibold">Total</span>
                   <span className="text-lg font-bold text-[#C5A464]">
-                    ${(subtotal + (subtotal * 0.07)).toFixed(2)}
+                    ${orderTotal.toFixed(2)}
                   </span>
                 </div>
               </div>

@@ -27,6 +27,7 @@ import {
   type PublicJob,
 } from "@/lib/hiring";
 import { sendApplicationConfirmation, sendNewApplicationAlert } from "@/lib/hiringEmails";
+import { verifyTurnstile, HUMAN_CHECK_FAILED_MESSAGE } from "@/lib/turnstile";
 
 // Explicit field list: anything added to the model later stays private until
 // someone decides it belongs on the public site.
@@ -167,6 +168,11 @@ function cleanFileName(name: string): string {
 const DUPLICATE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function submitApplication(formData: FormData): Promise<SubmitResult> {
+  // Cloudflare Turnstile human check, before anything is parsed or stored.
+  if (!(await verifyTurnstile(formData.get("turnstileToken")))) {
+    return { success: false, message: HUMAN_CHECK_FAILED_MESSAGE };
+  }
+
   let payload: unknown;
   try {
     payload = JSON.parse(String(formData.get("payload") ?? ""));

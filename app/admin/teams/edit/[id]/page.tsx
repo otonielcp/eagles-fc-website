@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getTeamById } from "@/actions/team";
 import { Team } from "@/types/team";
 import EditTeamForm from "@/components/admin/teams/EditTeamForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -82,7 +82,6 @@ export default function EditTeamPage() {
         onCancel={handleCancel}
         onTeamUpdated={handleTeamUpdated}
       />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

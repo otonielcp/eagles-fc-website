@@ -6,6 +6,7 @@ import { getPublishedNews } from '@/actions/news';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import gsap from 'gsap';
+import { toPlainText, truncateText } from './plainText';
 // Temporarily disabled Three.js to fix 500 error
 // import dynamic from 'next/dynamic';
 // const SoccerScene = dynamic(() => import('@/components/news/SoccerScene'), {
@@ -13,7 +14,14 @@ import gsap from 'gsap';
 //   loading: () => null
 // });
 
-export default function DynamicLatestNews() {
+interface DynamicLatestNewsProps {
+  /** How many of the newest articles to leave out (the /news hero slider already shows the top 5). */
+  skip?: number;
+  /** Article to leave out, e.g. the one currently being read. */
+  excludeId?: string;
+}
+
+export default function DynamicLatestNews({ skip = 0, excludeId }: DynamicLatestNewsProps) {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,12 +123,9 @@ export default function DynamicLatestNews() {
               </h3>
 
               {/* Description - White text */}
-              <p
-                className="text-white/90 text-base leading-relaxed mb-6 line-clamp-2"
-                dangerouslySetInnerHTML={{
-                  __html: item.summary.slice(0, 150) + "..."
-                }}
-              ></p>
+              <p className="text-white/90 text-base leading-relaxed mb-6 line-clamp-2">
+                {truncateText(toPlainText(item.summary), 150)}
+              </p>
 
               {/* Metadata at bottom */}
               <div className="flex items-center justify-between">
@@ -176,10 +181,9 @@ export default function DynamicLatestNews() {
             </h3>
 
             {/* Description */}
-            <p
-              className="text-sm text-gray-700 line-clamp-3 leading-relaxed mb-4 flex-grow"
-              dangerouslySetInnerHTML={{ __html: item.summary }}
-            ></p>
+            <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed mb-4 flex-grow">
+              {truncateText(toPlainText(item.summary), 200)}
+            </p>
 
             {/* Footer */}
             <div className="mt-auto pt-4 border-t border-gray-200">
@@ -203,8 +207,8 @@ export default function DynamicLatestNews() {
     );
   };
 
-  // Skip first 5 articles (they're in the slider)
-  const remainingNews = news.slice(5);
+  // Leave out the articles the caller already shows (e.g. the /news hero slider)
+  const remainingNews = news.filter((item) => item._id !== excludeId).slice(skip);
 
   if (remainingNews.length === 0) {
     return null; // Don't show this section if no remaining news

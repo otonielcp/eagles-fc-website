@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import TeamLogo from '@/models/TeamLogo';
 import { v2 as cloudinary } from 'cloudinary';
@@ -22,12 +24,16 @@ export async function searchTeams(query: string): Promise<TeamLogoData[]> {
   try {
     await connectDB();
 
-    if (!query || query.length < 2) {
+    if (typeof query !== 'string' || query.length < 2) {
       return [];
     }
 
+    // Escape regex metacharacters so names like "St. Mary (U12)" match literally
+    // and a crafted pattern cannot cause catastrophic backtracking.
+    const pattern = query.toLowerCase().slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     const teams = await TeamLogo.find({
-      name: { $regex: query.toLowerCase(), $options: 'i' }
+      name: { $regex: pattern, $options: 'i' }
     })
     .limit(10)
     .sort({ name: 1 });
@@ -69,6 +75,7 @@ export async function getTeamLogoByName(name: string): Promise<TeamLogoData | nu
 
 // Save or update team logo
 export async function saveTeamLogo(name: string, logoUrl: string): Promise<{ success: boolean; team?: TeamLogoData; message?: string }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -139,6 +146,7 @@ export async function getAllTeams(): Promise<TeamLogoData[]> {
 export async function uploadAndSaveTeamLogo(
   formData: FormData
 ): Promise<{ success: boolean; url?: string; team?: TeamLogoData; message?: string }> {
+  await requireAdmin();
   try {
     const file = formData.get('file') as File;
     const teamName = formData.get('teamName') as string;

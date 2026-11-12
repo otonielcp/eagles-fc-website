@@ -38,8 +38,8 @@ const ProgramsHero = () => {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           className="mb-16"
         >
-          <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
-            <span className="block text-white mb-4">OUR</span>
+          <h1 className="text-8xl sm:text-9xl lg:text-[10rem] font-bebas leading-[0.85]">
+            <span className="block text-white mb-2">OUR</span>
             <span className="block bg-gradient-to-r from-[#C5A464] via-[#D4AF37] to-[#C5A464] bg-clip-text text-transparent">
               PROGRAMS
             </span>
@@ -62,7 +62,7 @@ const ProgramsHero = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="mb-20"
         >
-          <p className="text-xl sm:text-2xl text-gray-400 leading-relaxed font-light max-w-4xl mx-auto tracking-wide">
+          <p className="text-lg sm:text-2xl text-gray-400 leading-relaxed font-light max-w-4xl mx-auto">
             From recreational play to elite competition,<br className="hidden sm:block"/>
             <span className="text-[#C5A464] font-normal">discover the perfect pathway</span> for every player's journey
           </p>
@@ -74,13 +74,13 @@ const ProgramsHero = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex items-center justify-center gap-20 sm:gap-32"
+          className="flex items-center justify-center gap-10 sm:gap-32"
         >
           {/* Program Count */}
           <div className="relative group">
             <div className="absolute inset-0 bg-[#C5A464]/10 blur-3xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700"></div>
             <div className="relative text-center">
-              <div className="text-7xl sm:text-8xl font-black mb-3">
+              <div className="text-7xl sm:text-8xl font-bebas leading-none mb-3">
                 <span className="bg-gradient-to-br from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
                   3
                 </span>
@@ -100,7 +100,7 @@ const ProgramsHero = () => {
           <div className="relative group">
             <div className="absolute inset-0 bg-[#C5A464]/10 blur-3xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700"></div>
             <div className="relative text-center">
-              <div className="text-7xl sm:text-8xl font-black mb-3">
+              <div className="text-7xl sm:text-8xl font-bebas leading-none mb-3">
                 <span className="bg-gradient-to-br from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
                   All
                 </span>

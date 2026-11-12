@@ -61,7 +61,7 @@ export default function ProductList({ products, onEdit, onDelete }: ProductListP
               <TableCell>{product.category}</TableCell>
               <TableCell>
                 ${product.price.toFixed(2)}
-                {product.discount && (
+                {product.discount != null && product.discount > 0 && (
                   <span className="text-xs text-gray-500 line-through ml-2">
                     ${product.discount.toFixed(2)}
                   </span>

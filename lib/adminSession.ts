@@ -52,24 +52,29 @@ function safeEqual(a: string, b: string): boolean {
 export const ADMIN_COOKIE_NAME = 'admin_auth';
 export const ADMIN_SESSION_TTL_SECONDS = DEFAULT_TTL_MS;
 
-export async function createSessionToken(): Promise<string | null> {
+/**
+ * Issues a signed `<scope>.<expiry>.<hmac>` token. The scope is part of the
+ * signed payload, so a token for one scope (e.g. "members") never verifies
+ * for another (e.g. "admin") even though both share the server secret.
+ */
+export async function createScopedToken(scope: string, ttlSeconds: number): Promise<string | null> {
   const secret = getSecret();
   if (!secret) {
-    console.error('[adminSession] ADMIN_PASSWORD/ADMIN_SESSION_SECRET is not set; refusing to issue a session');
+    console.error(`[adminSession] ADMIN_PASSWORD/ADMIN_SESSION_SECRET is not set; refusing to issue a ${scope} session`);
     return null;
   }
-  const expiresAt = Date.now() + DEFAULT_TTL_MS * 1000;
-  const payload = `${SCOPE}.${expiresAt}`;
+  const expiresAt = Date.now() + ttlSeconds * 1000;
+  const payload = `${scope}.${expiresAt}`;
   return `${payload}.${await sign(payload, secret)}`;
 }
 
-export async function verifySessionToken(token: string | undefined | null): Promise<boolean> {
+export async function verifyScopedToken(expectedScope: string, token: string | undefined | null): Promise<boolean> {
   if (!token) return false;
 
   const secret = getSecret();
   if (!secret) {
     // Fail closed: no secret means we cannot prove anything, so trust nothing.
-    console.error('[adminSession] ADMIN_PASSWORD/ADMIN_SESSION_SECRET is not set; denying admin access');
+    console.error(`[adminSession] ADMIN_PASSWORD/ADMIN_SESSION_SECRET is not set; denying ${expectedScope} access`);
     return false;
   }
 
@@ -77,10 +82,18 @@ export async function verifySessionToken(token: string | undefined | null): Prom
   if (parts.length !== 3) return false;
 
   const [scope, expiresAtRaw, signature] = parts;
-  if (scope !== SCOPE) return false;
+  if (scope !== expectedScope) return false;
 
   const expiresAt = Number(expiresAtRaw);
   if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
 
   return safeEqual(signature, await sign(`${scope}.${expiresAtRaw}`, secret));
+}
+
+export async function createSessionToken(): Promise<string | null> {
+  return createScopedToken(SCOPE, DEFAULT_TTL_MS);
+}
+
+export async function verifySessionToken(token: string | undefined | null): Promise<boolean> {
+  return verifyScopedToken(SCOPE, token);
 }

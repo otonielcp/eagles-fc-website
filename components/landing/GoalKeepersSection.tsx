@@ -3,7 +3,6 @@ const playerImage = "/default.jpg" // Replace with actual image path
 
 // Sample Goalkeepers Data
 const goalkeepers = [
-  { number: "19", name: "ISAIAH CORTEZ", image: playerImage },
   { number: "22", name: "TOM HEATON", image: playerImage },
   { number: "24", name: "ANDRE ONANA", image: playerImage },
 ];

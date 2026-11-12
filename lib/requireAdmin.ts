@@ -7,8 +7,17 @@ import { ADMIN_COOKIE_NAME, verifySessionToken } from "@/lib/adminSession";
  * changes admin-only data must call this first.
  */
 export async function requireAdmin(): Promise<void> {
-  const token = (await cookies()).get(ADMIN_COOKIE_NAME)?.value;
-  if (!(await verifySessionToken(token))) {
+  if (!(await isAdmin())) {
     throw new Error("Unauthorized");
+  }
+}
+
+/** Non-throwing check, for public reads that show admins a little more (e.g. draft news). */
+export async function isAdmin(): Promise<boolean> {
+  try {
+    const token = (await cookies()).get(ADMIN_COOKIE_NAME)?.value;
+    return await verifySessionToken(token);
+  } catch {
+    return false;
   }
 }

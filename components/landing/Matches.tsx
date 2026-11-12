@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getClubFixtures } from "@/actions/futbolcore";
 import Link from "next/link";
 import gsap from "gsap";
+import { parseLocalDate, startOfToday } from "./landingUtils";
+import SafeImg from "./SafeImg";
 
 // Three.js Animated Background Component
 const ThreeJSBackground = () => {
@@ -180,19 +182,28 @@ const Matches: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const [matches, setMatches] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
-      const fixtures = await getClubFixtures();
-      // Filter to only upcoming scheduled games
-      const now = new Date();
-      const upcoming = fixtures.filter((f: any) => {
-        const gameDate = new Date(f.date);
-        return f.status === 'SCHEDULED' && gameDate >= now;
-      });
-      setMatches(upcoming);
+      try {
+        const fixtures = await getClubFixtures();
+        // Upcoming scheduled games. f.date is a calendar day ("YYYY-MM-DD"), so
+        // compare it as a local date against the start of today — a game stays
+        // "upcoming" for the whole of match day.
+        const today = startOfToday();
+        const upcoming = fixtures.filter((f: any) => {
+          const gameDate = parseLocalDate(f.date);
+          return f.status === 'SCHEDULED' && gameDate >= today;
+        });
+        setMatches(upcoming);
+      } catch (error) {
+        console.error("Error fetching upcoming matches:", error);
+      } finally {
+        setLoaded(true);
+      }
     };
     fetchMatches();
   }, []);
@@ -270,126 +281,49 @@ const Matches: React.FC = () => {
     setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
   };
 
+  // Nothing scheduled: leave the section out rather than show an empty carousel.
+  if (loaded && matches.length === 0) {
+    return null;
+  }
+
+  // Card width and slide step for `visibleSlides` cards with a 24px (gap-6) gap.
+  // Percentages are of the track width, which equals the viewport width.
+  const GAP = 24;
+  const cardWidth = `calc((100% - ${GAP * (visibleSlides - 1)}px) / ${visibleSlides})`;
+  const slideX = `calc(-${currentIndex} * ((100% - ${GAP * (visibleSlides - 1)}px) / ${visibleSlides} + ${GAP}px))`;
+
   return (
-    <div className="w-full bg-white pb-20 pt-24 relative overflow-hidden">
-      {/* Stadium drawing background */}
-      <div className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.12 }}>
-        <svg 
-          className="w-full h-full" 
-          viewBox="0 0 1200 800" 
-          preserveAspectRatio="xMidYMid meet"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Stadium structure */}
-          <g stroke="#BD9B58" strokeWidth="4" fill="none" strokeOpacity="0.6">
-            {/* Main field outline */}
-            <rect x="150" y="250" width="900" height="300" rx="15" />
-            
-            {/* Center circle */}
-            <circle cx="600" cy="400" r="70" />
-            <line x1="600" y1="250" x2="600" y2="550" />
-            
-            {/* Penalty boxes */}
-            <rect x="150" y="310" width="160" height="180" rx="8" />
-            <rect x="890" y="310" width="160" height="180" rx="8" />
-            
-            {/* Goal areas */}
-            <rect x="150" y="360" width="50" height="80" rx="4" />
-            <rect x="1000" y="360" width="50" height="80" rx="4" />
-            
-            {/* Stadium stands - top */}
-            <path d="M 100 200 Q 100 150 150 130 Q 250 110 350 120 Q 450 130 550 140 Q 650 150 750 145 Q 850 135 950 125 Q 1050 115 1100 120 Q 1150 125 1150 200" />
-            <line x1="100" y1="200" x2="100" y2="250" />
-            <line x1="1150" y1="200" x2="1150" y2="250" />
-            
-            {/* Stadium stands - bottom */}
-            <path d="M 100 600 Q 100 650 150 670 Q 250 690 350 680 Q 450 670 550 660 Q 650 650 750 655 Q 850 665 950 675 Q 1050 685 1100 680 Q 1150 675 1150 600" />
-            <line x1="100" y1="600" x2="100" y2="550" />
-            <line x1="1150" y1="600" x2="1150" y2="550" />
-            
-            {/* Stands vertical supports */}
-            <line x1="150" y1="130" x2="150" y2="250" />
-            <line x1="350" y1="120" x2="350" y2="250" />
-            <line x1="550" y1="140" x2="550" y2="250" />
-            <line x1="750" y1="145" x2="750" y2="250" />
-            <line x1="950" y1="125" x2="950" y2="250" />
-            <line x1="1100" y1="120" x2="1100" y2="250" />
-            
-            <line x1="150" y1="670" x2="150" y2="550" />
-            <line x1="350" y1="680" x2="350" y2="550" />
-            <line x1="550" y1="660" x2="550" y2="550" />
-            <line x1="750" y1="655" x2="750" y2="550" />
-            <line x1="950" y1="675" x2="950" y2="550" />
-            <line x1="1100" y1="680" x2="1100" y2="550" />
-            
-            {/* Corner arcs */}
-            <path d="M 150 250 Q 100 250 100 300" />
-            <path d="M 1050 250 Q 1150 250 1150 300" />
-            <path d="M 150 550 Q 100 550 100 500" />
-            <path d="M 1050 550 Q 1150 550 1150 500" />
-          </g>
-        </svg>
-      </div>
-      
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent"></div>
-
+    <div className="w-full bg-white py-20 md:py-24 relative overflow-hidden">
       {/* Section Title */}
-      <div className="relative z-10 text-center mb-16 px-4">
-        <div className="inline-flex items-center gap-3 mb-4">
-          <div className="w-12 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bebas text-gray-900 uppercase tracking-tight">Upcoming Matches</h2>
-          <div className="w-12 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
+      <div className="relative z-10 text-center mb-12 md:mb-14 px-4">
+        <div className="inline-flex items-center gap-4 mb-3">
+          <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bebas text-gray-900 uppercase leading-none">Upcoming Matches</h2>
+          <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
         </div>
-        <p className="text-gray-600 text-sm uppercase tracking-widest font-medium">Next Fixtures</p>
+        <p className="text-gray-500 text-xs sm:text-sm uppercase tracking-[0.25em] font-semibold">Next Fixtures</p>
       </div>
 
-      <div className="relative w-full mx-auto px-4 max-w-[1800px] z-10" ref={containerRef}>
-        {/* Left side fade */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-
-        {/* Right side fade */}
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-
-        <div className="relative overflow-hidden" ref={sliderRef}>
+      <div className="relative w-full mx-auto px-4 sm:px-6 max-w-[1500px] z-10" ref={containerRef}>
+        <div className="relative overflow-hidden -my-4 py-4" ref={sliderRef}>
           <motion.div
-            className="flex gap-6 py-5"
-            animate={{
-              x: visibleSlides === 4 ? `calc(-${currentIndex} * (100% / 4 + 1.5%))` :
-                 visibleSlides === 3 ? `calc(-${currentIndex} * (100% / 3 + 2%))` :
-                 visibleSlides === 2 ? `calc(-${currentIndex} * (100% / 2 + 3%))` :
-                 `calc(-${currentIndex} * 100%)`
-            }}
+            className="flex gap-6"
+            animate={{ x: slideX }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {matches.map((match, idx) => (
-              <Link 
-                key={idx} 
+              <Link
+                key={idx}
                 href={`/matchreport/${match._id}`}
                 className="group flex-shrink-0 match-card"
-                style={{ 
-                  width: visibleSlides === 4 ? "calc((100% - 72px) / 4)" : 
-                         visibleSlides === 3 ? "calc((100% - 48px) / 3)" :
-                         visibleSlides === 2 ? "calc((100% - 24px) / 2)" :
-                         "100%",
-                  minWidth: visibleSlides === 1 ? "100%" : "280px"
-                }}
+                style={{ width: cardWidth }}
               >
-                <div className="bg-white rounded-3xl overflow-hidden transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15),0_4px_12px_rgba(189,155,88,0.2)] h-full flex flex-col min-h-[520px] border border-gray-200 hover:border-[#BD9B58]/60 group relative backdrop-blur-sm">
-                  {/* Subtle inner shadow for depth */}
-                  <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06), inset 0 -1px 2px rgba(0,0,0,0.04)'
-                  }}></div>
-                  
-                  {/* Subtle gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#BD9B58]/0 via-transparent to-transparent group-hover:from-[#BD9B58]/8 group-hover:via-transparent transition-all duration-500 pointer-events-none"></div>
-                  
+                <div className="bg-white rounded-3xl overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] hover:-translate-y-1 h-full flex flex-col border border-gray-200 hover:border-[#BD9B58]/60 relative">
                   {/* Top accent bar */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BD9B58] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
                   {/* League Logo or Match Title */}
-                  <div className="px-8 pt-12 pb-8 flex items-center justify-center relative">
-                    <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-transparent"></div>
+                  <div className="px-6 pt-8 pb-5 flex items-center justify-center relative min-h-[104px]">
                     {match.leagueLogo ? (
                       <>
                         <img
@@ -414,55 +348,60 @@ const Matches: React.FC = () => {
                   </div>
 
                   {/* Date & Location */}
-                  <div className="px-6 pb-8 text-center relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-[1px] bg-gradient-to-r from-transparent via-[#BD9B58]/30 to-transparent"></div>
-                    <p className="text-base font-semibold text-gray-900 mb-1.5 mt-4 tracking-tight">
+                  <div className="px-6 pb-6 text-center relative">
+                    <div className="mx-auto mb-4 w-16 h-[1px] bg-gradient-to-r from-transparent via-[#BD9B58]/40 to-transparent"></div>
+                    <p className="text-base font-semibold text-gray-900 mb-1 tracking-tight">
                       {formatDate(match.date)}
                     </p>
-                    <p className="text-sm text-gray-500 font-medium">
-                      {formatTime(match.time)} • {match.stadium}
+                    <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
+                      {match.stadium}
                     </p>
                   </div>
 
-                  {/* Teams Section */}
-                  <div className="px-8 pb-8 flex-1 flex flex-col justify-center relative">
-                    {/* Logos and Score/Time */}
-                    <div className="flex items-center justify-center gap-6 relative z-10">
-                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center">
-                        <img
-                          src={match.homeTeamLogo}
-                          alt={match.homeTeam}
-                          className="w-full h-full object-contain"
-                        />
+                  {/* Teams: home logo — kick-off time (or score) — away logo */}
+                  <div className="px-5 pb-6 flex-1 flex flex-col justify-center">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                      <div className="flex flex-col items-center gap-2 min-w-0">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                          <SafeImg
+                            src={match.homeTeamLogo}
+                            alt={match.homeTeam}
+                            fallbackSrc={null}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 text-center leading-tight line-clamp-2">{match.homeTeam}</span>
                       </div>
 
                       {match.status === "SCHEDULED" || match.status === "Scheduled" || (match.homeScore === 0 && match.awayScore === 0) ? (
-                        <div className="bg-gradient-to-br from-[#BD9B58] to-[#d4b068] text-white text-2xl font-bebas px-6 py-3 rounded-2xl text-center min-w-[120px] shadow-lg relative overflow-hidden flex-shrink-0">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-                          <span className="relative z-10">{formatTime(match.time)}</span>
+                        <div className="bg-[#BD9B58] text-white text-xl sm:text-2xl font-bebas px-3 sm:px-4 py-2 rounded-xl text-center whitespace-nowrap shadow-md">
+                          {formatTime(match.time)}
                         </div>
                       ) : (
-                        <div className="text-white text-4xl font-bebas px-6 py-3 rounded-2xl shadow-lg relative overflow-hidden flex-shrink-0" style={{ backgroundColor: '#181819' }}>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                          <span className="relative z-10">{match.homeScore}-{match.awayScore}</span>
+                        <div className="bg-[#181819] text-white text-3xl font-bebas px-4 py-2 rounded-xl whitespace-nowrap shadow-md">
+                          {match.homeScore}-{match.awayScore}
                         </div>
                       )}
 
-                      <div className="transition-transform duration-500 group-hover:scale-105 w-24 h-24 flex-shrink-0 flex items-center justify-center">
-                        <img
-                          src={match.awayTeamLogo}
-                          alt={match.awayTeam}
-                          className="w-full h-full object-contain"
-                        />
+                      <div className="flex flex-col items-center gap-2 min-w-0">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                          <SafeImg
+                            src={match.awayTeamLogo}
+                            alt={match.awayTeam}
+                            fallbackSrc={null}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 text-center leading-tight line-clamp-2">{match.awayTeam}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Footer with Status */}
-                  <div className="px-8 pb-8 relative z-10">
-                    <div className="w-full bg-gray-50 group-hover:bg-gradient-to-r group-hover:from-[#BD9B58] group-hover:to-[#d4b068] border border-gray-200 group-hover:border-transparent rounded-2xl px-6 py-3.5 text-center transition-all duration-500">
-                      <span className="text-sm font-bold text-gray-700 group-hover:text-white uppercase tracking-wider transition-colors duration-500">
-                        {match.status}
+                  {/* Footer */}
+                  <div className="px-6 pb-6">
+                    <div className="w-full border border-gray-200 group-hover:border-[#BD9B58] group-hover:bg-[#BD9B58] rounded-xl px-4 py-3 text-center transition-colors duration-300">
+                      <span className="text-xs font-bold text-gray-700 group-hover:text-white uppercase tracking-[0.2em] transition-colors duration-300">
+                        Match Details →
                       </span>
                     </div>
                   </div>
@@ -472,40 +411,46 @@ const Matches: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Navigation arrows */}
-        <button
-          className="bg-white/90 backdrop-blur-md text-gray-700 px-4 py-3 absolute left-4 top-1/2 transform -translate-y-1/2 hover:bg-white border border-gray-200 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-all focus:outline-none rounded-full z-20 disabled:opacity-30 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          className="bg-gradient-to-r from-[#BD9B58] to-[#d4b068] text-white px-4 py-3 absolute right-4 top-1/2 transform -translate-y-1/2 hover:shadow-[0_4px_20px_rgba(189,155,88,0.4)] hover:scale-105 transition-all focus:outline-none rounded-full z-20 disabled:opacity-30 shadow-lg disabled:cursor-not-allowed"
-          onClick={handleNext}
-          disabled={currentIndex >= maxIndex}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        {/* Pagination dots */}
-        <div className="flex justify-center mt-10 gap-2">
-          {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+        {/* Controls: prev — dots — next (kept below the cards so they never cover a logo) */}
+        {maxIndex > 0 && (
+          <div className="flex items-center justify-center gap-5 mt-10">
             <button
-              key={index}
-              className={`rounded-full transition-all duration-300 ${
-                index === currentIndex 
-                  ? "bg-[#BD9B58] w-10 h-2 shadow-md" 
-                  : "bg-gray-300 w-2 h-2 hover:bg-gray-400"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div>
+              type="button"
+              aria-label="Previous matches"
+              className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:border-[#BD9B58] hover:text-[#BD9B58] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`Go to slide ${index + 1}`}
+                  className={`rounded-full transition-all duration-300 h-2 ${
+                    index === currentIndex ? "bg-[#BD9B58] w-8" : "bg-gray-300 w-2 hover:bg-gray-400"
+                  }`}
+                  onClick={() => setCurrentIndex(index)}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              aria-label="Next matches"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-[#BD9B58] text-white hover:bg-[#a8884a] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              onClick={handleNext}
+              disabled={currentIndex >= maxIndex}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

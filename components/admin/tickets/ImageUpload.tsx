@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { validateImageFile, MAX_IMAGE_UPLOAD_MB } from "@/components/admin/shared/validateImageFile";
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => void;
@@ -32,16 +33,20 @@ export default function ImageUpload({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (!isUploading && e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onImageUpload(e.dataTransfer.files[0]);
+    const file = e.dataTransfer.files?.[0];
+    if (!isUploading && file && validateImageFile(file)) {
+      onImageUpload(file);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (!isUploading && e.target.files && e.target.files[0]) {
-      onImageUpload(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (!isUploading && file && validateImageFile(file)) {
+      onImageUpload(file);
     }
+    // Reset so choosing the same file again still fires onChange
+    e.target.value = "";
   };
 
   const handleButtonClick = () => {
@@ -60,11 +65,13 @@ export default function ImageUpload({
             className="w-full h-48 object-contain rounded-md"
           />
           <Button
+            type="button"
             variant="destructive"
             size="icon"
             className="absolute top-2 right-2 h-8 w-8 rounded-full"
             onClick={() => !isUploading && onImageUpload(new File([], ""))}
             disabled={isUploading}
+            aria-label="Remove image"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -107,7 +114,7 @@ export default function ImageUpload({
                 </button>
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Supports: JPG, PNG, GIF (Max 5MB)
+                Supports: JPG, PNG, GIF (Max {MAX_IMAGE_UPLOAD_MB}MB)
               </p>
             </div>
             {isUploading && (

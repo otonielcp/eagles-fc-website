@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Briefcase,
@@ -177,7 +177,7 @@ export default function JobPostingsPage() {
         <div className="space-y-3">
           {jobs.map((job) => {
             const status = displayStatus(job);
-            const style = STATUS_STYLES[status];
+            const style = STATUS_STYLES[status] ?? STATUS_STYLES.draft;
             return (
               <div key={job._id} className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -306,7 +306,6 @@ export default function JobPostingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Toaster position="top-center" richColors />
     </div>
   );
 }

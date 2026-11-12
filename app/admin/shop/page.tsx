@@ -1,14 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { Toaster } from "sonner";
 import ProductsManagement from "@/components/admin/products/ProductsManagement";
 import { Loader2 } from "lucide-react";
 
 export default function AdminShopPage() {
   return (
     <div className="p-6">
-      <Toaster position="top-right" />
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Shop Management</h1>
         <p className="text-gray-500 mt-1">

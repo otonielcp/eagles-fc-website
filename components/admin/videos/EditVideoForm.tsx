@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "../news/ImageUpload";
-import { Toaster } from "sonner";
 
 interface EditVideoFormProps {
   video: Video;
@@ -155,6 +154,7 @@ export default function EditVideoForm({ video, onCancel, onVideoUpdated }: EditV
               onImageUpload={handleThumbnailUpload}
               isUploading={thumbnailUploading}
               imageUrl={formData.thumbnailUrl}
+              onRemove={() => setFormData(prev => ({ ...prev, thumbnailUrl: "" }))}
             />
           </div>
 
@@ -193,7 +193,6 @@ export default function EditVideoForm({ video, onCancel, onVideoUpdated }: EditV
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 } 

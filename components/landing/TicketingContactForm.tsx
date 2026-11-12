@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { toast, Toaster } from 'sonner';
 import { sendContactEmail } from '@/actions/contact';
+import { useTurnstile } from '@/components/forms/Turnstile';
 
-const contactImage = "/heroimage1.jpeg"
+// NOTE: not rendered anywhere. /heroimage1.jpeg no longer exists; use the crest.
+const contactImage = "/EAGLES-CREST.png"
 
 export default function ContactPage() {
+  const human = useTurnstile();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -39,6 +42,11 @@ export default function ContactPage() {
       return;
     }
 
+    if (!human.ready) {
+      toast.error(human.missingMessage);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -48,10 +56,12 @@ export default function ContactPage() {
         email: formData.email,
         phone: formData.phone,
         subject: 'Ticketing Inquiry',
-        message: formData.message
+        message: formData.message,
+        turnstileToken: human.token,
       };
 
       const result = await sendContactEmail(contactData);
+      human.reset(); // each token works once
 
       if (result.success) {
         toast.success('Message sent successfully!');
@@ -68,6 +78,7 @@ export default function ContactPage() {
         toast.error(result.message || 'Failed to send message');
       }
     } catch (error) {
+      human.reset();
       console.error('Error sending message:', error);
       toast.error('Failed to send message. Please try again.');
     } finally {
@@ -178,6 +189,9 @@ export default function ContactPage() {
                 required
               ></textarea>
             </div>
+
+            {/* Human check (Cloudflare Turnstile) */}
+            {human.widget}
 
             {/* Submit Button */}
             <button 

@@ -29,6 +29,7 @@ const ProgramCard = ({
   index,
 }: ProgramCardProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const detailsId = `program-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,7 +101,7 @@ const ProgramCard = ({
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 40 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-7xl sm:text-8xl lg:text-9xl xl:text-[10rem] font-black text-white tracking-tighter leading-[0.85] mb-10"
+                className="text-7xl sm:text-8xl lg:text-9xl xl:text-[10rem] font-bebas text-white leading-[0.85] mb-10 break-words"
               >
                 {title}
               </motion.h2>
@@ -116,8 +117,7 @@ const ProgramCard = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="text-xl sm:text-2xl text-gray-300 leading-[1.6] mb-12 max-w-2xl"
-                style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}
+                className="text-lg sm:text-xl text-gray-300 leading-[1.7] mb-12 max-w-2xl"
               >
                 {description}
               </motion.p>
@@ -127,10 +127,10 @@ const ProgramCard = ({
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
               >
-                <button className="group inline-flex items-center gap-4 px-12 py-5 bg-[#C5A464] text-black font-bold text-sm uppercase tracking-[0.2em] hover:bg-white transition-all duration-300">
+                <a href={`#${detailsId}`} className="group inline-flex items-center gap-4 px-10 sm:px-12 py-5 bg-[#C5A464] text-black font-bold text-sm uppercase tracking-[0.2em] hover:bg-white transition-all duration-300">
                   <span>Discover More</span>
                   <ArrowRight className="w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-300" />
-                </button>
+                </a>
               </motion.div>
             </div>
 
@@ -159,7 +159,7 @@ const ProgramCard = ({
       </div>
 
       {/* Premium Content Section */}
-      <div className="relative bg-white py-32 lg:py-40">
+      <div id={detailsId} className="relative bg-white py-20 sm:py-32 lg:py-40 scroll-mt-24">
         <div className="max-w-[1800px] mx-auto px-6 sm:px-12 lg:px-20">
           
           {/* Section Header */}
@@ -191,9 +191,9 @@ const ProgramCard = ({
                   <div className="flex items-start gap-6">
                     <div className="w-1 h-full bg-[#C5A464] flex-shrink-0"></div>
                     <div>
-                      <h4 className="text-2xl font-black text-gray-900 mb-4 leading-tight">{label}</h4>
+                      <h4 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 leading-tight">{label}</h4>
                       {text && (
-                        <p className="text-gray-600 text-lg leading-[1.7]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{text}</p>
+                        <p className="text-gray-600 text-lg leading-[1.7]" >{text}</p>
                       )}
                     </div>
                   </div>
@@ -217,7 +217,7 @@ const ProgramCard = ({
                      title === 'JUNIOR ACADEMY' ? 'Building Champions' :
                      'Your Journey Starts Here'}
                   </h4>
-                  <p className="text-gray-700 text-xl leading-[1.7]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <p className="text-gray-700 text-xl leading-[1.7]" >
                     {additionalInfo}
                   </p>
                 </div>

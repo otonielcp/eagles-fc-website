@@ -22,7 +22,8 @@ function formatMatchDate(value: unknown): string {
 export async function GET() {
   try {
     await connectDB();
-    const raw = await Slider.find({}).sort({ order: 1 });
+    // Public endpoint: only active slides (docs missing the field count as active).
+    const raw = await Slider.find({ isActive: { $ne: false } }).sort({ order: 1 });
     const list = JSON.parse(JSON.stringify(raw)) as any[];
 
     for (const s of list) {

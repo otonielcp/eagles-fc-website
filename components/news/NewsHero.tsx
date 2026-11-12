@@ -5,6 +5,7 @@ import { getPublishedNews } from '@/actions/news';
 import { News } from '@/types/news';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { toPlainText } from './plainText';
 
 export default function NewsHero() {
   const [news, setNews] = useState<News[]>([]);
@@ -111,7 +112,7 @@ export default function NewsHero() {
 
                 {/* Excerpt */}
                 <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8 line-clamp-3">
-                  {item.summary}
+                  {toPlainText(item.summary)}
                 </p>
 
                 {/* Meta Info */}
@@ -148,7 +149,7 @@ export default function NewsHero() {
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-black/50 hover:bg-[#BD9B58] border border-[#BD9B58]/30 hover:border-[#BD9B58] transition-all duration-300 group"
+            className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 hidden md:flex items-center justify-center bg-black/50 hover:bg-[#BD9B58] border border-[#BD9B58]/30 hover:border-[#BD9B58] transition-all duration-300 group"
             aria-label="Previous slide"
           >
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +159,7 @@ export default function NewsHero() {
 
           <button
             onClick={nextSlide}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-black/50 hover:bg-[#BD9B58] border border-[#BD9B58]/30 hover:border-[#BD9B58] transition-all duration-300 group"
+            className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 hidden md:flex items-center justify-center bg-black/50 hover:bg-[#BD9B58] border border-[#BD9B58]/30 hover:border-[#BD9B58] transition-all duration-300 group"
             aria-label="Next slide"
           >
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

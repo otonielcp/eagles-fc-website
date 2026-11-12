@@ -4,7 +4,7 @@ import { TeamCard } from '@/components/landing/TeamCard';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Teams Overview | Eagles FC',
+  title: 'Teams Overview',
   description: 'View all Eagles FC teams, players, and coaching staff',
 };
 

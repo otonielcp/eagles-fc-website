@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import Team from '@/models/Team';
 import Player from '@/models/Player';
@@ -56,6 +58,7 @@ export async function getTeamById(id: string): Promise<TeamType | null> {
 
 // Create team
 export async function createTeam(teamData: TeamFormData): Promise<{ success: boolean; message: string; team?: TeamType }> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -85,6 +88,7 @@ export async function createTeam(teamData: TeamFormData): Promise<{ success: boo
 
 // Update team
 export async function updateTeam(id: string, teamData: TeamFormData): Promise<{ success: boolean; message: string; team?: TeamType }> {
+  await requireAdmin();
   try {
     await connectDB();
     
@@ -132,6 +136,7 @@ export async function deleteTeam(id: string): Promise<{
   playersDeleted?: number;
   staffDeleted?: number;
 }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -188,6 +193,7 @@ export async function countTeamDependencies(ids: string[]): Promise<{
   players: number;
   staff: number;
 }> {
+  await requireAdmin();
   try {
     await connectDB();
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -212,6 +218,7 @@ export async function deleteTeams(ids: string[]): Promise<{
   staffDeleted: number;
   message: string;
 }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -279,6 +286,7 @@ export async function syncTeamsFromFutbolCore(): Promise<{
   skipped: { name: string; reason: string }[];
   message: string;
 }> {
+  await requireAdmin();
   try {
     await connectDB();
 
@@ -303,7 +311,9 @@ export async function syncTeamsFromFutbolCore(): Promise<{
 
       const baseFields = {
         name: remote.name,
-        shortName: remote.shortName || remote.name.slice(0, 20),
+        // Team.shortName has maxlength 20; FutbolCore's can be longer, which
+        // used to fail validation and silently skip the whole team.
+        shortName: (remote.shortName?.trim() || remote.name.trim()).slice(0, 20),
         description: remote.description || remote.name,
         category: remote.category || 'Senior',
         image: imageUrl,
@@ -367,6 +377,7 @@ export async function syncTeamsFromFutbolCore(): Promise<{
 
 // Upload team image
 export async function uploadTeamImage(file: File): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
   try {
     if (!file) {
       return { success: false, message: "No file provided" };

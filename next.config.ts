@@ -1,11 +1,30 @@
+import path from "path";
 import type { NextConfig } from "next";
 
+// Hashed build assets and files served from /public. These must stay cacheable;
+// only page/data responses get the no-store headers below.
+const STATIC_ASSET_EXCLUSION =
+  "_next/static|_next/image|.*\\.(?:png|jpe?g|jfif|webp|avif|gif|svg|ico|mp4|webm|woff2?|ttf|otf|css|js|map)$";
+
 const nextConfig: NextConfig = {
+  // A stray lockfile in the user's home directory made Next infer the wrong
+  // workspace root; pin it to this project.
+  outputFileTracingRoot: path.resolve(__dirname),
+
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      // Team logos from FutbolCore
+      {
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
       },
     ],
   },
@@ -23,8 +42,10 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: [],
 
-  // Add empty turbopack config to work with webpack config
-  turbopack: {},
+  // Add turbopack config to work with webpack config
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
 
   // Disables static optimization — makes all pages SSR
 
@@ -33,11 +54,13 @@ const nextConfig: NextConfig = {
     return `build-${Date.now()}`;
   },
 
-  // Set HTTP headers to prevent browser caching
+  // Set HTTP headers to prevent browser caching of pages and data (so admin
+  // edits show up immediately). Static assets are excluded: no-store on them
+  // made every visit re-download all JS and images.
   headers: async () => {
     return [
       {
-        source: '/:path*',
+        source: `/:path((?!${STATIC_ASSET_EXCLUSION}).*)`,
         headers: [
           {
             key: 'Cache-Control',
@@ -68,8 +91,7 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Turn off compression and etags
-  compress: false,
+  // Etags off (pages are no-store anyway); gzip compression stays on (default).
   generateEtags: false,
   poweredByHeader: false,
 

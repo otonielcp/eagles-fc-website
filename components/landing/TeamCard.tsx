@@ -3,6 +3,7 @@
 import { Eye, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { Team } from '@/types/team';
+import SafeImg from './SafeImg';
 
 interface TeamCardProps {
   team: Team & {
@@ -16,8 +17,8 @@ export function TeamCard({ team }: TeamCardProps) {
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
       {/* Card Image */}
       <div className="relative h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-        <img
-          src={team.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop'}
+        <SafeImg
+          src={team.image}
           alt={team.name}
           className="w-full h-full object-cover"
         />

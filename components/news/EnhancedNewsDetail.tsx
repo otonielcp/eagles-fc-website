@@ -4,7 +4,6 @@ import { News } from '@/types/news';
 import { Facebook, Twitter, Mail, Linkedin } from 'lucide-react';
 import { format } from 'date-fns';
 import DynamicLatestNews from './DynamicLatestNews';
-import Head from 'next/head';
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -51,29 +50,31 @@ export default function EnhancedNewsDetail({ news }: { news: News }) {
         <div className="md:w-16 flex flex-row md:flex-col gap-4 mb-6 md:mb-0 order-2 md:order-1">
           <div className="text-xs text-gray-500 uppercase hidden md:block mb-2">SHARE</div>
           <div className="flex md:flex-col gap-4">
-            <FacebookShareButton url={currentUrl}>
-              <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
+            {/* react-share renders its own <button>; the icon wrapper must not be another button */}
+            <FacebookShareButton url={currentUrl} aria-label="Share on Facebook">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
                 <Facebook size={18} className="text-white" />
-              </button>
+              </span>
             </FacebookShareButton>
-            <TwitterShareButton url={currentUrl} title={`${news.title} - Eagles Football Club`}>
-              <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
+            <TwitterShareButton url={currentUrl} title={`${news.title} - Eagles Football Club`} aria-label="Share on X (Twitter)">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
                 <Twitter size={18} className="text-white" />
-              </button>
+              </span>
             </TwitterShareButton>
             <EmailShareButton
               url={currentUrl}
               subject={`Check out this article: ${news.title}`}
               body={`I thought you might be interested in this article from Eagles Football Club:\n\n${news.title}\n\n${news.summary}\n\n${currentUrl}\n\nPublished on ${publishDate} by ${news.author}`}
+              aria-label="Share by email"
             >
-              <button className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                 <Mail size={18} className="text-gray-600" />
-              </button>
+              </span>
             </EmailShareButton>
-            <LinkedinShareButton url={currentUrl} title={news.title} summary={news.summary}>
-              <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
+            <LinkedinShareButton url={currentUrl} title={news.title} summary={news.summary} aria-label="Share on LinkedIn">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#181819' }}>
                 <Linkedin size={18} className="text-white" />
-              </button>
+              </span>
             </LinkedinShareButton>
           </div>
         </div>
@@ -97,25 +98,13 @@ export default function EnhancedNewsDetail({ news }: { news: News }) {
     </div>
   );
 
+  // Social/OG tags come from generateMetadata in app/(landing)/news/[id]/page.tsx
+  // (next/head is a no-op in the App Router).
   return (
-    <>
-      <Head>
-        <meta property="og:title" content={news.title} />
-        <meta property="og:description" content={news.summary} />
-        <meta property="og:url" content={currentUrl} />
-        <meta property="og:image" content={news.image || '/default.jpg'} />
-        <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="Eagles Football Club" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={news.title} />
-        <meta name="twitter:description" content={news.summary} />
-        <meta name="twitter:image" content={news.image || '/default.jpg'} />
-      </Head>
-      <div className="bg-gray-50">
-        <NewsHero />
-        <NewsContent />
-        <DynamicLatestNews />
-      </div>
-    </>
+    <div className="bg-gray-50">
+      <NewsHero />
+      <NewsContent />
+      <DynamicLatestNews skip={0} excludeId={news._id} />
+    </div>
   );
 }

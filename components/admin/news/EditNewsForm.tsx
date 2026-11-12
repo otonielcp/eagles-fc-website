@@ -25,8 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "./ImageUpload";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import RichTextEditor from "@/components/richtexteditor/RichTextEditor"; // Import the reusable component
 
 interface EditNewsFormProps {
@@ -125,8 +124,12 @@ export default function EditNewsForm({ news, onCancel, onNewsUpdated }: EditNews
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // A cleared or partially-typed datetime-local gives "", which is an
+    // Invalid Date; keep the previous value instead.
+    if (!e.target.value) return;
     const date = new Date(e.target.value);
-    setFormData({ ...formData, publishDate: date });
+    if (!isValid(date)) return;
+    setFormData((prev) => ({ ...prev, publishDate: date }));
   };
 
   const handleSummaryChange = (value: string) => {
@@ -219,7 +222,7 @@ export default function EditNewsForm({ news, onCancel, onNewsUpdated }: EditNews
               id="publishDate"
               name="publishDate"
               type="datetime-local"
-              value={formData.publishDate ? format(new Date(formData.publishDate), "yyyy-MM-dd'T'HH:mm") : ""}
+              value={formData.publishDate && isValid(new Date(formData.publishDate)) ? format(new Date(formData.publishDate), "yyyy-MM-dd'T'HH:mm") : ""}
               onChange={handleDateChange}
             />
           </div>
@@ -230,6 +233,7 @@ export default function EditNewsForm({ news, onCancel, onNewsUpdated }: EditNews
               onImageUpload={handleImageUpload}
               isUploading={imageUploading}
               imageUrl={formData.image}
+              onRemove={() => setFormData(prev => ({ ...prev, image: "" }))}
             />
           </div>
 
@@ -279,7 +283,6 @@ export default function EditNewsForm({ news, onCancel, onNewsUpdated }: EditNews
           </Button>
         </CardFooter>
       </form>
-      <Toaster position="top-center" richColors />
     </Card>
   );
 }

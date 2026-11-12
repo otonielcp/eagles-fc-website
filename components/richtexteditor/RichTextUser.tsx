@@ -19,6 +19,8 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   className 
 }) => {
   const editor = useEditor({
+    // Not rendered on the server; avoids TipTap's SSR/hydration warning
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,

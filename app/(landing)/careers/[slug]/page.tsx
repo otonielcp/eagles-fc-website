@@ -5,6 +5,7 @@ import { ArrowLeft, Banknote, CalendarClock, Clock, MapPin, Users } from "lucide
 import { getOpenJobBySlug } from "@/actions/careers";
 import ApplicationForm from "@/components/careers/ApplicationForm";
 import { DEPARTMENTS, EMPLOYMENT_TYPES, formatDateOnly, type PublicJob } from "@/lib/hiring";
+import { SITE_URL } from "@/app/(landing)/site-url";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -47,8 +48,8 @@ function jobPostingJsonLd(job: PublicJob) {
     hiringOrganization: {
       "@type": "SportsOrganization",
       name: "Eagles Football Club",
-      sameAs: "https://eaglesfcgi.org",
-      logo: "https://eaglesfcgi.org/LOGO%20(2).png",
+      sameAs: SITE_URL,
+      logo: `${SITE_URL}/LOGO%20(2).png`,
     },
     jobLocation: {
       "@type": "Place",

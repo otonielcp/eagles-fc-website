@@ -3,17 +3,22 @@
 import { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { validateImageFile, MAX_IMAGE_UPLOAD_MB } from "@/components/admin/shared/validateImageFile";
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => void;
   isUploading: boolean;
   imageUrl: string;
+  // Clears the image URL held by the parent form. The remove button is only
+  // shown when this is provided.
+  onRemove?: () => void;
 }
 
 export default function ImageUpload({
   onImageUpload,
   isUploading,
   imageUrl,
+  onRemove,
 }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,16 +37,20 @@ export default function ImageUpload({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onImageUpload(e.dataTransfer.files[0]);
+    const file = e.dataTransfer.files?.[0];
+    if (file && validateImageFile(file)) {
+      onImageUpload(file);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      onImageUpload(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file && validateImageFile(file)) {
+      onImageUpload(file);
     }
+    // Reset so choosing the same file again still fires onChange
+    e.target.value = "";
   };
 
   const handleButtonClick = () => {
@@ -49,11 +58,10 @@ export default function ImageUpload({
   };
 
   const handleRemoveImage = () => {
-    // This would need to be implemented in the parent component
-    // For now, we'll just clear the input
     if (inputRef.current) {
       inputRef.current.value = "";
     }
+    onRemove?.();
   };
 
   return (
@@ -65,14 +73,19 @@ export default function ImageUpload({
             alt="Uploaded image"
             className="w-full h-48 object-cover rounded-md"
           />
-          <Button
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 h-8 w-8 rounded-full"
-            onClick={handleRemoveImage}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {onRemove && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+              onClick={handleRemoveImage}
+              disabled={isUploading}
+              aria-label="Remove image"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -107,7 +120,7 @@ export default function ImageUpload({
                 </button>
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Supports: JPG, PNG, GIF (Max 5MB)
+                Supports: JPG, PNG, GIF (Max {MAX_IMAGE_UPLOAD_MB}MB)
               </p>
             </div>
             {isUploading && (

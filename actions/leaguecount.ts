@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import connectDB from '@/lib/dbConnect';
 import LeagueCount from '@/models/LeagueCount';
 import { Document } from 'mongoose';
@@ -40,6 +42,7 @@ export async function updateLeagueCountNumber(
   league: League, 
   count: number | string
 ): Promise<Record<string, any>> {
+  await requireAdmin();
   try {
     await connectDB();
     

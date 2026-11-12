@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'How Eagles Football Club collects, uses and protects your personal information.',
+};
 
 const PrivacyPolicyPage = () => {
   return (

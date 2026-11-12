@@ -6,19 +6,43 @@ import MiniNavbarTeams from "@/components/landing/MiniNavbarTeams";
 import { notFound } from "next/navigation";
 import { getTeamDisplayName } from "@/lib/teamName";
 import { Player, Team } from "@/types/team";
+import type { Metadata } from "next";
+import { cache } from "react";
 
-export default async function PlayerProfilePage({ params }: any) {
+type PlayerPageProps = { params: Promise<{ teamId: string; playerId: string }> };
+
+// generateMetadata and the page share these fetches; run each once per request.
+const getTeams = cache(() => getClubTeams());
+const getRoster = cache((teamId: string) => getTeamRosterWithBranding(teamId));
+
+export async function generateMetadata({ params }: PlayerPageProps): Promise<Metadata> {
+  const { teamId, playerId } = await params;
+  const fcTeam = (await getTeams()).find((t) => t._id === teamId);
+  const fcPlayer = fcTeam ? (await getRoster(teamId)).players.find((p) => p._id === playerId) : undefined;
+  if (!fcTeam || !fcPlayer) return { title: "Player Not Found" };
+
+  // Players are minors: metadata carries only the team and jersey number —
+  // no name, birthdate or photo.
+  const teamName = getTeamDisplayName(fcTeam);
+  const number = fcPlayer.jerseyNumber ? ` #${fcPlayer.jerseyNumber}` : "";
+  return {
+    title: `${teamName}${number} Player Profile`,
+    description: `Season stats for an Eagles FC ${teamName} player.`,
+  };
+}
+
+export default async function PlayerProfilePage({ params }: PlayerPageProps) {
   const { teamId, playerId } = await params;
 
   // FutbolCore is the single source of truth. The old MongoDB path was removed:
   // it passed whole player documents into PlayerProfile, a client component, so
   // every field — dateOfBirth, height, weight — was serialized into the page
   // payload and readable in source whether or not it was ever rendered.
-  const fcTeams = await getClubTeams();
+  const fcTeams = await getTeams();
   const fcTeam = fcTeams.find((t) => t._id === teamId);
   if (!fcTeam) notFound();
 
-  const rosterData = await getTeamRosterWithBranding(teamId);
+  const rosterData = await getRoster(teamId);
   const fcPlayer = rosterData.players.find((p) => p._id === playerId);
   if (!fcPlayer) notFound();
 

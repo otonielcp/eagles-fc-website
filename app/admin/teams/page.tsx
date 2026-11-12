@@ -10,7 +10,6 @@ import {
 } from "@/actions/team";
 import { Team } from "@/types/team";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Users, UserCog, RefreshCw } from "lucide-react";
@@ -363,7 +362,6 @@ export default function TeamsManagement() {
           </Table>
         </div>
       )}
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getPlayerById } from "@/actions/player";
 import { Player } from "@/types/team";
 import EditPlayerForm from "@/components/admin/players/EditPlayerForm";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -90,7 +90,6 @@ export default function EditPlayerPage() {
         onCancel={handleCancel}
         onPlayerUpdated={handlePlayerUpdated}
       />
-      <Toaster position="top-center" richColors />
     </div>
   );
 } 

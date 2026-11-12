@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from '@/lib/requireAdmin';
+
 import { revalidatePath } from "next/cache";
 import Fixture, { IFixture } from "@/models/Fixture";
 import Slider from "@/models/Slider";
@@ -119,6 +121,7 @@ async function removeFixtureSlider(fixtureId: string) {
 
 // Get all fixtures
 export async function getAllFixtures() {
+  await requireAdmin();
     try {
         await connectDB();
         const fixtures = await Fixture.find({}).sort({ date: -1 });
@@ -150,6 +153,7 @@ export async function getFixtureById(id: string) {
 
 // Create new fixture
 export async function createFixture(fixtureData: Partial<IFixture>) {
+  await requireAdmin();
     try {
         await connectDB();
         const newFixture = await Fixture.create(fixtureData);
@@ -170,6 +174,7 @@ export async function createFixture(fixtureData: Partial<IFixture>) {
 
 // Update fixture
 export async function updateFixture(id: string, fixtureData: Partial<IFixture>) {
+  await requireAdmin();
     try {
         await connectDB();
 
@@ -215,6 +220,7 @@ export async function updateFixture(id: string, fixtureData: Partial<IFixture>) 
 
 // Delete fixture
 export async function deleteFixture(id: string) {
+  await requireAdmin();
     try {
         await connectDB();
         const deletedFixture = await Fixture.findByIdAndDelete(id);
@@ -238,6 +244,7 @@ export async function deleteFixture(id: string) {
 
 // Bulk delete fixtures
 export async function deleteFixtures(ids: string[]) {
+  await requireAdmin();
     try {
         await connectDB();
 
@@ -326,6 +333,7 @@ export async function getFixturesByTeam(teamName: string) {
 
 // Update fixture timeline
 export async function updateFixtureTimeline(id: string, timeline: any[]) {
+  await requireAdmin();
     try {
         await connectDB();
         console.log(timeline)
@@ -348,6 +356,7 @@ export async function updateFixtureTimeline(id: string, timeline: any[]) {
 
 // Add this new function to upload fixture logos
 export async function uploadFixtureLogo(formData: FormData): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
     try {
         const file = formData.get('file') as File;
         const folder = formData.get('folder') as string || 'logos';
@@ -436,11 +445,11 @@ export async function getFilteredUpcomingMatches(
     if (season && season !== "All") {
       const year = season.match(/\d{4}/)?.[0];
       if (year) {
-        const startDate = new Date(`${year}-01-01`);
-        const endDate = new Date(`${year}-12-31`);
+        // `date` is a "YYYY-MM-DD" string. Comparing it to ISO timestamps
+        // dropped Jan 1 games ("2025-01-01" < "2025-01-01T00:00:00.000Z").
         filter.date = {
-          $gte: startDate.toISOString(),
-          $lte: endDate.toISOString()
+          $gte: `${year}-01-01`,
+          $lt: `${Number(year) + 1}-01-01`
         };
       }
     }
@@ -538,6 +547,7 @@ export async function getDistinctSeasons(includeArchived: boolean = false) {
 
 // Get all seasons including archived (for admin use)
 export async function getAllSeasons() {
+  await requireAdmin();
   return getDistinctSeasons(true);
 }
 
@@ -617,11 +627,11 @@ export async function getFilteredFullTimeMatches(
         season !== "All seasons") {
       const year = season.match(/\d{4}/)?.[0];
       if (year) {
-        const startDate = new Date(`${year}-01-01`);
-        const endDate = new Date(`${year}-12-31`);
+        // `date` is a "YYYY-MM-DD" string. Comparing it to ISO timestamps
+        // dropped Jan 1 games ("2025-01-01" < "2025-01-01T00:00:00.000Z").
         filter.date = {
-          $gte: startDate.toISOString(),
-          $lte: endDate.toISOString()
+          $gte: `${year}-01-01`,
+          $lt: `${Number(year) + 1}-01-01`
         };
       }
     }

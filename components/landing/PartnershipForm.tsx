@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { sendPartnershipInquiry } from '@/actions/contact';
+import { useTurnstile } from '@/components/forms/Turnstile';
 
 const PartnershipForm = () => {
+  const human = useTurnstile();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -16,6 +18,7 @@ const PartnershipForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,12 +26,19 @@ const PartnershipForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!human.ready) {
+      setIsError(true);
+      setSubmitMessage(human.missingMessage);
+      return;
+    }
     setIsSubmitting(true);
     setSubmitMessage('');
+    setIsError(false);
 
     try {
-      const result = await sendPartnershipInquiry(formData);
-      
+      const result = await sendPartnershipInquiry({ ...formData, turnstileToken: human.token });
+      human.reset(); // each token works once
+
       if (result.success) {
         setSubmitMessage('Partnership inquiry submitted successfully!');
         // Reset form
@@ -43,9 +53,12 @@ const PartnershipForm = () => {
           description: "",
         });
       } else {
+        setIsError(true);
         setSubmitMessage(`Error: ${result.message}`);
       }
     } catch (error) {
+      human.reset();
+      setIsError(true);
       setSubmitMessage('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -58,7 +71,7 @@ const PartnershipForm = () => {
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 uppercase tracking-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bebas text-gray-900 uppercase leading-none">
             Let's Partner Up!
           </h2>
           <div className="w-16 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
@@ -197,9 +210,12 @@ const PartnershipForm = () => {
             ></textarea>
           </div>
 
+          {/* Human check (Cloudflare Turnstile) */}
+          {human.widget}
+
           {/* Submit Message */}
           {submitMessage && (
-            <div className={`p-4 rounded-lg text-center font-semibold ${submitMessage.includes('Error') ? 'bg-red-100 text-red-700 border-2 border-red-300' : 'bg-green-100 text-green-700 border-2 border-green-300'}`}>
+            <div role={isError ? 'alert' : 'status'} className={`p-4 rounded-lg text-center font-semibold ${isError ? 'bg-red-100 text-red-700 border-2 border-red-300' : 'bg-green-100 text-green-700 border-2 border-green-300'}`}>
               {submitMessage}
             </div>
           )}

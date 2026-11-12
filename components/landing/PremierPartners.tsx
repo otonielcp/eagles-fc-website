@@ -1,4 +1,5 @@
 import { getPortfolioLogosByCategory } from "@/actions/sponsorsLogo"
+import SafeImg from "./SafeImg"
 
 // Placeholder Partner Logo
 // const partner1 = "/mainpartners/partner5.png"
@@ -8,6 +9,7 @@ import { getPortfolioLogosByCategory } from "@/actions/sponsorsLogo"
 
 const PremierPartners = async () => {
   const partners = await getPortfolioLogosByCategory("Partner");
+  if (!partners.length) return null;
 
   return (
     <div className="w-full py-6 sm:py-10 px-4 sm:px-10 md:px-28">
@@ -21,13 +23,14 @@ const PremierPartners = async () => {
       </div>
 
       {/* Grid Layout for Logos */}
-      <div className="px-2 sm:px-10 md:px-40 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-7 place-items-center">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
         {partners.map((partner, index) => (
-          <img
+          <SafeImg
             key={index}
             src={partner.image}
             alt={partner.name}
-            className="h-24 sm:h-16 md:h-28 w-auto object-contain"
+            fallbackSrc={null}
+            className="h-16 sm:h-20 md:h-24 w-auto max-w-[220px] object-contain"
           />
         ))}
       </div>

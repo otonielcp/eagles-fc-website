@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { login } from '@/actions/auth'
 import { useRouter } from 'next/navigation'
-import { toast, Toaster } from 'sonner'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -73,7 +73,6 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        <Toaster position="top-center" richColors />
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Toaster } from "sonner";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import {
@@ -23,11 +22,11 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getAllMembers, deleteMember } from "@/actions/member";
+import { ageFromDateOnly } from "@/app/admin/_lib/dateOnly";
 
 export default function MembersManagement() {
     const [members, setMembers] = useState<any[]>([]);
@@ -85,7 +84,6 @@ export default function MembersManagement() {
 
     return (
         <div className="p-6">
-            <Toaster position="top-right" />
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Members Management</h1>
@@ -111,11 +109,10 @@ export default function MembersManagement() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
-                                    <TableHead>Team</TableHead>
-                                    <TableHead>Position</TableHead>
-                                    <TableHead>Jersey #</TableHead>
+                                    <TableHead>Gender</TableHead>
                                     <TableHead>Age</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead>Parent/Guardian</TableHead>
+                                    <TableHead>Email</TableHead>
                                     <TableHead>Added On</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -128,21 +125,13 @@ export default function MembersManagement() {
                                                 {member.firstName} {member.lastName}
                                             </Link>
                                         </TableCell>
-                                        <TableCell>{member.team}</TableCell>
-                                        <TableCell>{member.position}</TableCell>
-                                        <TableCell>{member.jerseyNumber}</TableCell>
+                                        {/* Only fields the Member model actually stores (models/Member.ts). */}
+                                        <TableCell className="capitalize">{member.gender || "N/A"}</TableCell>
+                                        <TableCell>{ageFromDateOnly(member.dateOfBirth) ?? "N/A"}</TableCell>
                                         <TableCell>
-                                            {new Date().getFullYear() - new Date(member.dateOfBirth).getFullYear()}
+                                            {[member.parentFirstName, member.parentLastName].filter(Boolean).join(" ") || "N/A"}
                                         </TableCell>
-                                        <TableCell>
-                                            {member.isActive ? (
-                                                <Badge className="bg-green-500 hover:bg-green-600">
-                                                    Active
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline">Inactive</Badge>
-                                            )}
-                                        </TableCell>
+                                        <TableCell>{member.email || "N/A"}</TableCell>
                                         <TableCell>{formatDate(member.createdAt)}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">

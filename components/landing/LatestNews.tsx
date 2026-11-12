@@ -5,6 +5,8 @@ import { News } from '@/types/news';
 import { getPublishedNews } from '@/actions/news';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { stripHtml, truncateText } from './landingUtils';
+import SafeImg from './SafeImg';
 
 const LatestNews = () => {
   const [news, setNews] = useState<News[]>([]);
@@ -40,7 +42,7 @@ const LatestNews = () => {
     return null;
   }
   return (
-    <div className="relative bg-white py-20 overflow-hidden">
+    <div className="relative bg-gray-50 py-20 md:py-24 overflow-hidden">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-[0.015]">
         <div className="absolute inset-0" style={{
@@ -52,14 +54,14 @@ const LatestNews = () => {
       <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 relative z-10">
         {/* Header Section */}
         <div className="text-center mb-10 sm:mb-16">
-          <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="w-8 sm:w-16 h-[2px] bg-gradient-to-r from-transparent to-[#C5A464]"></div>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 uppercase tracking-tight">
+          <div className="inline-flex items-center justify-center gap-4 mb-3">
+            <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bebas text-gray-900 uppercase leading-none">
               Latest News
             </h2>
-            <div className="w-8 sm:w-16 h-[2px] bg-gradient-to-l from-transparent to-[#C5A464]"></div>
+            <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
           </div>
-          <p className="text-gray-500 text-xs sm:text-sm md:text-base uppercase tracking-widest font-semibold">
+          <p className="text-gray-500 text-xs sm:text-sm uppercase tracking-[0.25em] font-semibold">
             Club News & Announcements
           </p>
         </div>
@@ -77,22 +79,21 @@ const LatestNews = () => {
                 <div className="relative">
                   {/* Image */}
                   <div className="relative overflow-hidden h-64 md:h-80">
-                    <img 
-                      src={newsItem.image} 
-                      alt={newsItem.title} 
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                    <SafeImg
+                      src={newsItem.image}
+                      alt={newsItem.title}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10"></div>
+
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                      <h3 className="text-white text-2xl md:text-3xl font-bold uppercase mb-3 leading-tight group-hover:text-[#C5A464] transition-colors duration-300">
+                      <h3 className="text-white text-3xl md:text-4xl font-bebas uppercase mb-2 leading-[1.05] line-clamp-3 group-hover:text-[#C5A464] transition-colors duration-300">
                         {newsItem.title}
                       </h3>
-                      <p 
-                        className="text-white/90 text-sm md:text-base mb-4 leading-relaxed line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: newsItem.summary.slice(0, 150) + '...' }}
-                      />
+                      <p className="text-white/90 text-sm md:text-base mb-4 leading-relaxed line-clamp-2">
+                        {truncateText(stripHtml(newsItem.summary), 150)}
+                      </p>
                       <div className="flex items-center justify-between">
                         <span className="text-xs md:text-sm font-bold text-[#C5A464] uppercase tracking-wider">
                           {formattedDate} | {newsItem.category}
@@ -121,10 +122,10 @@ const LatestNews = () => {
               >
                 {/* Image */}
                 <div className="relative overflow-hidden h-48">
-                  <img 
-                    src={newsItem.image} 
-                    alt={newsItem.title} 
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                  <SafeImg
+                    src={newsItem.image}
+                    alt={newsItem.title}
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                   <div className="absolute top-3 right-3 w-2 h-2 bg-[#C5A464] rounded-full animate-pulse shadow-lg"></div>
@@ -135,10 +136,9 @@ const LatestNews = () => {
                   <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-[#C5A464] transition-colors duration-300 mb-2 line-clamp-2 uppercase">
                     {newsItem.title}
                   </h3>
-                  <p 
-                    className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-4"
-                    dangerouslySetInnerHTML={{ __html: newsItem.summary }}
-                  />
+                  <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-4">
+                    {truncateText(stripHtml(newsItem.summary), 150)}
+                  </p>
                   
                   <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -156,15 +156,15 @@ const LatestNews = () => {
 
         {/* View All News Button */}
         <div className="text-center mt-12">
-          <a 
-            href="/news" 
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-[#C5A464] to-[#D4B574] hover:from-[#B39355] hover:to-[#C5A464] text-white font-bold text-base md:text-lg px-10 py-4 rounded-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group"
+          <Link
+            href="/news"
+            className="group inline-flex items-center gap-3 bg-[#BD9B58] hover:bg-[#a8884a] text-white font-bold text-sm uppercase tracking-[0.15em] px-9 py-4 rounded-tr-2xl rounded-bl-2xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             View All News
             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

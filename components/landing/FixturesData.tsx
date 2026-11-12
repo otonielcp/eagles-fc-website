@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SafeImg from "./SafeImg";
 
 interface FixturesDataProps {
   fixtures: any[];
@@ -31,9 +32,13 @@ const FixturesData: React.FC<FixturesDataProps> = ({ fixtures, loading }) => {
 
   return (
     <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-      <h2 className="text-4xl font-black uppercase tracking-tight mb-16 text-gray-900 text-center">
-        Upcoming Fixtures
-      </h2>
+      <div className="text-center mb-14">
+        <div className="inline-flex items-center gap-4">
+          <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-r from-transparent to-[#BD9B58]"></div>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bebas uppercase text-gray-900 leading-none">Upcoming Fixtures</h2>
+          <div className="w-6 sm:w-14 h-[2px] bg-gradient-to-l from-transparent to-[#BD9B58]"></div>
+        </div>
+      </div>
       
       {Object.entries(groupedFixtures).map(([month, matches]) => (
         <div key={month} className="mb-20">
@@ -58,9 +63,10 @@ const FixturesData: React.FC<FixturesDataProps> = ({ fixtures, loading }) => {
                   
                   {/* League Logo - Top */}
                   <div className="h-20 flex items-center justify-center bg-white border-b border-gray-100">
-                    <img
+                    <SafeImg
                       src={match.leagueLogo}
                       alt="League"
+                      fallbackSrc={null}
                       className="w-12 h-12 object-contain"
                     />
                   </div>
@@ -81,9 +87,10 @@ const FixturesData: React.FC<FixturesDataProps> = ({ fixtures, loading }) => {
                     {/* Teams - Horizontal */}
                     <div className="flex items-center justify-center gap-4 mb-6">
                       {/* Team 1 Logo */}
-                      <img
+                      <SafeImg
                         src={match.team1Logo}
                         alt={match.team1}
+                        fallbackSrc={null}
                         className="w-16 h-16 object-contain"
                       />
 
@@ -91,9 +98,10 @@ const FixturesData: React.FC<FixturesDataProps> = ({ fixtures, loading }) => {
                       <span className="text-xs font-bold text-gray-400 px-2">VS</span>
 
                       {/* Team 2 Logo */}
-                      <img
+                      <SafeImg
                         src={match.team2Logo}
                         alt={match.team2}
+                        fallbackSrc={null}
                         className="w-16 h-16 object-contain"
                       />
                     </div>

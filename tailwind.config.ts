@@ -63,15 +63,21 @@ export default {
   			}
   		},
   		fontFamily: {
-  			bebas: [
-  				'Bebas Neue',
-  				'cursive'
+  			sans: [
+  				'var(--font-poppins)',
+  				'Poppins',
+  				'ui-sans-serif',
+  				'system-ui',
+  				'sans-serif'
   			],
-  			barlow: [
-  				'Barlow',
+  			bebas: [
+  				'var(--font-bebas)',
+  				'Bebas Neue',
+  				'Impact',
   				'sans-serif'
   			],
   			playfair: [
+  				'var(--font-playfair)',
   				'Playfair Display',
   				'serif'
   			]

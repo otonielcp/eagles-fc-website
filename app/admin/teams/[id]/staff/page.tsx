@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, ArrowLeft, Loader2 } from "lucide-react";
+import { ageFromDateOnly } from "@/app/admin/_lib/dateOnly";
 
 export default function TeamStaffPage() {
   const params: { id: string } = useParams();
@@ -80,16 +81,8 @@ export default function TeamStaffPage() {
     return format(new Date(dateString), "MMM d, yyyy");
   };
 
-  const getAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
+  // Reads the stored UTC date part, so the age doesn't tick over a day early.
+  const getAge = (dateOfBirth: string) => ageFromDateOnly(dateOfBirth) ?? "N/A";
 
   if (loading) {
     return (

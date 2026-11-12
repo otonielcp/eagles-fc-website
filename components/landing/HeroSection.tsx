@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
+import { stripHtml } from "./landingUtils";
+import SafeImg from "./SafeImg";
 
 // Countdown Timer Component
 interface CountdownProps {
@@ -226,6 +228,8 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
   // Get current slide data (safe access with optional chaining)
   const currentSlideData = slides[currentSlide];
   const isGameSlide = currentSlideData?.type === "game";
+  // Featured-news slides carry the rich-text summary (HTML); render it as plain text.
+  const slideContent = stripHtml(currentSlideData?.content);
 
   // Different animation variants for each slide
   const getAnimationVariant = (slideIndex: number) => {
@@ -397,13 +401,11 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
               }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              <img
+              <SafeImg
                 src={gameData.leagueLogo}
                 alt="League"
+                fallbackSrc={null}
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
               />
             </motion.div>
           </motion.div>
@@ -422,16 +424,16 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
         )}
 
         {/* Main Match Display */}
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+        <div className="flex flex-row items-start justify-center gap-3 sm:gap-10 lg:gap-16">
           {/* Home Team - Left */}
           <motion.div
-            className="flex flex-col items-center text-center"
+            className="flex flex-col items-center text-center w-28 sm:w-48 lg:w-auto"
             initial={{ opacity: 0, x: -150, scale: 0.8 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2, type: "spring", stiffness: 100 }}
           >
             <motion.div
-              className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mb-4 relative"
+              className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 mb-3 sm:mb-4 relative"
               whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
               transition={{ duration: 0.3 }}
             >
@@ -445,17 +447,15 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               />
-              <img
+              <SafeImg
                 src={gameData.homeTeamLogo}
                 alt={gameData.homeTeamName}
+                fallbackSrc={null}
                 className="w-full h-full object-contain drop-shadow-2xl relative z-10"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
               />
             </motion.div>
             <motion.h3
-              className="text-white text-xl md:text-2xl lg:text-3xl font-bebas tracking-wide"
+              className="text-white text-lg sm:text-2xl lg:text-3xl font-bebas tracking-wide leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
@@ -466,7 +466,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
 
           {/* Center - VS & Match Info */}
           <motion.div
-            className="flex flex-col items-center"
+            className="flex flex-col items-center pt-4 sm:pt-8 lg:pt-10"
             initial={{ opacity: 0, scale: 0, rotate: -180 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ duration: 0.8, delay: 0.4, type: "spring", stiffness: 150 }}
@@ -521,7 +521,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                 </motion.p>
               )}
               {gameData.matchLocation && (
-                <p className="text-gray-400 text-sm md:text-base">
+                <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-[9rem] sm:max-w-none">
                   {gameData.matchLocation}
                 </p>
               )}
@@ -530,13 +530,13 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
 
           {/* Away Team - Right */}
           <motion.div
-            className="flex flex-col items-center text-center"
+            className="flex flex-col items-center text-center w-28 sm:w-48 lg:w-auto"
             initial={{ opacity: 0, x: 150, scale: 0.8 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2, type: "spring", stiffness: 100 }}
           >
             <motion.div
-              className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mb-4 relative"
+              className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 mb-3 sm:mb-4 relative"
               whileHover={{ scale: 1.1, rotate: [0, 5, -5, 0] }}
               transition={{ duration: 0.3 }}
             >
@@ -550,17 +550,15 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               />
-              <img
+              <SafeImg
                 src={gameData.awayTeamLogo}
                 alt={gameData.awayTeamName}
+                fallbackSrc={null}
                 className="w-full h-full object-contain drop-shadow-2xl relative z-10"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
               />
             </motion.div>
             <motion.h3
-              className="text-white text-xl md:text-2xl lg:text-3xl font-bebas tracking-wide"
+              className="text-white text-lg sm:text-2xl lg:text-3xl font-bebas tracking-wide leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
@@ -571,27 +569,27 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
         </div>
 
         {/* Additional Content */}
-        {currentSlideData.content && (
+        {slideContent && (
           <motion.p
             className="text-center text-gray-300 text-base md:text-lg mt-8 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            {currentSlideData.content}
+            {slideContent}
           </motion.p>
         )}
 
         {/* CTA Button */}
         <motion.div
-          className="flex justify-center mt-16 md:mt-20"
+          className="flex justify-center mt-10 md:mt-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1 }}
         >
           <Link href={currentSlideData.link}>
-            <motion.button
-              className="group relative px-12 py-6 bg-gradient-to-r from-[#BD9B58] to-[#d4b068] text-black text-base md:text-lg font-black tracking-[0.25em] overflow-hidden shadow-2xl rounded-full"
+            <motion.span
+              className="group relative inline-flex px-8 py-4 md:px-12 md:py-6 bg-gradient-to-r from-[#BD9B58] to-[#d4b068] text-black text-sm md:text-lg font-black tracking-[0.25em] overflow-hidden shadow-2xl rounded-full"
               whileHover={{
                 scale: 1.08,
                 boxShadow: "0 0 60px rgba(189, 155, 88, 1), 0 10px 40px rgba(0, 0, 0, 0.5)"
@@ -631,7 +629,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                   →
                 </motion.span>
               </span>
-            </motion.button>
+            </motion.span>
           </Link>
         </motion.div>
       </div>
@@ -686,15 +684,15 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                 backfaceVisibility: "hidden"
               }}
             >
-              {currentSlideData.content}
+              {slideContent}
             </motion.p>
           </div>
 
           {/* CTA Button with Enhanced GSAP Animation */}
           <div ref={buttonRef} className="flex items-center gap-6 pt-8">
             <Link href={currentSlideData.link}>
-              <motion.button
-                className="group relative px-12 py-6 bg-gradient-to-r from-[#BD9B58] to-[#d4b068] text-black text-base md:text-lg font-black tracking-[0.25em] overflow-hidden shadow-2xl rounded-full"
+              <motion.span
+                className="group relative inline-flex px-8 py-4 md:px-12 md:py-6 bg-gradient-to-r from-[#BD9B58] to-[#d4b068] text-black text-sm md:text-lg font-black tracking-[0.25em] overflow-hidden shadow-2xl rounded-full"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 1.4, type: "spring" }}
@@ -737,7 +735,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
                     →
                   </motion.span>
                 </span>
-              </motion.button>
+              </motion.span>
             </Link>
           </div>
         </div>
@@ -805,7 +803,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
     );
   }
 
-  // Show message when no sliders exist (after all hooks are called)
+  // No slides: show a simple branded hero (public page — no admin instructions)
   if (slides.length === 0) {
     return (
       <div className="relative h-screen overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #181819, #000000, #181819)' }}>
@@ -813,14 +811,11 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
           <h1 className="text-5xl md:text-7xl font-bebas font-black text-white uppercase tracking-wider mb-6">
             EAGLES FC
           </h1>
-          <p className="text-gray-400 text-lg mb-4">
-            No active hero sliders found.
+          <p className="text-gray-400 text-lg mb-8">
+            Youth soccer in Grand Island, Nebraska.
           </p>
-          <p className="text-gray-500 text-sm mb-8">
-            If you have created sliders, make sure they are marked as <strong className="text-white">"Active"</strong> in the admin panel. Go to Sliders → Edit each slider → Toggle "Active" ON → Save.
-          </p>
-          <Link href="/admin/sliders" className="inline-block bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] text-black font-bold px-8 py-4 rounded uppercase tracking-wider hover:from-[#D4AF37] hover:to-[#BD9B58] transition-all duration-300">
-            Go to Admin Panel
+          <Link href="/teams" className="inline-block bg-gradient-to-r from-[#BD9B58] to-[#D4AF37] text-black font-bold px-8 py-4 rounded uppercase tracking-wider hover:from-[#D4AF37] hover:to-[#BD9B58] transition-all duration-300">
+            Meet Our Teams
           </Link>
         </div>
       </div>
@@ -887,81 +882,9 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
         }}
       />
 
-      {/* Player Images for Game Slides - Positioned at hero level */}
-      {isGameSlide && currentSlideData.gameData && (
-        <>
-          {currentSlideData.gameData.leftPlayerImage && (
-            <motion.div
-              className="hidden lg:block absolute -left-20 xl:-left-32 2xl:-left-40 bottom-0 z-20 pointer-events-none"
-              initial={{ opacity: 0, x: -200, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{
-                duration: 1.2,
-                delay: 0.3,
-                type: "spring",
-                stiffness: 50,
-                damping: 15
-              }}
-            >
-              <motion.img
-                src={currentSlideData.gameData.leftPlayerImage}
-                alt="Left Player"
-                className="h-[550px] xl:h-[700px] 2xl:h-[800px] object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-                style={{
-                  filter: "drop-shadow(0 0 30px rgba(0,0,0,0.8)) drop-shadow(0 0 60px rgba(189, 155, 88, 0.3))"
-                }}
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-            </motion.div>
-          )}
-
-          {currentSlideData.gameData.rightPlayerImage && (
-            <motion.div
-              className="hidden lg:block absolute -right-20 xl:-right-32 2xl:-right-40 bottom-0 z-20 pointer-events-none"
-              initial={{ opacity: 0, x: 200, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{
-                duration: 1.2,
-                delay: 0.3,
-                type: "spring",
-                stiffness: 50,
-                damping: 15
-              }}
-            >
-              <motion.img
-                src={currentSlideData.gameData.rightPlayerImage}
-                alt="Right Player"
-                className="h-[550px] xl:h-[700px] 2xl:h-[800px] object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-                style={{
-                  filter: "drop-shadow(0 0 30px rgba(0,0,0,0.8)) drop-shadow(0 0 60px rgba(189, 155, 88, 0.3))"
-                }}
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5
-                }}
-              />
-            </motion.div>
-          )}
-        </>
-      )}
+      {/* Game slides intentionally never render gameData.leftPlayerImage /
+          rightPlayerImage: every roster is U7–U15, and player photos are not
+          published on public pages. */}
 
       {/* Main Content Container */}
       <div className="relative h-full flex items-center pt-32 pb-24">
@@ -985,7 +908,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
         <>
           <motion.button
             onClick={goToPrevSlide}
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-white p-3 rounded-full backdrop-blur-sm"
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-white p-3 rounded-full backdrop-blur-sm hidden md:block"
             aria-label="Previous slide"
             whileHover={{
               scale: 1.1,
@@ -1002,7 +925,7 @@ const HeroSection = ({ initialSlides = [] }: HeroSectionProps) => {
 
           <motion.button
             onClick={goToNextSlide}
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-white p-3 rounded-full backdrop-blur-sm"
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-white p-3 rounded-full backdrop-blur-sm hidden md:block"
             aria-label="Next slide"
             whileHover={{
               scale: 1.1,
